@@ -145,7 +145,9 @@
     input.addEventListener('scroll',()=>{$('expression-highlight').scrollLeft=input.scrollLeft;});
     $('angle-mode').addEventListener('input',()=>{$('angle-label').textContent=$('angle-mode').value==='1'?'Degrees':'Radians'; update();});
     input.addEventListener('click',showSuggestions);
-    input.addEventListener('blur',()=>setTimeout(()=>{if(document.activeElement!==input) {hideSuggestions(); update();}},0));
+    // Keep suggestions in place until a click completes: removing them on blur
+    // can move a saved calculation out from under the pointer before click.
+    document.addEventListener('click',e=>{if(e.target!==input && !$('autocomplete-list').contains(e.target)) hideSuggestions();});
     input.addEventListener('keydown',e=>{
         if($('autocomplete-list').hidden || e.ctrlKey || e.metaKey || e.altKey) return;
         if(e.key==='ArrowDown'||e.key==='ArrowUp') {e.preventDefault(); suggestionIndex=(suggestionIndex+(e.key==='ArrowDown'?1:-1)+suggestions.length)%suggestions.length; markSuggestion();}

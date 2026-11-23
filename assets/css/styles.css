@@ -218,7 +218,10 @@ kbd { font-size: .75rem; opacity: .7; padding-left: .35rem; }
 .expression-editor { margin-top: .5rem; border: 1px solid var(--border); border-radius: 10px; background: white; overflow: hidden; }
 .expression-editor:focus-within { outline: 2px solid #d7e6ff; border-color: #bfd3f6; }
 .calculator .expression-editor #expression { margin: 0; border: 0; border-radius: 0; outline: 0; }
-.expression-editor .math-preview { margin: 0 .9rem; padding: .65rem 0 .8rem; border-top: 1px solid #e7edf6; min-height: 0; }
+.preview-row { display: flex; align-items: baseline; gap: .7rem; margin: 0 .9rem; border-top: 1px solid #e7edf6; overflow-x: auto; }
+.preview-row:has(.math-preview[hidden]) { display: none; }
+.expression-editor .math-preview { margin: 0; padding: .65rem 0 .8rem; min-height: 0; overflow: visible; flex: 1 0 auto; }
+.preview-result:not([hidden]) { display: flex; align-items: baseline; gap: .4rem; flex: 0 0 auto; white-space: nowrap; font-size: 1.2rem; }
 
 .prefix-note { color: var(--muted); font-size: .82rem; margin: .1rem .9rem .65rem; }
 .result-relation { margin: -.7rem 0 .35rem !important; color: var(--muted); }
@@ -279,7 +282,8 @@ kbd { font-size: .75rem; opacity: .7; padding-left: .35rem; }
     .angle-setting input[type="range"] { min-height: 44px; width: 3rem; }
     .angle-setting strong { display: none; }
     .calculator .expression-input-layer #expression, .expression-highlight { padding: .75rem; font-size: 1rem; }
-    .expression-editor .math-preview { margin: 0 .75rem; padding: .5rem 0; }
+    .preview-row { margin: 0 .75rem; }
+    .expression-editor .math-preview { margin: 0; padding: .5rem 0; }
     .calculator-toolbar { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: .35rem; margin: .55rem 0; }
     .calculator-toolbar button { padding: .5rem .2rem; font-size: .88rem; }
     .calculator-toolbar kbd { display: none; }
