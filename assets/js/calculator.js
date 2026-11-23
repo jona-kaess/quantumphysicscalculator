@@ -163,7 +163,14 @@
     document.addEventListener('pointerdown',e=>{if(!$('insert-menu').hidden && !$('insert-menu').contains(e.target) && !e.target.closest('#constants-button, #units-button, #functions-button')) closeMenu();});
     $('copy-latex').addEventListener('click',async()=>{
         const status=$('action-status'); if(!currentLatex) {status.textContent='Enter a valid expression first.'; return;}
-        try {await navigator.clipboard.writeText(currentLatex.replace(/\\color\{[^{}]*\}/g,'')); status.textContent='LaTeX copied.';} catch {status.textContent='Could not copy LaTeX. Check clipboard permissions.';}
+        let latex=currentLatex.replace(/\\color\{[^{}]*\}/g,'').trim();
+        while(latex.startsWith('{') && latex.endsWith('}')) {
+            let depth=0, enclosesAll=true;
+            for(let i=0;i<latex.length;i++) {if(latex[i]==='\\') {i++; continue;} if(latex[i]==='{') depth++; else if(latex[i]==='}') depth--; if(depth===0 && i<latex.length-1) {enclosesAll=false; break;}}
+            if(!enclosesAll || depth!==0) break;
+            latex=latex.slice(1,-1).trim();
+        }
+        try {await navigator.clipboard.writeText(latex); status.textContent='LaTeX copied.';} catch {status.textContent='Could not copy LaTeX. Check clipboard permissions.';}
     });
     function renderSaved() {
         const list=$('saved-list'), entries=readStorage(savedKey,[]); list.replaceChildren();
