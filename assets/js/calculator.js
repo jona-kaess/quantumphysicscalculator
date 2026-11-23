@@ -157,10 +157,10 @@
     $('result-unit-search').addEventListener('input',filterResultUnits);
     $('result-unit-search').addEventListener('keydown',e=>{if(e.key==='Enter' && !$('result-unit').hidden){e.preventDefault();selectedUnit=$('result-unit').options[0].value;$('result-unit').value=selectedUnit;manualUnit=true;showResultChoice();}});
     $('result-unit').addEventListener('change',()=>{selectedUnit=$('result-unit').value; manualUnit=true; showResultChoice();});
-    for(const [id,mode] of [['constants-button','constants'],['units-button','units'],['functions-button','functions']]) {$(id).addEventListener('mousedown',e=>e.preventDefault()); $(id).addEventListener('click',()=>openMenu(mode));}
+    for(const [id,mode] of [['constants-button','constants'],['units-button','units'],['functions-button','functions']]) {$(id).addEventListener('mousedown',e=>e.preventDefault()); $(id).addEventListener('click',()=>{if(!$('insert-menu').hidden && menuMode===mode) closeMenu(); else openMenu(mode);});}
     $('menu-search').addEventListener('input',populateMenu); $('unit-group').addEventListener('change',populateMenu); $('menu-close').addEventListener('click',()=>{closeMenu();input.focus();});
     $('menu-search').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault(); $('menu-items').querySelector('button')?.click();}});
-    document.addEventListener('pointerdown',e=>{if(!$('insert-menu').hidden && !$('insert-menu').contains(e.target) && !e.target.closest('.calculator-toolbar')) closeMenu();});
+    document.addEventListener('pointerdown',e=>{if(!$('insert-menu').hidden && !$('insert-menu').contains(e.target) && !e.target.closest('#constants-button, #units-button, #functions-button')) closeMenu();});
     $('copy-latex').addEventListener('click',async()=>{
         const status=$('action-status'); if(!currentLatex) {status.textContent='Enter a valid expression first.'; return;}
         try {await navigator.clipboard.writeText(currentLatex.replace(/\\color\{[^{}]*\}/g,'')); status.textContent='LaTeX copied.';} catch {status.textContent='Could not copy LaTeX. Check clipboard permissions.';}
