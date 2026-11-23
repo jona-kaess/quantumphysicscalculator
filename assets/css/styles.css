@@ -242,6 +242,7 @@ kbd { font-size: .75rem; opacity: .7; padding-left: .35rem; }
 .angle-setting label { color: var(--text); }
 .angle-setting input[type="range"] { width: 3.5rem; padding: 0; accent-color: var(--accent); }
 .angle-setting strong { color: var(--accent); }
+.angle-short { display: none; }
 
 /* A non-interactive mirror colors the text while the native input keeps editing,
    selection, keyboard shortcuts and accessibility behavior. */
@@ -271,12 +272,14 @@ kbd { font-size: .75rem; opacity: .7; padding-left: .35rem; }
 @media (max-width: 600px) {
     .container { padding: .75rem .75rem 2rem; }
     .hero h1 { margin-top: .5rem; font-size: 1.65rem; }
-    .hero > p { font-size: .95rem; line-height: 1.4; }
+    .calculator > p { display: none; }
     .panel { padding: .85rem; margin-top: .75rem; }
     input, select { font-size: 16px; min-height: 44px; }
     button { min-height: 44px; }
-    .angle-setting { gap: .35rem .5rem; margin-bottom: .55rem; }
-    .angle-setting input[type="range"] { min-height: 44px; width: 3rem; }
+    .angle-setting { gap: .4rem; flex-wrap: nowrap; white-space: nowrap; margin-bottom: .55rem; }
+    .angle-setting input[type="range"] { flex: 0 0 3rem; min-height: 44px; width: 3rem; }
+    .angle-full { display: none; }
+    .angle-short { display: inline; }
     .angle-setting strong { display: none; }
     .calculator .expression-input-layer #expression, .expression-highlight { padding: .75rem; font-size: 1rem; }
     .preview-row { margin: 0 .75rem; }
@@ -285,7 +288,7 @@ kbd { font-size: .75rem; opacity: .7; padding-left: .35rem; }
     .calculator-toolbar button { padding: .5rem .2rem; font-size: .88rem; }
     .calculator-toolbar kbd { display: none; }
     .calculator-toolbar { display: none; }
-    .calculator .panel:focus-within #input-help { display: none; }
+    .calculator #input-help { display: none; }
     .mobile-result:not([hidden]) { display: flex; align-items: baseline; gap: .65rem; padding: .5rem .1rem 0; overflow-x: auto; }
     .mobile-result > span:first-child { flex: none; color: var(--muted); font-size: .75rem; font-weight: 700; text-transform: uppercase; }
     #mobile-result-value { font-size: 1.15rem; white-space: nowrap; }
