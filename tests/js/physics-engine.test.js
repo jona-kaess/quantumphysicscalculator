@@ -176,7 +176,7 @@ test('live completions include short constants and base units, preserve token bo
     assert.ok(unit.items.some(item=>item.symbol==='GHz'));
     const list=engine.completions('H',1).items;
     assert.ok(list.some(item=>item.symbol==='Hz'));
-    assert.ok(!list.some(item=>item.symbol==='GHz'));
+    assert.ok(list.some(item=>item.symbol==='GHz'));
     assert.equal(engine.searchItems([{symbol:'MHz',name:'megahertz'}, {symbol:'mHz',name:'millihertz'}],'mHz')[0].symbol,'mHz');
     assert.deepEqual(engine.completions('1 + ',4).items,[]);
 });

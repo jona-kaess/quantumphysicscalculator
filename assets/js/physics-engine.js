@@ -309,11 +309,10 @@
             return {start:cursor,end:cursor,items:common.map(symbol=>({...U[symbol],type:'unit'}))};
         }
         if(!token) return {start:cursor,end:cursor,items:[]};
-        const query=token[0].toLowerCase();
-        const unitItems=Object.values(U).filter(u=>!u.prefix || (query.length>=2 && u.symbol.toLowerCase().startsWith(query))).map(u=>({symbol:u.symbol,name:u.name,type:'unit'}));
+        const unitItems=Object.values(U).map(u=>({symbol:u.symbol,name:u.name,type:'unit'}));
         const afterEq=/(?:^|\s)eq\s+[A-Za-zµ_][A-Za-z0-9µ_]*$/.test(before);
         const pool=afterEq?unitItems:[...constantItems(),...Object.entries(FUNCTIONS).map(([symbol,name])=>({symbol,name,type:'function'})),{symbol:'eq',name:'Convert result to a unit',type:'operator'},{symbol:'i',name:'Imaginary unit',type:'constant'},{symbol:'euler',name:'Euler number',type:'constant'},...unitItems];
-        const items=searchItems(pool,token[0]).filter(x=>x.symbol.toLowerCase().startsWith(query)||x.name.toLowerCase().startsWith(query)).slice(0,8);
+        const items=searchItems(pool,token[0]);
         const remainder=text.slice(cursor).match(/^[A-Za-z0-9µ_]*/)[0];
         return {start:cursor-token[0].length,end:cursor+remainder.length,items};
     }
