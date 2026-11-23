@@ -283,6 +283,7 @@ kbd { font-size: .75rem; opacity: .7; padding-left: .35rem; }
     .angle-full { display: none; }
     .angle-short { display: inline; }
     .angle-setting strong { display: none; }
+    .calculator .expression-editor { margin-left: -.85rem; margin-right: -.85rem; border-left: 0; border-right: 0; border-radius: 0; }
     .calculator .expression-input-layer #expression, .expression-highlight { padding: .75rem; font-size: 1rem; }
     .preview-row { margin: 0 .75rem; flex-wrap: wrap; gap: 0 .5rem; overflow: visible; }
     .expression-editor .math-preview { flex: 1 0 max-content; max-width: 100%; min-width: 0; margin: 0; padding: .5rem 0; overflow-x: auto; scrollbar-width: none; }
