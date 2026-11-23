@@ -289,6 +289,19 @@ kbd { font-size: .75rem; opacity: .7; padding-left: .35rem; }
 .saved-restore > span { min-width: 0; max-width: 100%; }
 .saved-restore mjx-math { white-space: normal; overflow-wrap: anywhere; }
 .saved-result { color: var(--text); }
+.calculator-header { display: flex; align-items: center; justify-content: space-between; gap: .5rem; }
+.guide-link { display: inline-flex; align-items: center; justify-content: center; gap: .4rem; min-width: 44px; min-height: 44px; color: var(--accent); font-weight: 600; text-decoration: none; }
+.guide-link > span:first-child { display: grid; place-items: center; width: 1.35rem; height: 1.35rem; border: 1px solid currentColor; border-radius: 50%; }
+.guide-page { line-height: 1.5; }
+.guide-page h1 { margin: .5rem 0; }
+.guide-page h2 { margin: 1.4rem 0 .4rem; font-size: 1.15rem; }
+.guide-page p, .guide-page ul { margin: .35rem 0; color: var(--text); }
+.guide-page li { margin: .3rem 0; }
+.guide-page a { color: var(--accent); }
+.guide-page code { color: #a4d1ca; overflow-wrap: anywhere; }
+.guide-page figure { margin: .8rem 0; }
+.guide-page img { display: block; max-width: 100%; height: auto; border: 1px solid var(--border); border-radius: 8px; }
+.guide-page figcaption { color: var(--muted); font-size: .85rem; margin-top: .3rem; }
 
 /* Keep touch targets and the editor usable when the on-screen keyboard is open. */
 @media (max-width: 600px) {
@@ -368,6 +381,11 @@ mjx-mstyle[style*="color: brown"], mjx-mo[style*="color: brown"] { color: #e5b39
 @media (max-width: 600px) {
     .container { padding-top: .25rem; }
     .calculator > h1 { margin: .25rem 0; padding: 0 .65rem; font-size: 1.45rem; }
+    .calculator-header { padding: 0 .35rem 0 .65rem; }
+    .calculator-header h1 { margin: .25rem 0; font-size: 1.45rem; }
+    .guide-link-text { display: none; }
+    .guide-link { min-width: 2rem; min-height: 2rem; }
+    .guide-page { padding: .6rem .75rem 2rem; }
     .panel { padding: .55rem .65rem; margin-top: .35rem; }
     .panel h2 { margin-bottom: .35rem; }
     .calculator .expression-editor { margin-left: -.65rem; margin-right: -.65rem; }

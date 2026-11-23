@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#171b22">
+    <title>Calculator guide</title>
+    <link rel="stylesheet" href="assets/css/styles.css?v=2df7bd2728a2">
+</head>
+<body>
+<main class="container guide-page">
+    <a href="index.html">← Back to calculator</a>
+    <h1>Calculator guide</h1>
+    <p>Enter an expression. The calculator shows its formatted form and result as you type.</p>
+    <figure><img src="assets/images/guide-expression.png" alt="Calculator showing hbar times 25 GHz and its energy result"><figcaption>Enter numbers, constants and units in the Expression field.</figcaption></figure>
+
+    <h2>Calculate</h2>
+    <ul>
+        <li><code>7/8</code>, <code>2*(3+4)</code>, <code>2^3</code>, <code>5!</code>, <code>50%</code> and <code>mod(11,3)</code> work as expected.</li>
+        <li>For scientific notation use uppercase <code>E</code>: <code>1E6</code> or <code>1E-3</code>. Lowercase <code>e</code> is the elementary charge; <code>euler</code> is Euler’s number.</li>
+        <li>For complex numbers use <code>i</code>, for example <code>(2+3i)*2</code>.</li>
+    </ul>
+
+    <h2>Units and constants</h2>
+    <ul>
+        <li>Write a unit next to a number: <code>10GHz</code>, <code>2 kg</code> or <code>3 m/s</code>. Prefixes such as <code>m</code>, <code>k</code>, <code>G</code>, <code>u</code>, <code>mu</code> and <code>µ</code> are supported.</li>
+        <li>Examples: <code>hbar * 25 GHz</code>, <code>k_B * 300 K</code> and <code>2 kg * 9.81 m / s^2</code>. Used constants and their values appear below the result.</li>
+        <li>Other examples include <code>1 in</code>, <code>1 gal_US</code>, <code>1 gal_UK</code>, <code>1 F</code>, <code>1 G</code> and <code>1 kcal</code>. US and UK volume units have separate names.</li>
+        <li>Dimensions must match when adding or subtracting. <code>5V / 10A</code> divides two quantities; <code>5V / 10 A</code> multiplies by A after division. Parentheses make the order explicit.</li>
+        <li>On a keyboard, use <kbd>Ctrl K</kbd> for constants, <kbd>Ctrl E</kbd> for units and <kbd>Ctrl Y</kbd> for functions. You can also type a name and select a suggestion; use ↑/↓ and Enter or Tab on a keyboard.</li>
+    </ul>
+
+    <h2>Choose an output unit</h2>
+    <ul>
+        <li>Search under <strong>Choose a unit</strong>, or append <code>eq</code>: <code>10 m / 2s eq km/h</code> or <code>hbar * 25 GHz eq meV</code>. Type <code>eq</code> to see it in suggestions, then type the desired unit.</li>
+        <li>Energy equivalents are marked separately. <code>1 eV eq GHz</code> converts using E = hν; ordinary <code>GHz</code> in an expression is a frequency. <code>GHz_energy</code>, <code>rad_s_energy</code>, <code>K_energy</code>, <code>T_energy</code> and <code>nm_energy</code> are energy equivalents in input.</li>
+        <li>The output selects readable SI prefixes automatically for base units; a prefix explicitly entered after <code>eq</code> is retained.</li>
+    </ul>
+    <figure><img src="assets/images/guide-conversion.png" alt="Result panel showing a frequency energy equivalent and the relation E equals h nu"><figcaption>The result identifies the selected unit and the relation used for an energy equivalent.</figcaption></figure>
+
+    <h2>Functions and angles</h2>
+    <p>Use parentheses, for example <code>sqrt(9 m^2)</code>, <code>sin(90)</code> or <code>pow(2,3)</code>. Select <strong>Rad</strong> or <strong>Deg</strong> for trigonometric functions; explicit angles such as <code>sin(90 deg)</code> work in either mode.</p>
+    <p>Available functions: <code>sqrt</code>, <code>sin</code>, <code>cos</code>, <code>tan</code>, <code>asin</code>, <code>acos</code>, <code>atan</code>, <code>sinh</code>, <code>cosh</code>, <code>tanh</code>, <code>ln</code>, <code>log</code>, <code>exp</code>, <code>tenpow</code>, <code>abs</code>, <code>re</code>, <code>im</code>, <code>conj</code>, <code>arg</code>, <code>floor</code>, <code>ceil</code>, <code>factorial</code>, <code>mod</code>, <code>pow</code>, <code>recip</code> and <code>percent</code>.</p>
+
+    <h2>Temperatures</h2>
+    <p>Use <code>20 degC</code> or <code>68 degF</code> for absolute temperatures and <code>deltaC</code> or <code>deltaF</code> for differences. For example, <code>20 degC - 10 degC</code> gives a temperature difference. Absolute Celsius and Fahrenheit values cannot be multiplied or divided.</p>
+
+    <h2>Save and reuse</h2>
+    <p><strong>Copy LaTeX</strong> copies the expression as LaTeX. <strong>Save calculation</strong> stores it and the selected result unit in this browser on this device. Select a saved expression to restore it, or choose <strong>Use result</strong> to append its result to the current expression. <strong>Clear</strong> clears the expression.</p>
+    <p><a href="index.html">← Back to calculator</a></p>
+</main>
+</body>
+</html>

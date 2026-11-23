@@ -2,6 +2,7 @@
 
 A static, client-side physics calculator. It runs in the browser and can be hosted
 on GitHub Pages; Flask, Python and a backend API are not needed at runtime.
+See [the calculator guide](guide.html) for usage examples.
 
 The calculator is available at `index.html`. The former unit converter and
 qubit Hamiltonians are preserved on the `legacy-converter-hamiltonians` branch.

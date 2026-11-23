@@ -98,10 +98,33 @@
         } catch(err) {currentResult=null; currentLatex=''; panel.hidden=true; $('calculator-error').textContent=err.message; $('expression-preview').hidden=true; $('input-prefixes').hidden=true; invalidate($('expression-preview'));}
     }
     function hideSuggestions() { $('autocomplete-list').hidden=true; input.setAttribute('aria-expanded','false'); input.removeAttribute('aria-activedescendant'); suggestions=[]; }
+    // Mobile browsers may keep the input focused when the system keyboard is
+    // dismissed. Detect the viewport expanding again instead of relying on blur.
+    if(window.visualViewport && window.matchMedia('(pointer: coarse)').matches) {
+        let baseline=window.visualViewport.height, wasOpen=false, orientation=screen.orientation?.type;
+        input.addEventListener('focus',()=>{baseline=window.visualViewport.height; wasOpen=false; orientation=screen.orientation?.type;});
+        window.visualViewport.addEventListener('resize',()=>{
+            if(document.activeElement!==input) return;
+            const height=window.visualViewport.height, current=screen.orientation?.type;
+            if(current!==orientation) {orientation=current; baseline=height; wasOpen=false; return;}
+            if(height>baseline) baseline=height;
+            if(baseline-height>120) wasOpen=true;
+            else if(wasOpen && baseline-height<80) {wasOpen=false; hideSuggestions();}
+        });
+        const keyboard=navigator.virtualKeyboard;
+        if(keyboard) {
+            let visible=false;
+            keyboard.addEventListener('geometrychange',()=>{
+                const open=keyboard.boundingRect.height>0;
+                if(visible && !open && document.activeElement===input) hideSuggestions();
+                visible=open;
+            });
+        }
+    }
     function acceptSuggestion(index) {
         if(!suggestions[index] || !completionRange) return;
-        const item=suggestions[index], value=item.type==='function'?`${item.symbol}()`:item.symbol;
-        input.setRangeText(value,completionRange.start,completionRange.end,'end'); if(item.type==='function') input.setSelectionRange(input.selectionStart-1,input.selectionStart-1); hideSuggestions(); input.focus(); manualUnit=false; $('result-unit-search').value=''; update(); if(item.type==='function') $('calculator-error').textContent='';
+        const item=suggestions[index], value=item.type==='function'?`${item.symbol}()`:item.type==='operator'?`${item.symbol} `:item.symbol;
+        input.setRangeText(value,completionRange.start,completionRange.end,'end'); if(item.type==='function') input.setSelectionRange(input.selectionStart-1,input.selectionStart-1); hideSuggestions(); input.focus(); manualUnit=false; $('result-unit-search').value=''; update(); if(item.type==='function') $('calculator-error').textContent=''; if(item.type==='operator') showSuggestions();
     }
     function showSuggestions() {
         if(document.activeElement!==input || !$('insert-menu').hidden) return hideSuggestions();
@@ -113,7 +136,7 @@
         suggestions.forEach((item,index)=>{
             const option=document.createElement('button'), symbol=document.createElement('strong'), description=document.createElement('span');
             option.type='button'; option.id=`completion-${index}`; option.className='autocomplete-option'; option.setAttribute('role','option');
-            symbol.className=item.type==='unit'?'unit-color':item.type==='function'?'function-color':'constant-color'; symbol.textContent=item.symbol; description.textContent=`${item.name} · ${item.type}`;
+            symbol.className=item.type==='unit'?'unit-color':item.type==='function'||item.type==='operator'?'function-color':'constant-color'; symbol.textContent=item.symbol; description.textContent=`${item.name} · ${item.type}`;
             option.append(symbol,description); option.addEventListener('mousedown',e=>e.preventDefault()); option.addEventListener('click',()=>acceptSuggestion(index)); list.append(option);
         });
         list.hidden=false; input.setAttribute('aria-expanded','true'); markSuggestion();
