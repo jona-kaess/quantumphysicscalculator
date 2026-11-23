@@ -1,7 +1,7 @@
 (() => {
     const engine=PhysicsEngine, $=id=>document.getElementById(id), input=$('expression');
     let menuMode='', start=0, end=0, resultChoices=[], selectedUnit='', manualUnit=false, suggestions=[], suggestionIndex=0, completionRange=null;
-    let lastResult=null, lastText='', answer=null, currentLatex='';
+    let lastResult=null, lastText='', answer=null, currentLatex='', enteringAnswer=false;
     const savedKey='physics-calculator-saved-v1', answerKey='physics-calculator-answer-v1';
     const readStorage=(key,fallback)=>{try{return JSON.parse(localStorage.getItem(key))??fallback;}catch{return fallback;}};
     const writeStorage=(key,value)=>{try{localStorage.setItem(key,JSON.stringify(value));return true;}catch{return false;}};
@@ -142,10 +142,18 @@
         populateMenu(); $('menu-search').focus();
     }
     function rememberAnswer(nextText='') {if(lastResult && (!/\bANS\b/.test(lastText) || !/\bANS\b/.test(nextText))) {answer=lastResult; engine.setAnswer(answer); writeStorage(answerKey,answer);}}
-    input.addEventListener('input',()=>{ rememberAnswer(input.value); $('result-unit-search').value=''; update(); showSuggestions();});
+    input.addEventListener('input',()=>{
+        // A is also the ampere unit. While the user types A → AN → ANS,
+        // retain the answer from before that token instead of saving 1 A.
+        const beforeCursor=input.value.slice(0,input.selectionStart);
+        const answerToken=/(?:^|[^A-Za-z0-9_µ])A(?:N(?:S)?)?$/.test(beforeCursor);
+        if(!answerToken || !enteringAnswer) rememberAnswer(input.value);
+        enteringAnswer=answerToken;
+        $('result-unit-search').value=''; update(); showSuggestions();
+    });
     window.addEventListener('pagehide',()=>rememberAnswer());
     $('clear-expression').addEventListener('mousedown',e=>e.preventDefault());
-    $('clear-expression').addEventListener('click',()=>{rememberAnswer(); input.value=''; manualUnit=false; $('result-unit-search').value=''; closeMenu(); hideSuggestions(); update(); input.focus();});
+    $('clear-expression').addEventListener('click',()=>{rememberAnswer(); enteringAnswer=false; input.value=''; manualUnit=false; $('result-unit-search').value=''; closeMenu(); hideSuggestions(); update(); input.focus();});
     input.addEventListener('scroll',()=>{$('expression-highlight').scrollLeft=input.scrollLeft;});
     $('angle-mode').addEventListener('input',()=>{$('angle-label').textContent=$('angle-mode').value==='1'?'Degrees':'Radians'; update();});
     input.addEventListener('click',showSuggestions);
