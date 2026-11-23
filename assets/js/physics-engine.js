@@ -277,9 +277,25 @@
     }
     function chooseDefault(result, text, choices) {
         const name=dimensionName(result.dim);
-        const preferred={energy:/eV\b/.test(text)?'eV':'J',frequency:'Hz',length:'m',area:'m²',mass:'g',time:'s',temperature:'K',force:'N',power:'W','pressure / energy density':'Pa',charge:'C',voltage:'V',resistance:'ohm','magnetic flux density':'T',current:'A',amount:'mol',luminous:'cd',volume:'m³',capacitance:'F',inductance:'H',conductance:'S','magnetic flux':'Wb'}[name];
-        if(!preferred) return choices[0]?.label || '';
-        return choices.find(row=>row.label===preferred && row.group!=='Energy equivalent')?.key || choices[0]?.key || choices[0]?.label || '';
+        const byKey=key=>choices.find(row=>row.key===key);
+        const names=tokenize(text).filter(token=>token.type==='name').map(token=>token.value);
+        // When the input already names a unit of the result's dimension, keep
+        // that unit family. Prefixes are still selected from the result size.
+        for(const symbol of names) {
+            const unit=U[symbol]; if(!unit || !same(unit.dim,result.dim)) continue;
+            const base=unit.base || symbol;
+            const key={degC:'°C',degF:'°F',deltaC:'Δ°C',deltaF:'Δ°F'}[base] || base;
+            if(byKey(key)) return key;
+        }
+        // Planck, Boltzmann and Bohr-magneton energies are commonly discussed
+        // in electronvolts. Do not infer a field solely from the magnitude.
+        if(name==='energy') {
+            const quantum=new Set(['h','hbar','k_B','mu_B']);
+            const energyConstant=names.some(symbol=>quantum.has(symbol) || /(?:planck_constant|boltzmann_constant|bohr_magneton)/i.test(symbol));
+            if(energyConstant && byKey('eV')) return 'eV';
+        }
+        const preferred={energy:'J',frequency:'Hz',length:'m',area:'m²',volume:'m³',mass:'g',time:'s',temperature:'K',force:'N',power:'W','pressure / energy density':'Pa',charge:'C',voltage:'V',resistance:'ohm','magnetic flux density':'T',current:'A',amount:'mol',luminous:'cd',velocity:'m/s',acceleration:'m/s²',capacitance:'F',inductance:'H',conductance:'S','magnetic flux':'Wb'}[name];
+        return byKey(preferred)?.key || choices[0]?.key || '';
     }
     function scaledChoice(choice) {
         const magnitude=Math.hypot(choice.value,choice.imag||0);

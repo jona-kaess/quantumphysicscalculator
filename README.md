@@ -35,6 +35,11 @@ make grouping explicit. US and UK liquid measures have distinct names, such as
 `gal_US` and `gal_UK`. Unit pickers show base symbols; the result chooses a
 readable SI prefix automatically.
 
+The default output unit follows an explicitly entered unit of the resulting
+dimension when possible. Otherwise, energies involving Planck's constant,
+Boltzmann's constant or the Bohr magneton default to electronvolts; other
+results use standard units. A manually selected output unit takes precedence.
+
 `ANS` uses the previous valid result, including its dimensions and temperature
 type. The answer is kept while editing an expression containing `ANS`, and is
 updated when starting another expression. Save calculations to restore their
