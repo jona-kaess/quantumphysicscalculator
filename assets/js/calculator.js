@@ -208,7 +208,7 @@
             try {
                 const saved=savedResult(item); resultDisplay.className='saved-result'; renderMath(resultDisplay,`= ${saved.tex}`);
                 useResult.setAttribute('aria-label',`Use result of ${item.expression}`);
-                useResult.addEventListener('click',()=>{input.value=saved.expression; manualUnit=false; $('result-unit-search').value=''; update(); input.focus();});
+                useResult.addEventListener('click',()=>{input.value+=(input.value && !/\s$/.test(input.value)?' ':'')+saved.expression; manualUnit=false; $('result-unit-search').value=''; update(); input.focus(); input.setSelectionRange(input.value.length,input.value.length);});
             } catch {useResult.hidden=true; resultDisplay.textContent='Result unavailable'; resultDisplay.className='saved-result';}
         });
     }
