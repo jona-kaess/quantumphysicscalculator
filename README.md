@@ -3,12 +3,8 @@
 A static, client-side physics calculator. It runs in the browser and can be hosted
 on GitHub Pages; Flask, Python and a backend API are not needed at runtime.
 
-## Pages
-
-- `index.html` — dimensional physics calculator with constants and unit conversion.
-- `converter.html` — quantum-unit converter (energy, wavelength, temperature,
-  frequency and magnetic field equivalents).
-- `hamiltonians.html` — interactive qubit Hamiltonians and energy plots.
+The calculator is available at `index.html`. The former unit converter and
+qubit Hamiltonians are preserved on the `legacy-converter-hamiltonians` branch.
 
 Open `index.html` in a browser or serve this directory with any static HTTP server,
 for example `python3 -m http.server 5000`. MathJax is loaded from a CDN for
