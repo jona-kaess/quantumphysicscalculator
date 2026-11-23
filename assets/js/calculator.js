@@ -67,7 +67,7 @@
         highlightExpression();
         const text=input.value.trim(), panel=$('result-panel');
         $('clear-expression').hidden=!input.value; $('mobile-result').hidden=true;
-        if(!text) { $('calculator-error').textContent=''; $('expression-preview').hidden=true; $('input-prefixes').hidden=true; invalidate($('expression-preview')); panel.hidden=true; return; }
+        if(!text) { currentLatex=''; $('calculator-error').textContent=''; $('expression-preview').hidden=true; $('input-prefixes').hidden=true; invalidate($('expression-preview')); panel.hidden=true; return; }
         try {
             const result=engine.evaluate(text,$('angle-mode').value==='1'?'deg':'rad'); lastResult=result; lastText=text; currentLatex=result.latex; $('calculator-error').textContent=''; panel.hidden=false; $('expression-preview').hidden=false; renderMath($('expression-preview'),result.latex);
             $('input-prefixes').hidden=!result.usedPrefixes.length;
@@ -163,7 +163,7 @@
     document.addEventListener('pointerdown',e=>{if(!$('insert-menu').hidden && !$('insert-menu').contains(e.target) && !e.target.closest('.calculator-toolbar')) closeMenu();});
     $('copy-latex').addEventListener('click',async()=>{
         const status=$('action-status'); if(!currentLatex) {status.textContent='Enter a valid expression first.'; return;}
-        try {await navigator.clipboard.writeText(currentLatex); status.textContent='LaTeX copied.';} catch {status.textContent='Could not copy LaTeX. Check clipboard permissions.';}
+        try {await navigator.clipboard.writeText(currentLatex.replace(/\\color\{[^{}]*\}/g,'')); status.textContent='LaTeX copied.';} catch {status.textContent='Could not copy LaTeX. Check clipboard permissions.';}
     });
     function renderSaved() {
         const list=$('saved-list'), entries=readStorage(savedKey,[]); list.replaceChildren();
