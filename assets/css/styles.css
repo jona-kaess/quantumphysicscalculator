@@ -289,6 +289,7 @@ kbd { font-size: .75rem; opacity: .7; padding-left: .35rem; }
 .saved-restore > span { min-width: 0; max-width: 100%; }
 .saved-restore mjx-math { white-space: normal; overflow-wrap: anywhere; }
 .saved-result { color: var(--text); }
+.mobile-keys { display: none; }
 .calculator-header { display: flex; align-items: center; justify-content: space-between; gap: .5rem; }
 .guide-link { display: inline-flex; align-items: center; justify-content: center; gap: .4rem; min-width: 44px; min-height: 44px; color: var(--accent); font-weight: 600; text-decoration: none; }
 .guide-link > span:first-child { display: grid; place-items: center; width: 1.35rem; height: 1.35rem; border: 1px solid currentColor; border-radius: 50%; }
@@ -309,6 +310,9 @@ kbd { font-size: .75rem; opacity: .7; padding-left: .35rem; }
     .calculator > h1 { padding: 0 .85rem; }
     .hero h1 { margin-top: .5rem; font-size: 1.65rem; }
     .calculator > p { display: none; }
+    .mobile-keys { display: grid; grid-template-columns: repeat(9, minmax(0, 1fr)); margin: 0 -.85rem; }
+    .mobile-keys button { min-width: 0; min-height: 40px; margin: 0; padding: .3rem 0; border: 1px solid var(--border); border-right-width: 0; border-radius: 0; background: #2b3644; color: var(--text); font-size: 1rem; touch-action: manipulation; }
+    .mobile-keys button:last-child { border-right-width: 1px; }
     .panel { padding: .85rem; margin-top: .75rem; border: 0; border-radius: 0; box-shadow: none; }
     .calculator .panel + .panel { border-top: 1px solid var(--border); }
     input, select { font-size: 16px; min-height: 44px; }
@@ -389,6 +393,7 @@ mjx-mstyle[style*="color: brown"], mjx-mo[style*="color: brown"] { color: #e5b39
     .panel { padding: .55rem .65rem; margin-top: .35rem; }
     .panel h2 { margin-bottom: .35rem; }
     .calculator .expression-editor { margin-left: -.65rem; margin-right: -.65rem; }
+    .mobile-keys { margin-left: -.65rem; margin-right: -.65rem; }
     .calculator .expression-editor { height: 155px; }
     .angle-setting { margin-bottom: .2rem; }
     .calculator .expression-input-layer #expression, .expression-highlight { padding: .2rem .4rem; line-height: 1.35; }

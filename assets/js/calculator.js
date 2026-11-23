@@ -169,6 +169,21 @@
         populateMenu(); $('menu-search').focus();
     }
     input.addEventListener('input',()=>{ $('result-unit-search').value=''; update(); showSuggestions();});
+    function useMobileKey(button) {
+        input.focus({preventScroll:true});
+        if(button.dataset.insert) {
+            input.setRangeText(button.dataset.insert,input.selectionStart,input.selectionEnd,'end');
+            input.dispatchEvent(new Event('input',{bubbles:true}));
+        } else {
+            const left=button.dataset.move==='-1', start=input.selectionStart, end=input.selectionEnd;
+            const position=start!==end?(left?start:end):Math.max(0,Math.min(input.value.length,start+(left?-1:1)));
+            input.setSelectionRange(position,position); showSuggestions();
+        }
+    }
+    document.querySelectorAll('.mobile-keys button').forEach(button=>{
+        button.addEventListener('pointerdown',event=>{if(event.button!==0) return; event.preventDefault(); useMobileKey(button);});
+        button.addEventListener('click',event=>{if(event.detail===0) useMobileKey(button);});
+    });
     $('clear-expression').addEventListener('mousedown',e=>e.preventDefault());
     $('clear-expression').addEventListener('click',()=>{input.value=''; manualUnit=false; $('result-unit-search').value=''; closeMenu(); hideSuggestions(); update(); input.focus();});
     input.addEventListener('scroll',()=>{$('expression-highlight').scrollLeft=input.scrollLeft; $('expression-highlight').scrollTop=input.scrollTop;});
@@ -176,7 +191,7 @@
     input.addEventListener('click',showSuggestions);
     // Keep suggestions in place until a click completes: removing them on blur
     // can move a saved calculation out from under the pointer before click.
-    document.addEventListener('click',e=>{if(e.target!==input && !$('autocomplete-list').contains(e.target)) hideSuggestions();});
+    document.addEventListener('click',e=>{if(e.target!==input && !$('autocomplete-list').contains(e.target) && !e.target.closest('.mobile-keys')) hideSuggestions();});
     input.addEventListener('keydown',e=>{
         if($('autocomplete-list').hidden || e.ctrlKey || e.metaKey || e.altKey) return;
         if(e.key==='ArrowDown'||e.key==='ArrowUp') {e.preventDefault(); suggestionIndex=(suggestionIndex+(e.key==='ArrowDown'?1:-1)+suggestions.length)%suggestions.length; markSuggestion();}
