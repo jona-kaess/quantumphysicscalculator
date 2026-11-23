@@ -17,6 +17,9 @@ formatted equations; calculations and plots run locally, including offline.
 For GitHub Pages, select **Deploy from a branch**, then choose **main** and **/(root)**.
 All navigation and asset paths are relative and work under a repository subpath.
 Changes become public after they are pushed and the Pages deployment completes.
+After modifying a CSS or JavaScript asset, run `python3 scripts/version_assets.py`
+before committing. It updates the content hashes in the page URLs so browsers
+request the matching asset versions. The static-site test checks these hashes.
 
 ## Calculator input
 

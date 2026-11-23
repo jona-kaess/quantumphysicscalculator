@@ -2,6 +2,7 @@ const test=require('node:test');
 const assert=require('node:assert/strict');
 const fs=require('node:fs');
 const path=require('node:path');
+const crypto=require('node:crypto');
 const {convert}=require('../../assets/js/converter.js');
 
 test('all pages and local assets use relative paths suitable for GitHub Pages',()=>{
@@ -12,7 +13,12 @@ test('all pages and local assets use relative paths suitable for GitHub Pages',(
         for(const [,url] of html.matchAll(/(?:src|href)="([^"]+)"/g)) {
             if (/^(https?:|#)/.test(url)) continue;
             assert.ok(!url.startsWith('/'),`${page}: ${url} must be relative`);
-            assert.ok(fs.existsSync(path.resolve(path.dirname(page),url)),`${page}: missing ${url}`);
+            const [asset,query]=url.split('?');
+            assert.ok(fs.existsSync(path.resolve(path.dirname(page),asset)),`${page}: missing ${url}`);
+            if(asset.startsWith('assets/')) {
+                const digest=crypto.createHash('sha256').update(fs.readFileSync(asset)).digest('hex').slice(0,12);
+                assert.equal(query,`v=${digest}`,`${page}: run python3 scripts/version_assets.py after changing ${asset}`);
+            }
         }
         for(const target of ['index.html','converter.html','hamiltonians.html']) assert.ok(html.includes(`href="${target}"`),`${page}: navigation to ${target}`);
     }
