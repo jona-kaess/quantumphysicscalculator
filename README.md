@@ -35,6 +35,10 @@ make grouping explicit. US and UK liquid measures have distinct names, such as
 `gal_US` and `gal_UK`. Unit pickers show base symbols; the result chooses a
 readable SI prefix automatically.
 
+Append `eq` and a target unit to choose the exact output unit, for example
+`hbar * 25 GHz eq meV` or `10 m / 2s eq km/h`. Energy results can also
+use energy equivalents such as `eq GHz`, `eq K_energy` or `eq nm_energy`.
+
 The default output unit follows an explicitly entered unit of the resulting
 dimension when possible. Otherwise, energies involving Planck's constant,
 Boltzmann's constant or the Bohr magneton default to electronvolts; other

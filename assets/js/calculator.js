@@ -59,7 +59,7 @@
     function filterResultUnits() {
         const query=$('result-unit-search').value.trim().toLowerCase(), select=$('result-unit'); select.replaceChildren();
         const matches=resultChoices.filter(row=>`${row.key} ${row.label} ${row.group}`.toLowerCase().includes(query));
-        matches.forEach(row=>{const option=document.createElement('option'); option.value=row.key; option.textContent=`${row.group==='Energy equivalent'?row.key:row.label} — ${row.group}`; select.append(option);});
+        matches.forEach(row=>{const option=document.createElement('option'); option.value=row.key; option.textContent=`${row.group==='Energy equivalent'&&!row.key.startsWith('eq:')?row.key:row.label} — ${row.group}`; select.append(option);});
         $('result-unit-empty').hidden=matches.length>0; select.hidden=!matches.length;
         if(matches.some(row=>row.key===selectedUnit)) select.value=selectedUnit;
     }
@@ -69,12 +69,16 @@
         $('clear-expression').hidden=!input.value; $('mobile-result').hidden=true;
         if(!text) { currentLatex=''; $('calculator-error').textContent=''; $('expression-preview').hidden=true; $('input-prefixes').hidden=true; invalidate($('expression-preview')); panel.hidden=true; return; }
         try {
-            const result=engine.evaluate(text,$('angle-mode').value==='1'?'deg':'rad'); lastResult=result; lastText=text; currentLatex=result.latex; $('calculator-error').textContent=''; panel.hidden=false; $('expression-preview').hidden=false; renderMath($('expression-preview'),result.latex);
+            const separator=/\s+eq(?:\s+|$)/.exec(text), expression=separator?text.slice(0,separator.index).trim():text, target=separator?text.slice(separator.index+separator[0].length).trim():null;
+            const result=engine.evaluate(expression,$('angle-mode').value==='1'?'deg':'rad');
+            const requested=target!==null?engine.requestedConversion(result,target):null;
+            lastResult=result; lastText=text; currentLatex=result.latex; $('calculator-error').textContent=''; panel.hidden=false; $('expression-preview').hidden=false; renderMath($('expression-preview'),result.latex);
             $('input-prefixes').hidden=!result.usedPrefixes.length;
             if(result.usedPrefixes.length) renderMath($('input-prefixes'),result.usedPrefixes.map(p=>`\\mathrm{${['µ','mu','u'].includes(p.symbol)?'\\mu':p.symbol}}:\\;\\times 10^{${p.power}}`).join(',\\quad '));
             $('dimension-tag').textContent=engine.dimensionName(result.dim);
-            resultChoices=engine.conversions(result); $('conversion-section').hidden=!resultChoices.length;
-            if(!manualUnit || !resultChoices.some(row=>row.key===selectedUnit)) selectedUnit=engine.chooseDefault(result,text,resultChoices);
+            resultChoices=engine.conversions(result); if(requested) resultChoices.unshift(requested); $('conversion-section').hidden=!resultChoices.length;
+            if(requested) selectedUnit=requested.key;
+            else if(!manualUnit || !resultChoices.some(row=>row.key===selectedUnit)) selectedUnit=engine.chooseDefault(result,expression,resultChoices);
             if(resultChoices.length) {filterResultUnits(); showResultChoice();}
             else { const unit=siUnit(result.dim), tex=`${complexNumber(result.value,result.imag)}${unit==='1'?'':`\\,${mathUnit(unit)}`}`; renderMath($('calculator-result'),tex); renderMath($('mobile-result-value'),tex); $('result-relation').hidden=true; $('result-prefix').hidden=true; }
             $('mobile-result').hidden=false;

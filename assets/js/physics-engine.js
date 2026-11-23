@@ -236,6 +236,37 @@
         if(same(result.dim,D.energy)) {for(const [key,label,via] of [['Hz_energy','Hz','E = h\\nu'],['rad_s_energy','rad/s','E = \\hbar\\omega'],['K_energy','K','E = k_B T'],['T_energy','T','E = \\mu_B B']]) list.push({key,label,via,value:result.value/U[key].factor,group:'Energy equivalent',prefixable:true}); if(result.value>0) list.push({key:'nm_energy',label:'nm',via:'E = hc/\\lambda',value:H*C/result.value*1e9,group:'Energy equivalent'});}
         return list.map(row=>({...row,key:row.key||row.label}));
     }
+    function requestedConversion(result, target) {
+        target=target.trim();
+        if(!target) throw Error('Enter a unit after eq.');
+        const choices=conversions(result), unit=U[target];
+        const special={degC:'°C',degF:'°F',deltaC:'Δ°C',deltaF:'Δ°F'};
+        if(unit && special[target]) {
+            const choice=choices.find(row=>row.key===special[target]);
+            if(!choice) throw Error('That temperature unit is not compatible with this result.');
+            return {...choice,key:'eq:'+target,prefixable:false};
+        }
+        if(unit && same(result.dim,D.energy)) {
+            const base=unit.base || target;
+            const equivalent=target==='nm'?'nm_energy':{Hz:'Hz_energy',rad_s:'rad_s_energy',K:'K_energy',T:'T_energy'}[base];
+            const direct=target.endsWith('_energy')?target:equivalent;
+            if(direct) {
+                const energyUnit=target.endsWith('_energy')?U[direct]:(U[(unit.prefix||'')+direct] || U[direct]);
+                const baseEnergy=energyUnit?.base || direct;
+                const choice=choices.find(row=>row.key===baseEnergy);
+                if(!choice) throw Error('That energy equivalent is not available for this result.');
+                if(baseEnergy==='nm_energy') return {...choice,key:'eq:'+target,prefixable:false};
+                const factor=energyUnit?.factor || U[direct].factor;
+                return {...choice,key:'eq:'+target,label:target.replace(/_energy$/,'').replace('rad_s','rad/s'),value:result.value/factor,imag:(result.imag||0)/factor,prefixable:false};
+            }
+        }
+        const tokens=tokenize(target);
+        if(!tokens.length || !tokens.some(t=>t.type==='name') || tokens.some(t=>t.type==='name' && !U[t.value]) || tokens.some(t=>['+','!','%',','].includes(t.type)) || tokens.some((t,i)=>t.type==='number' && tokens[i-1]?.type!=='^' && !(tokens[i-1]?.type==='-' && tokens[i-2]?.type==='^'))) throw Error('Enter a valid unit after eq.');
+        let reference;
+        try {reference=evaluate('1 '+target);} catch {throw Error('Enter a valid unit after eq.');}
+        if(!same(result.dim,reference.dim) || reference.absolute || reference.imag || !reference.value) throw Error('The requested unit is not compatible with the result.');
+        return {key:'eq:'+target,label:target.replaceAll('rad_s','rad/s'),group:unit?.group||dimensionName(result.dim),value:result.value/reference.value,imag:(result.imag||0)/reference.value,prefixable:false};
+    }
     function searchItems(items, query) {
         const original=query.trim(); query=original.toLowerCase();
         const rank=x=>{const s=x.symbol.toLowerCase(), n=x.name.toLowerCase(), aliases=(x.keywords||'').toLowerCase().split(/\s+/); return !query?0:x.symbol===original?0:s===query?1:n===query||aliases.includes(query)?2:x.symbol.startsWith(original)?3:s.startsWith(query)?4:n.startsWith(query)?5:6;};
@@ -305,5 +336,5 @@
         if(!found) return {value:choice.value,imag:choice.imag||0,label:choice.label,power:0,prefix:''};
         const [prefix,power]=found; return {value:choice.value/10**power,imag:(choice.imag||0)/10**power,label:prefix+choice.label,power,prefix};
     }
-    return {units:U,constants,functions:FUNCTIONS,dimensions:D,parse,evaluate,setAnswer,conversions,dimensionName,searchItems,constantItems,highlightTokens,completions,chooseDefault,scaledChoice};
+    return {units:U,constants,functions:FUNCTIONS,dimensions:D,parse,evaluate,setAnswer,conversions,requestedConversion,dimensionName,searchItems,constantItems,highlightTokens,completions,chooseDefault,scaledChoice};
 });
