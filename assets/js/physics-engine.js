@@ -203,6 +203,9 @@
         if(n.kind==='unary') return n.op+latex(n.child);
         if(n.kind==='/') return `\\frac{${latex(n.left)}}{${latex(n.right)}}`;
         if(n.kind==='^') return `{${latex(n.left)}}^{${latex(n.right)}}`;
+        const numeric=n.left.kind==='number' || (n.left.kind==='unary' && n.left.child.kind==='number');
+        const unit=n.right.kind==='unit' || (n.right.kind==='^' && n.right.left.kind==='unit');
+        if(n.kind==='*' && n.implicit && numeric && unit) return `${latex(n.left)}\\, ${latex(n.right)}`;
         return `${latex(n.left)} ${n.kind==='*'?'\\cdot':n.kind} ${latex(n.right)}`;
     }
     function evaluate(text, angleMode='rad') {if(!['rad','deg'].includes(angleMode)) throw Error('Unknown angle mode.'); const parsed=parse(text), result=evaluateNode(parsed.tree,angleMode); if(!Number.isFinite(result.value) || !Number.isFinite(result.imag??0) || result.dim.some(x=>!Number.isFinite(x))) throw Error('Result is not finite.'); if(result.absoluteUnit||result.wavelengthUnit) throw Error('Enter a numerical value before this unit.'); if(result.absolute && result.value<0) throw Error('Absolute temperature cannot be below zero kelvin.'); return {...result,latex:latex(parsed.tree),used:parsed.used,usedPrefixes:parsed.usedPrefixes};}
