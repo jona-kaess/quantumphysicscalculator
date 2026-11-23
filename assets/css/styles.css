@@ -217,6 +217,11 @@ kbd { font-size: .75rem; opacity: .7; padding-left: .35rem; }
 .expression-input-layer { flex: 0 0 auto; }
 .expression-editor .preview-row { flex: 0 1 auto; min-height: 0; overflow: auto; }
 .expression-editor .prefix-note { flex: 0 0 auto; }
+.expression-editor .preview-row:has(#input-prefixes:not([hidden])) { display: grid; flex: 1 1 auto; grid-template-columns: minmax(0, 1fr) minmax(0, auto); grid-template-rows: minmax(0, 1fr) auto; gap: 0 .5rem; align-items: end; }
+.preview-row:has(#input-prefixes:not([hidden])) .math-preview { grid-column: 1 / -1; grid-row: 1; align-self: start; max-width: 100%; overflow: auto; scrollbar-width: none; }
+.preview-row #input-prefixes:not([hidden]) { grid-column: 1; grid-row: 2; min-width: 0; margin: 0 0 .35rem; overflow: auto; scrollbar-width: none; }
+.preview-row #input-prefixes::-webkit-scrollbar, .preview-row .math-preview::-webkit-scrollbar { display: none; }
+.preview-row:has(#input-prefixes:not([hidden])) .preview-result:not([hidden]) { grid-column: 2; grid-row: 2; justify-self: end; max-width: 100%; padding-bottom: .35rem; }
 .expression-editor:focus-within { outline: 2px solid #d7e6ff; border-color: #bfd3f6; }
 .calculator .expression-editor #expression { margin: 0; border: 0; border-radius: 0; outline: 0; }
 .preview-row { display: flex; align-items: baseline; gap: .7rem; margin: 0 .9rem; border-top: 1px solid #e7edf6; overflow-x: auto; }
