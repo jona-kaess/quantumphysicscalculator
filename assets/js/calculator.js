@@ -43,7 +43,8 @@
         const choice=resultChoices.find(row=>row.key===selectedUnit);
         if(!choice) return;
         const scaled=engine.scaledChoice(choice);
-        renderMath($('calculator-result'),`${complexNumber(scaled.value,scaled.imag)}\\,\\color{teal}{${mathUnit(scaled.label)}}`);
+        const tex=`${complexNumber(scaled.value,scaled.imag)}\\,\\color{teal}{${mathUnit(scaled.label)}}`;
+        renderMath($('calculator-result'),tex); renderMath($('mobile-result-value'),tex);
         $('result-relation').hidden=!choice.via;
         if(choice.via) renderMath($('result-relation'),`\\text{via } ${choice.via}`); else invalidate($('result-relation'));
         $('result-prefix').hidden=!scaled.prefix;
@@ -59,6 +60,7 @@
     function update() {
         highlightExpression();
         const text=input.value.trim(), panel=$('result-panel');
+        $('clear-expression').hidden=!input.value; $('mobile-result').hidden=true;
         if(!text) { $('calculator-error').textContent=''; $('expression-preview').hidden=true; $('input-prefixes').hidden=true; invalidate($('expression-preview')); panel.hidden=true; return; }
         try {
             const result=engine.evaluate(text,$('angle-mode').value==='1'?'deg':'rad'); $('calculator-error').textContent=''; panel.hidden=false; $('expression-preview').hidden=false; renderMath($('expression-preview'),result.latex);
@@ -68,7 +70,8 @@
             resultChoices=engine.conversions(result); $('conversion-section').hidden=!resultChoices.length;
             if(!manualUnit || !resultChoices.some(row=>row.key===selectedUnit)) selectedUnit=engine.chooseDefault(result,text,resultChoices);
             if(resultChoices.length) {filterResultUnits(); showResultChoice();}
-            else { const unit=siUnit(result.dim); renderMath($('calculator-result'),`${complexNumber(result.value,result.imag)}${unit==='1'?'':`\\,${mathUnit(unit)}`}`); $('result-relation').hidden=true; $('result-prefix').hidden=true; }
+            else { const unit=siUnit(result.dim), tex=`${complexNumber(result.value,result.imag)}${unit==='1'?'':`\\,${mathUnit(unit)}`}`; renderMath($('calculator-result'),tex); renderMath($('mobile-result-value'),tex); $('result-relation').hidden=true; $('result-prefix').hidden=true; }
+            $('mobile-result').hidden=false;
             $('temperature-note').hidden=engine.dimensionName(result.dim)!=='temperature';
             $('constant-section').hidden=!result.used.length; const constants=$('constant-list'); constants.replaceChildren();
             result.used.forEach(key=>{
@@ -129,6 +132,8 @@
         populateMenu(); $('menu-search').focus();
     }
     input.addEventListener('input',()=>{ $('result-unit-search').value=''; update(); showSuggestions();});
+    $('clear-expression').addEventListener('mousedown',e=>e.preventDefault());
+    $('clear-expression').addEventListener('click',()=>{input.value=''; manualUnit=false; $('result-unit-search').value=''; closeMenu(); hideSuggestions(); update(); input.focus();});
     input.addEventListener('scroll',()=>{$('expression-highlight').scrollLeft=input.scrollLeft;});
     $('angle-mode').addEventListener('input',()=>{$('angle-label').textContent=$('angle-mode').value==='1'?'Degrees':'Radians'; update();});
     input.addEventListener('click',showSuggestions);
