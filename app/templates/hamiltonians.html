@@ -9,10 +9,14 @@
             <option value="single">Single qubit — effective two-level system</option>
             <option value="coupled">Two coupled qubits — transverse coupling</option>
             <option value="transmon">Transmon — charge-basis model</option>
+            <option value="split">Split transmon — flux-tunable</option>
+            <option value="jc">Jaynes–Cummings — qubit and resonator</option>
+            <option value="lc">LC oscillator — harmonic reference</option>
         </select>
         <p id="model-description" class="model-description"></p>
         <p id="hamiltonian-formula" class="formula"></p>
         <p class="hint">All energies and energy parameters are expressed as E/h in GHz. Energies are shown without shifting the ground state.</p>
+        <p class="hint">Superconducting circuit models: <a href="https://arxiv.org/abs/1904.06560">Krantz et al., A Quantum Engineer’s Guide to Superconducting Qubits</a>, equations 13, 16, 22 and 144.</p>
     </div>
     <div class="panel">
         <h2>Parameters</h2>

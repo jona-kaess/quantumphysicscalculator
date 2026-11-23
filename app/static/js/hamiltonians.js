@@ -12,6 +12,31 @@
             params: [ ['w1', 'ω₁ — qubit 1 frequency (GHz)', 5, 0, 10], ['w2', 'ω₂ — qubit 2 frequency (GHz)', 5.5, 0, 10], ['g', 'g — coupling (GHz)', 0.3, -2, 2] ],
             eigenvalues: p => { const a = Math.hypot((p.w1 + p.w2) / 2, p.g), b = Math.hypot((p.w1 - p.w2) / 2, p.g); return [-a, -b, b, a]; }
         },
+        split: {
+            description: 'Flux-tunable transmon with two Josephson junctions (Krantz et al., Eq. 22). A phase shift has been absorbed into φ.',
+            formula: String.raw`\( H/h = 4e_C(n-n_g)^2 - e_{J\Sigma}\sqrt{\cos^2(\pi f)+d^2\sin^2(\pi f)}\cos\varphi \)`,
+            params: [ ['ej', 'EJΣ/h — total Josephson energy (GHz)', 15, 0, 30], ['ec', 'EC/h — charging energy (GHz)', 0.3, 0.05, 1], ['ng', 'ng — offset charge (2e units)', 0, -1, 1], ['flux', 'f = Φext/Φ₀ — reduced flux', 0, -1, 1], ['d', 'd — junction asymmetry', 0.15, -1, 1] ],
+            note: 'Here eC = EC/h and eJΣ = EJΣ/h. The paper uses ng = 0; an offset charge is included here. Numerical diagonalization uses 31 charge states (n = −15 … 15); check convergence outside the default ranges.',
+            eigenvalues: p => models.transmon.eigenvalues({...p, ej:p.ej*Math.hypot(Math.cos(Math.PI*p.flux), p.d*Math.sin(Math.PI*p.flux))})
+        },
+        jc: {
+            description: 'A two-level qubit coupled to a harmonic resonator in the rotating-wave approximation (Krantz et al., Eq. 144).',
+            formula: String.raw`\( H/h = f_r(a^\dagger a+\tfrac12)+\tfrac{f_q}{2}\sigma_z+g(\sigma_+a+\sigma_-a^\dagger) \)`,
+            params: [ ['fr', 'fr — resonator frequency (GHz)', 6, 1, 10], ['fq', 'fq — qubit frequency (GHz)', 5, 1, 10], ['g', 'g — coupling (GHz)', 0.2, 0, 1] ],
+            note: 'The lowest four energies are selected from the vacuum and excitation manifolds N = 1 … 20. The rotating-wave model is most reliable for weak coupling compared with the frequencies.',
+            eigenvalues: p => {
+                const energies=[(p.fr-p.fq)/2];
+                for(let n=1;n<=20;n++) { const split=Math.hypot((p.fq-p.fr)/2, p.g*Math.sqrt(n)); energies.push(n*p.fr-split,n*p.fr+split); }
+                return energies.sort((a,b)=>a-b).slice(0,4);
+            }
+        },
+        lc: {
+            description: 'The harmonic LC oscillator, the starting point for superconducting circuit quantization (Krantz et al., Eq. 13).',
+            formula: String.raw`\( H/h = 4e_C n^2 + \tfrac12 e_L\varphi^2,\qquad E_m/h=(m+\tfrac12)\sqrt{8e_Ce_L} \)`,
+            params: [ ['ec', 'EC/h — charging energy (GHz)', 0.3, 0.05, 1], ['el', 'EL/h — inductive energy (GHz)', 10, 0.5, 20] ],
+            note: 'A harmonic oscillator has equally spaced levels and is not an isolated qubit. Here eC = EC/h and eL = EL/h.',
+            eigenvalues: p => Array.from({length:4},(_,i)=>(i+0.5)*Math.sqrt(8*p.ec*p.el))
+        },
         transmon: {
             description: 'A superconducting qubit described by Josephson and charging energies. The lowest four levels are shown.',
             formula: String.raw`\( H/h = 4E_C(n-n_g)^2 - E_J\cos\varphi,\quad [\varphi,n]=i \)`,
@@ -63,8 +88,11 @@
         if ([...fields,$('sweep-min'),$('sweep-max')].some(el=>el.value.trim()==='' || !Number.isFinite(Number(el.value))) || min>=max) {
             $('plot-error').textContent='Enter finite parameter values and a sweep range with From smaller than To.'; $('energy-plot').replaceChildren(); $('levels').replaceChildren(); return;
         }
-        if ($('model').value==='transmon' && (values.ec<=0 || values.ej<0 || (key==='ec' && min<=0) || (key==='ej' && min<0))) {
-            $('plot-error').textContent='For the transmon, EC must be positive and EJ must be non-negative throughout the sweep.'; $('energy-plot').replaceChildren(); $('levels').replaceChildren(); return;
+        if (['transmon','split'].includes($('model').value) && (values.ec<=0 || values.ej<0 || (key==='ec' && min<=0) || (key==='ej' && min<0) || ($('model').value==='split' && (Math.abs(values.d)>1 || (key==='d' && (min< -1 || max>1)))))) {
+            $('plot-error').textContent='For the transmon, EC must be positive, EJ non-negative, and split-transmon asymmetry d between −1 and 1 throughout the sweep.'; $('energy-plot').replaceChildren(); $('levels').replaceChildren(); return;
+        }
+        if (($('model').value==='lc' && (values.ec<=0 || values.el<=0 || (['ec','el'].includes(key) && min<=0))) || ($('model').value==='jc' && (values.fr<=0 || values.fq<=0 || (['fr','fq'].includes(key) && min<=0)))) {
+            $('plot-error').textContent='Energies and frequencies must be positive throughout the sweep.'; $('energy-plot').replaceChildren(); $('levels').replaceChildren(); return;
         }
         $('plot-error').textContent='';
         const current=model.eigenvalues(values), samples=Array.from({length:101},(_,i)=>model.eigenvalues({...values,[key]:min+(max-min)*i/100}));
