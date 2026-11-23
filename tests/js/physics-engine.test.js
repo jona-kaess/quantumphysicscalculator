@@ -1,6 +1,6 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const engine = require('../../app/static/js/physics-engine.js');
+const engine = require('../../assets/js/physics-engine.js');
 const close = (actual, expected) => assert.ok(Math.abs(actual-expected) <= Math.max(1e-300,Math.abs(expected)*1e-12), `${actual} != ${expected}`);
 const convert = (result,label) => engine.conversions(result).find(x=>x.label===label).value;
 

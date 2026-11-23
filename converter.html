@@ -1,0 +1,148 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Quantum Physics Calculator</title>
+    <link rel="stylesheet" href="assets/css/styles.css">
+    <script>
+        window.MathJax = {
+            loader: { load: ['[tex]/color'] },
+            tex: { packages: { '[+]': ['color'] }, inlineMath: [["\\(", "\\)"]] },
+            options: { skipHtmlTags: ["script", "noscript", "style", "textarea", "pre", "code"] }
+        };
+    </script>
+    <script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+</head>
+<body>
+    <main class="container">
+        <nav class="main-nav" aria-label="Main navigation">
+            <a href="index.html">Physics calculator</a>
+            <a href="converter.html" aria-current="page">Unit converter</a>
+            <a href="hamiltonians.html">Qubit Hamiltonians</a>
+        </nav>
+        <section class="hero">
+            <h1>Quantum Physics Calculator</h1>
+            <p>Convert between quantum-related units with physical constants.</p>
+
+            <div class="panel">
+                <h2>Conversion Form</h2>
+                <div class="convert-form">
+                    <label for="value">Value</label>
+                    <input id="value" type="text" placeholder="Examples: 2.5, 1e-3, 2*10^5, 1G">
+
+                    <div class="row-label"><label for="source_unit">From</label></div>
+                    <div class="select-row">
+                        <select id="source_unit" aria-label="Source unit">
+                            <option value="ev" selected>Electron volts (eV)</option>
+                            <option value="j">Joules (J)</option>
+                            <option value="nm">Wavelength (nm)</option>
+                            <option value="t">Tesla (T, via Bohr magneton)</option>
+                            <option value="k">Kelvin (K, via Boltzmann constant)</option>
+                            <option value="hz">Frequency (Hz)</option>
+                            <option value="rad_s">Angular frequency (rad/s)</option>
+                        </select>
+                    </div>
+
+                    <div class="row-label"><label for="target_unit">To</label></div>
+                    <div class="select-row">
+                        <select id="target_unit" aria-label="Target unit">
+                            <option value="ev">Electron volts (eV)</option>
+                            <option value="j" selected>Joules (J)</option>
+                            <option value="nm">Wavelength (nm)</option>
+                            <option value="t">Tesla (T, via Bohr magneton)</option>
+                            <option value="k">Kelvin (K, via Boltzmann constant)</option>
+                            <option value="hz">Frequency (Hz)</option>
+                            <option value="rad_s">Angular frequency (rad/s)</option>
+                        </select>
+                    </div>
+
+                    <button type="button" id="swap-units" class="secondary">Swap From/To</button>
+                    <button type="button" id="convert-btn">Convert</button>
+                </div>
+            </div>
+
+            <div class="panel">
+                <h2>Result</h2>
+                <p id="result" class="result" aria-live="polite"></p>
+                <p id="equation" class="conversion-equation" aria-label="Conversion formula"></p>
+            </div>
+
+            <div class="panel">
+                <h2>Supported Units</h2>
+                <ul>
+                    <li>Electron volts (eV)</li>
+                    <li>Joules (J)</li>
+                    <li>Wavelength (nm)</li>
+                    <li>Tesla (T, via Bohr magneton)</li>
+                    <li>Kelvin (K, via Boltzmann constant)</li>
+                    <li>Frequency (Hz, via Planck constant h)</li>
+                    <li>Angular frequency (rad/s, via reduced Planck constant &hbar;)</li>
+                </ul>
+            </div>
+        </section>
+    </main>
+
+    <script src="assets/js/converter.js"></script>
+    <script>
+        (function () {
+            var valueInput = document.getElementById("value");
+            var sourceSelect = document.getElementById("source_unit");
+            var targetSelect = document.getElementById("target_unit");
+            var swapBtn = document.getElementById("swap-units");
+            var convertBtn = document.getElementById("convert-btn");
+            var resultEl = document.getElementById("result");
+            var eqEl = document.getElementById("equation");
+
+            const UNIT_EQUATIONS = {
+                ev: String.raw`e\,E_{\mathrm{eV}}`,
+                j: String.raw`E_{\mathrm{J}}`,
+                nm: String.raw`\frac{hc}{\lambda}`,
+                t: String.raw`\mu_B B`,
+                k: String.raw`k_B T`,
+                hz: String.raw`h\nu`,
+                rad_s: String.raw`\hbar\omega`,
+            };
+
+            function doConvert() {
+                resultEl.textContent = "";
+                resultEl.classList.remove("error");
+                eqEl.textContent = "";
+                try {
+                    var res = convert(
+                        valueInput.value,
+                        sourceSelect.value,
+                        targetSelect.value,
+                        "",
+                        ""
+                    );
+                    resultEl.textContent = res.resultDisplayText;
+                    if (UNIT_EQUATIONS[sourceSelect.value] && UNIT_EQUATIONS[targetSelect.value]) {
+                        eqEl.textContent = "\\(" + UNIT_EQUATIONS[sourceSelect.value] +
+                            " = " + UNIT_EQUATIONS[targetSelect.value] + "\\)";
+                    }
+                    if (window.MathJax && MathJax.typesetPromise) {
+                        MathJax.typesetPromise([eqEl]);
+                    }
+                } catch (err) {
+                    resultEl.classList.add("error");
+                    resultEl.textContent = err.message;
+                }
+            }
+
+            swapBtn.addEventListener("click", function () {
+                var tmp = sourceSelect.value;
+                sourceSelect.value = targetSelect.value;
+                targetSelect.value = tmp;
+            });
+            convertBtn.addEventListener("click", doConvert);
+            valueInput.addEventListener("keydown", function (e) {
+                if (e.key === "Enter") { e.preventDefault(); doConvert(); }
+            });
+            document.querySelectorAll(".select-row select").forEach(function (s) {
+                s.addEventListener("change", doConvert);
+            });
+        })();
+    </script>
+</body>
+</html>

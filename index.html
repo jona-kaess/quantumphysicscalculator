@@ -1,5 +1,27 @@
-{% extends "base.html" %}
-{% block content %}
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Quantum Physics Calculator</title>
+    <link rel="stylesheet" href="assets/css/styles.css">
+    <script>
+        window.MathJax = {
+            loader: { load: ['[tex]/color'] },
+            tex: { packages: { '[+]': ['color'] }, inlineMath: [["\\(", "\\)"]] },
+            options: { skipHtmlTags: ["script", "noscript", "style", "textarea", "pre", "code"] }
+        };
+    </script>
+    <script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+</head>
+<body>
+    <main class="container">
+        <nav class="main-nav" aria-label="Main navigation">
+            <a href="index.html" aria-current="page">Physics calculator</a>
+            <a href="converter.html" >Unit converter</a>
+            <a href="hamiltonians.html" >Qubit Hamiltonians</a>
+        </nav>
+        
 <section class="hero calculator">
     <h1>Physics calculator</h1>
     <p>Calculate with numbers, units and physical constants. Dimensions are checked automatically.</p>
@@ -37,7 +59,10 @@
     </div>
     <div class="panel examples"><h2>Examples</h2><div id="examples"></div><p class="hint">Energy-equivalent units are explicitly named, for example <code>10 GHz_energy</code> uses E = hν. Frequency <code>GHz</code> remains a frequency. Wavelength equivalents are offered for positive energy results.</p></div>
 </section>
-<script src="{{ url_for('static', filename='js/scipy-constants.js') }}" defer></script>
-<script src="{{ url_for('static', filename='js/physics-engine.js') }}" defer></script>
-<script src="{{ url_for('static', filename='js/calculator.js') }}" defer></script>
-{% endblock %}
+<script src="assets/js/scipy-constants.js" defer></script>
+<script src="assets/js/physics-engine.js" defer></script>
+<script src="assets/js/calculator.js" defer></script>
+
+    </main>
+</body>
+</html>
