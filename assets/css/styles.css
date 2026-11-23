@@ -216,7 +216,7 @@ kbd { font-size: .75rem; opacity: .7; padding-left: .35rem; }
 
 /* The editable source and its formatted rendering share one input surface. */
 .expression-editor { margin-top: .5rem; border: 1px solid var(--border); border-radius: 10px; background: white; overflow: hidden; }
-.expression-editor { height: 150px; display: flex; flex-direction: column; }
+.expression-editor { height: 210px; display: flex; flex-direction: column; }
 .expression-input-layer { flex: 0 0 auto; }
 .expression-editor .preview-row { flex: 0 1 auto; min-height: 0; overflow: auto; }
 .expression-editor .prefix-note { flex: 0 0 auto; }
@@ -264,7 +264,7 @@ kbd { font-size: .75rem; opacity: .7; padding-left: .35rem; }
 .expression-highlight { position: absolute; inset: 0; white-space: pre-wrap; overflow-wrap: anywhere; overflow: hidden; pointer-events: none; color: var(--text); }
 .calculator .expression-input-layer #expression { display: block; width: 100%; height: 4.5rem; min-height: 4.5rem; resize: none; overflow-y: auto; overflow-x: hidden; white-space: pre-wrap; overflow-wrap: anywhere; scrollbar-width: none; }
 .calculator .expression-input-layer #expression::-webkit-scrollbar { display: none; }
-.math-preview mjx-container, .math-preview mjx-math { max-width: 100%; white-space: normal; overflow-wrap: anywhere; }
+.math-preview mjx-container, .math-preview mjx-math { max-width: 100%; white-space: normal; overflow-wrap: anywhere; line-height: 1.55; }
 .syntax-active #expression { position: relative; background: transparent; color: transparent; caret-color: var(--text); }
 .syntax-active #expression::placeholder { color: #7d8c9f; opacity: 1; }
 .syntax-active #expression::selection { color: transparent; background: rgba(19,102,214,.25); }
