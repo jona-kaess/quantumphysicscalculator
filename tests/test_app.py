@@ -1,4 +1,6 @@
 import unittest
+import json
+from pathlib import Path
 
 from scipy import constants as const
 
@@ -21,6 +23,17 @@ class AppTestCase(unittest.TestCase):
         self.assertIn(b'physics-engine.js', response.data)
         self.assertIn(b'calculator.js', response.data)
         self.assertIn(b'id="expression"', response.data)
+        self.assertIn(b'scipy-constants.js', response.data)
+
+    def test_scipy_constants_catalog_matches_installed_scipy(self):
+        from scipy import constants
+        source = Path('app/static/js/scipy-constants.js').read_text(encoding='utf-8')
+        catalog = json.loads(source.split('this,\n', 1)[1].rsplit(');', 1)[0])
+        self.assertEqual(len(catalog), len(constants.physical_constants))
+        self.assertEqual({entry['name'] for entry in catalog.values()}, set(constants.physical_constants))
+        for entry in catalog.values():
+            value, unit, uncertainty = constants.physical_constants[entry['name']]
+            self.assertEqual((entry['sourceValue'], entry['unit'], entry['uncertainty']), (value, unit, uncertainty))
 
     def test_health_endpoint(self):
         response = self.client.get("/api/v1/health")

@@ -5,7 +5,10 @@
     <p>Calculate with numbers, units and physical constants. Dimensions are checked automatically.</p>
     <div class="panel">
         <label for="expression">Expression</label>
-        <input id="expression" type="text" autocomplete="off" spellcheck="false" placeholder="Try hbar * 10 GHz or 7/8" aria-describedby="input-help">
+        <div class="expression-editor">
+            <input id="expression" type="text" autocomplete="off" spellcheck="false" placeholder="Try hbar * 10 GHz or 7/8" aria-describedby="input-help">
+            <div id="expression-preview" class="math-preview" aria-live="polite" aria-label="Formatted expression" hidden></div>
+        </div>
         <div class="calculator-toolbar">
             <button type="button" class="secondary" id="constants-button" aria-expanded="false" aria-controls="insert-menu">Constants <kbd>Ctrl K</kbd></button>
             <button type="button" class="secondary" id="units-button" aria-expanded="false" aria-controls="insert-menu">Units <kbd>Ctrl E</kbd></button>
@@ -19,18 +22,18 @@
             <div id="menu-items" class="menu-items"></div>
             <button type="button" class="secondary" id="menu-close">Close</button>
         </div>
-        <div class="preview-box"><span class="eyebrow">EXPRESSION PREVIEW</span><div id="expression-preview" class="math-preview" aria-live="polite">Your expression will appear here.</div></div>
         <p id="calculator-error" class="error" role="status"></p>
     </div>
     <div class="panel" id="result-panel" hidden>
         <span class="eyebrow">RESULT <span id="dimension-tag" class="dimension-tag"></span></span>
-        <p id="calculator-result" class="calculator-result"></p>
-        <div id="conversion-section"><h2>Available units</h2><div id="conversion-list" class="conversion-list"></div></div>
-        <div id="constant-section" hidden><h2>Constants used</h2><div id="constant-list" class="constant-list"></div></div>
+        <p class="calculator-result"><span id="calculator-result"></span> <span id="result-unit-label" class="unit-color"></span></p>
+        <div id="conversion-section"><label for="result-unit-search">Choose a unit</label><input id="result-unit-search" type="search" placeholder="Search units"><select id="result-unit" aria-label="Result unit"></select><p id="result-unit-empty" class="hint" hidden>No matching units.</p></div>
+        <div id="constant-section" hidden><h2>Constants used</h2><div id="constant-list" class="constant-list"></div><p class="hint">Values from SciPy 1.14.1 / CODATA 2018; exact SI definitions where applicable.</p></div>
         <p class="hint temperature-note" id="temperature-note" hidden>Absolute temperature conversions assume K is an absolute temperature. Use deltaC or deltaF for differences; absolute °C and °F values cannot be multiplied or divided.</p>
     </div>
     <div class="panel examples"><h2>Examples</h2><div id="examples"></div><p class="hint">Energy-equivalent units are explicitly named, for example <code>10 GHz_energy</code> uses E = hν. Frequency <code>GHz</code> remains a frequency. Wavelength equivalents are offered for positive energy results.</p></div>
 </section>
+<script src="{{ url_for('static', filename='js/scipy-constants.js') }}" defer></script>
 <script src="{{ url_for('static', filename='js/physics-engine.js') }}" defer></script>
 <script src="{{ url_for('static', filename='js/calculator.js') }}" defer></script>
 {% endblock %}

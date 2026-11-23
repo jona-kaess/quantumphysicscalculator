@@ -211,3 +211,9 @@ kbd { font-size: .75rem; opacity: .7; padding-left: .35rem; }
 .temperature-note { margin-top: 1rem !important; }
 .examples #examples { display: flex; gap: .5rem; flex-wrap: wrap; margin-bottom: .8rem; }
 .example-button { background: #eef3fd; color: #24405e; border: 1px solid var(--border); font-family: ui-monospace, monospace; font-size: .85rem; padding: .45rem .65rem; margin: 0; }
+
+/* The editable source and its formatted rendering share one input surface. */
+.expression-editor { margin-top: .5rem; border: 1px solid var(--border); border-radius: 10px; background: white; overflow: hidden; }
+.expression-editor:focus-within { outline: 2px solid #d7e6ff; border-color: #bfd3f6; }
+.calculator .expression-editor #expression { margin: 0; border: 0; border-radius: 0; outline: 0; }
+.expression-editor .math-preview { margin: 0 .9rem; padding: .65rem 0 .8rem; border-top: 1px solid #e7edf6; min-height: 0; }

@@ -124,3 +124,16 @@ MathJax is loaded from a CDN for formatted equations, so rendering requires netw
 access; the arithmetic itself runs locally in the browser.
 
 Run the calculator engine unit tests with `node tests/js/physics-engine.test.js`.
+
+The constants catalog contains all 442 entries in the SciPy 1.14.1
+`scipy.constants.physical_constants` database (CODATA 2018), with the original
+value and unit shown when used. Additional short aliases such as `hbar`, `e` and
+`k_B` are provided for convenience. The catalog is stored locally for use without
+a server request and can be regenerated with
+`.venv/bin/python scripts/generate_scipy_constants.py`. SciPy version changes may
+change the catalog and its recommended values; review the generated source label
+when upgrading.
+
+The unit picker starts at **Any**, so its search includes every unit. Enter selects
+the best matching result. Common SI prefixes include `u`, `mu`, and `µ` for micro;
+for example, `mm`, `ml`, and `mug`.

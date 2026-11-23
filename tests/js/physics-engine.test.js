@@ -47,6 +47,28 @@ test('invalid input fails safely and descriptively', () => {
     assert.throws(()=>engine.evaluate('1 m + 1 s'),/different dimensions/);
     assert.throws(()=>engine.evaluate('1/0'),/zero/);
 });
+test('extended units, SI prefixes and SciPy constants', () => {
+    close(engine.evaluate('1 gauss').value,1e-4);
+    close(engine.evaluate('1 F').value,1);
+    assert.deepEqual(engine.evaluate('1 F').dim,[-2,-1,4,2,0,0,0]);
+    close(engine.evaluate('1 kcal').value,4184);
+    close(engine.evaluate('1 mm').value,1e-3);
+    close(engine.evaluate('1 ml').value,1e-6);
+    close(engine.evaluate('1 mug').value,1e-9);
+    close(engine.evaluate('scipy_electron_mass').value,9.1093837015e-31);
+    assert.deepEqual(engine.evaluate('scipy_electron_mass').dim,engine.dimensions.mass);
+    assert.equal(Object.keys(engine.constants).filter(k=>k.startsWith('scipy_')).length,442);
+    assert.ok(engine.conversions(engine.evaluate('1 J')).some(u=>u.label==='kcal'));
+    assert.ok(engine.conversions(engine.evaluate('1 F')).some(u=>u.label==='nF'));
+});
+test('search ranks exact matches first and result defaults to a readable prefix', () => {
+    const entries=[{symbol:'scipy_electron_mass',name:'electron mass'}, {symbol:'e',name:'Elementary charge'}, {symbol:'scipy_electron_mass_energy_equivalent',name:'electron mass energy equivalent'}];
+    assert.equal(engine.searchItems(entries,'electron mass')[0].symbol,'scipy_electron_mass');
+    assert.equal(engine.searchItems(entries,'e')[0].symbol,'e');
+    const value=engine.evaluate('0.025 eV');
+    assert.equal(engine.chooseDefault(value,'0.025 eV',engine.conversions(value)),'meV');
+    assert.equal(engine.conversions(engine.evaluate('1 g')).filter(row=>['ug','mug','µg'].includes(row.label)).length,1);
+});
 test('every registered unit and constant parses and exposes a finite result', () => {
     for(const [key,u] of Object.entries(engine.units)) {const r=engine.evaluate(`1 ${key}`); assert.ok(Number.isFinite(r.value),key); assert.deepEqual(r.dim,u.dim,key);}
     for(const [key,c] of Object.entries(engine.constants)) {const r=engine.evaluate(key); close(r.value,c.value); assert.deepEqual(r.used,[key]);}
