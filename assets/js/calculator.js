@@ -6,7 +6,11 @@
     const readStorage=(key,fallback)=>{try{return JSON.parse(localStorage.getItem(key))??fallback;}catch{return fallback;}};
     const writeStorage=(key,value)=>{try{localStorage.setItem(key,JSON.stringify(value));return true;}catch{return false;}};
     const versions=new WeakMap();
-    const fmt=x=>Number(x.toPrecision(9)).toString().replace(/e([+-]?\d+)/,'E$1');
+    const fmt=x=>{
+        const rounded=Number(x.toPrecision(9));
+        if(rounded && (Math.abs(rounded)<1e-3 || Math.abs(rounded)>=1e9)) return rounded.toExponential().replace(/e([+-]?\d+)/,'E$1');
+        return rounded.toString().replace(/e([+-]?\d+)/,'E$1');
+    };
     const mathNumber=x=>String(x).replace(/[eE]([+-]?\d+)/,(_,power)=>`\\times 10^{${Number(power)}}`);
     function complexNumber(real,imag=0) {
         const magnitude=Math.hypot(real,imag); if(magnitude && Math.abs(real)<magnitude*1e-14) real=0; if(magnitude && Math.abs(imag)<magnitude*1e-14) imag=0;
