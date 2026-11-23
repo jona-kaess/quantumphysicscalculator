@@ -259,6 +259,11 @@ kbd { font-size: .75rem; opacity: .7; padding-left: .35rem; }
 .clear-expression { margin: 0; padding: .4rem .7rem; color: var(--accent); background: transparent; }
 .clear-expression[hidden] { display: none; }
 .mobile-result { display: none; }
+.expression-actions { display: flex; align-items: center; flex-wrap: wrap; gap: .4rem; margin-top: .5rem; }
+.expression-actions button { margin: 0; padding: .45rem .65rem; font-size: .85rem; }
+#action-status { color: var(--muted); font-size: .85rem; }
+.saved-row { display: flex; gap: .5rem; margin-top: .5rem; }
+.saved-restore { flex: 1; min-width: 0; overflow-wrap: anywhere; text-align: left; }
 
 /* Keep touch targets and the editor usable when the on-screen keyboard is open. */
 @media (max-width: 600px) {
@@ -278,6 +283,7 @@ kbd { font-size: .75rem; opacity: .7; padding-left: .35rem; }
     .calculator-toolbar { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: .35rem; margin: .55rem 0; }
     .calculator-toolbar button { padding: .5rem .2rem; font-size: .88rem; }
     .calculator-toolbar kbd { display: none; }
+    .calculator-toolbar { display: none; }
     .calculator .panel:focus-within #input-help { display: none; }
     .mobile-result:not([hidden]) { display: flex; align-items: baseline; gap: .65rem; padding: .5rem .1rem 0; overflow-x: auto; }
     .mobile-result > span:first-child { flex: none; color: var(--muted); font-size: .75rem; font-weight: 700; text-transform: uppercase; }

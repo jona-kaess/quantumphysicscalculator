@@ -32,3 +32,12 @@ test('client-side converter preserves quantum conversions and validation',()=>{
     assert.throws(()=>convert('2junk','ev','j'),/numeric/);
     assert.throws(()=>convert('0','nm','ev'),/greater than 0/);
 });
+test('PWA manifest and offline shell use deployable relative resources',()=>{
+    const manifest=JSON.parse(fs.readFileSync('manifest.webmanifest','utf8'));
+    assert.equal(manifest.display,'standalone');
+    assert.ok(!manifest.start_url.startsWith('/'));
+    for(const icon of manifest.icons) assert.ok(fs.existsSync(icon.src));
+    const worker=fs.readFileSync('service-worker.js','utf8');
+    for(const asset of ['index.html','converter.html','hamiltonians.html','assets/js/physics-engine.js','assets/js/calculator.js']) assert.ok(worker.includes(asset),asset);
+    assert.match(worker,/ignoreSearch:true/);
+});

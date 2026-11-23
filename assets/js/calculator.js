@@ -1,6 +1,11 @@
 (() => {
     const engine=PhysicsEngine, $=id=>document.getElementById(id), input=$('expression');
     let menuMode='', start=0, end=0, resultChoices=[], selectedUnit='', manualUnit=false, suggestions=[], suggestionIndex=0, completionRange=null;
+    let lastResult=null, lastText='', answer=null, currentLatex='';
+    const savedKey='physics-calculator-saved-v1', answerKey='physics-calculator-answer-v1';
+    const readStorage=(key,fallback)=>{try{return JSON.parse(localStorage.getItem(key))??fallback;}catch{return fallback;}};
+    const writeStorage=(key,value)=>{try{localStorage.setItem(key,JSON.stringify(value));return true;}catch{return false;}};
+    answer=readStorage(answerKey,null); if(answer && Array.isArray(answer.dim) && answer.dim.length===7 && Number.isFinite(answer.value)) engine.setAnswer(answer); else answer=null;
     const versions=new WeakMap();
     const fmt=x=>Number(x.toPrecision(9)).toString().replace(/e([+-]?\d+)/,'E$1');
     const mathNumber=x=>String(x).replace(/[eE]([+-]?\d+)/,(_,power)=>`\\times 10^{${Number(power)}}`);
@@ -14,7 +19,8 @@
         const symbols={'rad/s':'rad/s','°C':'{}^\\circ C','°F':'{}^\\circ F','Δ°C':'\\Delta{}^\\circ C','Δ°F':'\\Delta{}^\\circ F'};
         const customary=unit.match(/^([A-Za-z_]+)_(US|UK)$/);
         if(customary) return `\\mathrm{${customary[1].replaceAll('_','\\,')}}_{\\mathrm{${customary[2]}}}`;
-        return symbols[unit] || `\\mathrm{${unit.replaceAll('_','\\_').replace(/\^(-?\d+)/g,'^{$1}').replace(/\s+/g,'\\,')}}`;
+        if(unit==='ohm') return '\\Omega';
+        return symbols[unit] || `\\mathrm{${unit.replaceAll('_','\\_').replace(/([A-Za-z]+)\^0\.5\b/g,'\\sqrt{$1}').replace(/\^(-?\d+(?:\.\d+)?)/g,'^{$1}').replace(/\s+/g,'\\,')}}`;
     }
     function renderMath(box,tex) {
         const version=(versions.get(box)||0)+1; versions.set(box,version);
@@ -52,8 +58,8 @@
     }
     function filterResultUnits() {
         const query=$('result-unit-search').value.trim().toLowerCase(), select=$('result-unit'); select.replaceChildren();
-        const matches=resultChoices.filter(row=>`${row.label} ${row.group}`.toLowerCase().includes(query));
-        matches.forEach(row=>{const option=document.createElement('option'); option.value=row.key; option.textContent=`${row.label} — ${row.group}`; select.append(option);});
+        const matches=resultChoices.filter(row=>`${row.key} ${row.label} ${row.group}`.toLowerCase().includes(query));
+        matches.forEach(row=>{const option=document.createElement('option'); option.value=row.key; option.textContent=`${row.group==='Energy equivalent'?row.key:row.label} — ${row.group}`; select.append(option);});
         $('result-unit-empty').hidden=matches.length>0; select.hidden=!matches.length;
         if(matches.some(row=>row.key===selectedUnit)) select.value=selectedUnit;
     }
@@ -63,7 +69,7 @@
         $('clear-expression').hidden=!input.value; $('mobile-result').hidden=true;
         if(!text) { $('calculator-error').textContent=''; $('expression-preview').hidden=true; $('input-prefixes').hidden=true; invalidate($('expression-preview')); panel.hidden=true; return; }
         try {
-            const result=engine.evaluate(text,$('angle-mode').value==='1'?'deg':'rad'); $('calculator-error').textContent=''; panel.hidden=false; $('expression-preview').hidden=false; renderMath($('expression-preview'),result.latex);
+            const result=engine.evaluate(text,$('angle-mode').value==='1'?'deg':'rad'); lastResult=result; lastText=text; currentLatex=result.latex; $('calculator-error').textContent=''; panel.hidden=false; $('expression-preview').hidden=false; renderMath($('expression-preview'),result.latex);
             $('input-prefixes').hidden=!result.usedPrefixes.length;
             if(result.usedPrefixes.length) renderMath($('input-prefixes'),result.usedPrefixes.map(p=>`\\mathrm{${['µ','mu','u'].includes(p.symbol)?'\\mu':p.symbol}}:\\;\\times 10^{${p.power}}`).join(',\\quad '));
             $('dimension-tag').textContent=engine.dimensionName(result.dim);
@@ -81,7 +87,7 @@
                 const value=String(c.sourceValue ?? c.value);
                 renderMath(math,`${c.latex} = ${mathNumber(value)}${c.unit?`\\,${mathUnit(c.unit)}`:''}`);
             });
-        } catch(err) {panel.hidden=true; $('calculator-error').textContent=err.message; $('expression-preview').hidden=true; $('input-prefixes').hidden=true; invalidate($('expression-preview'));}
+        } catch(err) {currentLatex=''; panel.hidden=true; $('calculator-error').textContent=err.message; $('expression-preview').hidden=true; $('input-prefixes').hidden=true; invalidate($('expression-preview'));}
     }
     function hideSuggestions() { $('autocomplete-list').hidden=true; input.setAttribute('aria-expanded','false'); input.removeAttribute('aria-activedescendant'); suggestions=[]; }
     function acceptSuggestion(index) {
@@ -131,9 +137,11 @@
         if(mode==='units') {const sel=$('unit-group');sel.replaceChildren(); ['Any',...[...new Set(Object.values(engine.units).map(u=>u.group))].sort()].forEach(group=>{const o=document.createElement('option');o.value=group;o.textContent=group;sel.append(o);});}
         populateMenu(); $('menu-search').focus();
     }
-    input.addEventListener('input',()=>{ $('result-unit-search').value=''; update(); showSuggestions();});
+    function rememberAnswer(nextText='') {if(lastResult && (!/\bANS\b/.test(lastText) || !/\bANS\b/.test(nextText))) {answer=lastResult; engine.setAnswer(answer); writeStorage(answerKey,answer);}}
+    input.addEventListener('input',()=>{ rememberAnswer(input.value); $('result-unit-search').value=''; update(); showSuggestions();});
+    window.addEventListener('pagehide',()=>rememberAnswer());
     $('clear-expression').addEventListener('mousedown',e=>e.preventDefault());
-    $('clear-expression').addEventListener('click',()=>{input.value=''; manualUnit=false; $('result-unit-search').value=''; closeMenu(); hideSuggestions(); update(); input.focus();});
+    $('clear-expression').addEventListener('click',()=>{rememberAnswer(); input.value=''; manualUnit=false; $('result-unit-search').value=''; closeMenu(); hideSuggestions(); update(); input.focus();});
     input.addEventListener('scroll',()=>{$('expression-highlight').scrollLeft=input.scrollLeft;});
     $('angle-mode').addEventListener('input',()=>{$('angle-label').textContent=$('angle-mode').value==='1'?'Degrees':'Radians'; update();});
     input.addEventListener('click',showSuggestions);
@@ -150,8 +158,22 @@
     for(const [id,mode] of [['constants-button','constants'],['units-button','units'],['functions-button','functions']]) {$(id).addEventListener('mousedown',e=>e.preventDefault()); $(id).addEventListener('click',()=>openMenu(mode));}
     $('menu-search').addEventListener('input',populateMenu); $('unit-group').addEventListener('change',populateMenu); $('menu-close').addEventListener('click',()=>{closeMenu();input.focus();});
     $('menu-search').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault(); $('menu-items').querySelector('button')?.click();}});
+    document.addEventListener('pointerdown',e=>{if(!$('insert-menu').hidden && !$('insert-menu').contains(e.target) && !e.target.closest('.calculator-toolbar')) closeMenu();});
+    $('copy-latex').addEventListener('click',async()=>{
+        const status=$('action-status'); if(!currentLatex) {status.textContent='Enter a valid expression first.'; return;}
+        try {await navigator.clipboard.writeText(currentLatex); status.textContent='LaTeX copied.';} catch {status.textContent='Could not copy LaTeX. Check clipboard permissions.';}
+    });
+    function renderSaved() {
+        const list=$('saved-list'), entries=readStorage(savedKey,[]); list.replaceChildren();
+        if(!Array.isArray(entries)||!entries.length) {list.textContent='No saved calculations yet.'; return;}
+        entries.forEach((item,index)=>{const row=document.createElement('div'), restore=document.createElement('button'), remove=document.createElement('button'); row.className='saved-row'; restore.type=remove.type='button'; restore.className='secondary saved-restore'; remove.className='secondary'; restore.textContent=item.expression; remove.textContent='Delete'; remove.setAttribute('aria-label',`Delete ${item.expression}`);
+            restore.addEventListener('click',()=>{if(item.answer && /\bANS\b/.test(item.expression)) {answer=item.answer; engine.setAnswer(answer); writeStorage(answerKey,answer);} input.value=item.expression; $('angle-mode').value=item.angle==='deg'?'1':'0'; $('angle-label').textContent=item.angle==='deg'?'Degrees':'Radians'; selectedUnit=item.unit||''; manualUnit=!!selectedUnit; $('result-unit-search').value=''; update(); input.focus();});
+            remove.addEventListener('click',()=>{entries.splice(index,1); if(!writeStorage(savedKey,entries)) $('action-status').textContent='Could not update browser storage.'; renderSaved();}); row.append(restore,remove); list.append(row);});
+    }
+    $('save-calculation').addEventListener('click',()=>{if(!currentLatex) {$('action-status').textContent='Enter a valid expression first.'; return;} const entries=readStorage(savedKey,[]); if(!Array.isArray(entries)) return; entries.unshift({expression:input.value,angle:$('angle-mode').value==='1'?'deg':'rad',unit:selectedUnit,answer:/\bANS\b/.test(input.value)?answer:null}); $('action-status').textContent=writeStorage(savedKey,entries)?'Calculation saved.':'Could not save in browser storage.'; renderSaved();});
     document.addEventListener('keydown',e=>{if((e.ctrlKey||e.metaKey)&&['k','e','y'].includes(e.key.toLowerCase())) {e.preventDefault();openMenu({k:'constants',e:'units',y:'functions'}[e.key.toLowerCase()]);} else if(e.key==='Escape'&&!$('insert-menu').hidden){closeMenu();input.focus();}});
     ['hbar * 10 GHz','7/8','1E6 eV','20 degC - 10 degC','2 kg * 9.81 m / s^2','10 GHz_energy'].forEach(example=>{const b=document.createElement('button');b.type='button';b.className='example-button';b.textContent=example;b.addEventListener('click',()=>{input.value=example;input.focus();manualUnit=false;$('result-unit-search').value='';update();});$('examples').append(b);});
     $('expression-highlight').parentElement.classList.add('syntax-active');
+    renderSaved();
     highlightExpression();
 })();

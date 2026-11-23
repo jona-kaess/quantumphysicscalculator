@@ -39,6 +39,18 @@ make grouping explicit. US and UK liquid measures have distinct names, such as
 `gal_US` and `gal_UK`. Unit pickers show base symbols; the result chooses a
 readable SI prefix automatically.
 
+`ANS` uses the previous valid result, including its dimensions and temperature
+type. The answer is kept while editing an expression containing `ANS`, and is
+updated when starting another expression. Save calculations to restore their
+expression, angle setting, selected result unit and any referenced `ANS` later;
+they are stored locally in this browser. The Copy LaTeX button copies the
+formatted input expression. On small screens, type names to use autocomplete.
+
+The calculator can be installed as a PWA through a compatible browser on HTTPS
+(or localhost). After the first online visit its application files are cached
+for offline use. MathJax is loaded from a CDN, so formatted mathematics may
+require an internet connection or a previously cached MathJax copy.
+
 ## Constants and maintenance
 
 The included catalog is generated from all 442 entries of SciPy 1.14.1

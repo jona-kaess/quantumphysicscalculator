@@ -16,6 +16,12 @@ def main():
             digest = hashlib.sha256(asset.read_bytes()).hexdigest()[:12]
             return f'{match.group("attr")}="{asset.as_posix()}?v={digest}"'
         page.write_text(ASSET_URL.sub(replace, text), encoding='utf-8')
+    # Refresh the offline shell whenever a page or core asset changes.
+    core = [Path(name) for name in PAGES] + sorted(Path('assets/css').glob('*')) + sorted(Path('assets/js').glob('*'))
+    digest = hashlib.sha256(b''.join(p.read_bytes() for p in core)).hexdigest()[:12]
+    worker = Path('service-worker.js')
+    if worker.exists():
+        worker.write_text(re.sub(r"const CACHE='physics-calculator-[^']+'", f"const CACHE='physics-calculator-{digest}'", worker.read_text(encoding='utf-8')), encoding='utf-8')
 
 
 if __name__ == '__main__':
