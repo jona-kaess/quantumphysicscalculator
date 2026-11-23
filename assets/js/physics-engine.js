@@ -257,7 +257,7 @@
                 if(!choice) throw Error('That energy equivalent is not available for this result.');
                 if(baseEnergy==='nm_energy') return {...choice,key:'eq:'+target,prefixable:false};
                 const factor=energyUnit?.factor || U[direct].factor;
-                return {...choice,key:'eq:'+target,label:target.replace(/_energy$/,'').replace('rad_s','rad/s'),value:result.value/factor,imag:(result.imag||0)/factor,prefixable:false};
+                return {...choice,key:'eq:'+target,label:target.replace(/_energy$/,'').replace('rad_s','rad/s'),value:result.value/factor,imag:(result.imag||0)/factor,prefixable:!unit.prefix && prefixable.includes(baseEnergy)};
             }
         }
         const tokens=tokenize(target);
@@ -265,7 +265,7 @@
         let reference;
         try {reference=evaluate('1 '+target);} catch {throw Error('Enter a valid unit after eq.');}
         if(!same(result.dim,reference.dim) || reference.absolute || reference.imag || !reference.value) throw Error('The requested unit is not compatible with the result.');
-        return {key:'eq:'+target,label:target.replaceAll('rad_s','rad/s'),group:unit?.group||dimensionName(result.dim),value:result.value/reference.value,imag:(result.imag||0)/reference.value,prefixable:false};
+        return {key:'eq:'+target,label:target.replaceAll('rad_s','rad/s'),group:unit?.group||dimensionName(result.dim),value:result.value/reference.value,imag:(result.imag||0)/reference.value,prefixable:!!unit && !unit.prefix && prefixable.includes(target)};
     }
     function searchItems(items, query) {
         const original=query.trim(); query=original.toLowerCase();
