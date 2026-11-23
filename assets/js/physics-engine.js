@@ -197,7 +197,12 @@
         if(n.kind==='function') { const args=n.args.map(latex); if(n.name==='sqrt') return `{\\color{brown}\\sqrt{{\\color{black}${args[0]}}}}`; if(n.name==='abs') return `{\\color{brown}\\left|{\\color{black}${args[0]}}\\right|}`; return `{\\color{brown}\\operatorname{${n.name}}\\left({\\color{black}${args.join(', ')}}\\right)}`; }
         if(n.kind==='postfix') return `{${latex(n.child)}}${n.op==='%'?'\\%':'!'}`;
         if(n.kind==='number') {const parts=n.text.split('E'); return parts.length===2?`${parts[0]}\\times 10^{${Number(parts[1])}}`:n.text;}
-        if(n.kind==='unit') {const symbols={ohm:'\\Omega',degC:'{}^\\circ\\mathrm{C}',degF:'{}^\\circ\\mathrm{F}',deltaC:'\\Delta{}^\\circ\\mathrm{C}',deltaF:'\\Delta{}^\\circ\\mathrm{F}'}; return `{\\color{teal}${symbols[n.text]||`\\mathrm{${n.text.replaceAll('_','\\_')}}`}}`;}
+        if(n.kind==='unit') {
+            const symbols={ohm:'\\Omega',degC:'{}^\\circ\\mathrm{C}',degF:'{}^\\circ\\mathrm{F}',deltaC:'\\Delta{}^\\circ\\mathrm{C}',deltaF:'\\Delta{}^\\circ\\mathrm{F}'};
+            const unit=U[n.text];
+            const rendered=['u','mu','µ'].includes(unit.prefix)?`\\mu\\mathrm{${unit.base.replaceAll('_','\\_')}}`:`\\mathrm{${n.text.replaceAll('_','\\_')}}`;
+            return `{\\color{teal}${symbols[n.text]||rendered}}`;
+        }
         if(n.kind==='constant') return `{\\color{purple}${constants[n.text].latex}}`;
         if(n.kind==='group') return `\\left(${latex(n.child)}\\right)`;
         if(n.kind==='unary') return n.op+latex(n.child);
