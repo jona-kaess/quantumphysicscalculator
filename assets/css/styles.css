@@ -265,8 +265,10 @@ kbd { font-size: .75rem; opacity: .7; padding-left: .35rem; }
 .expression-actions { display: flex; align-items: center; flex-wrap: wrap; gap: .4rem; margin-top: .5rem; }
 .expression-actions button { margin: 0; padding: .45rem .65rem; font-size: .85rem; }
 #action-status { color: var(--muted); font-size: .85rem; }
-.saved-row { display: flex; gap: .5rem; margin-top: .5rem; }
+.saved-row { display: flex; flex-wrap: wrap; gap: .5rem; margin-top: .5rem; }
 .saved-restore { flex: 1; min-width: 0; overflow-x: auto; overflow-wrap: anywhere; text-align: left; }
+.saved-restore > span { display: block; }
+.saved-result { margin-top: .3rem; color: var(--text); }
 
 /* Keep touch targets and the editor usable when the on-screen keyboard is open. */
 @media (max-width: 600px) {
@@ -304,4 +306,57 @@ kbd { font-size: .75rem; opacity: .7; padding-left: .35rem; }
     .autocomplete-list { max-height: min(180px, 28vh); overscroll-behavior: contain; }
     .autocomplete-option { min-height: 44px; }
     .plot-container { overscroll-behavior-x: contain; }
+}
+
+/* Dark palette keeps the expression editor and mathematical symbols legible. */
+:root {
+    color-scheme: dark;
+    --bg: #10151e;
+    --card: #1a2330;
+    --text: #e8eef7;
+    --accent: #8bbcff;
+    --accent-strong: #2767ba;
+    --border: #344357;
+    --muted: #aabbd1;
+    --success: #75d5a2;
+    --error: #ff94a5;
+}
+body { background: var(--bg); }
+input, select, .expression-editor, .autocomplete-list { background: #121a25; color: var(--text); }
+input:focus, select:focus, .expression-editor:focus-within { outline-color: #4775aa; border-color: #77a7e0; }
+button.secondary, .example-button { background: #26364a; color: #e2edfc; border-color: #405675; }
+button.secondary:hover, .example-button:hover { background: #304761; }
+.insert-menu, .conversion-item { background: #202e40; }
+.menu-option { background: #172331; color: var(--text); }
+.autocomplete-option[aria-selected="true"], .autocomplete-option:hover { background: #304761; }
+.dimension-tag { background: #204344; color: #7de0dc; }
+.preview-row { border-color: var(--border); }
+.calculator { --unit: #6ee1df; --constant: #e5a2e8; }
+.function-color, .expression-highlight .syntax-function { color: #ffad84; }
+.expression-highlight .syntax-unit { color: var(--unit); }
+.expression-highlight .syntax-constant { color: var(--constant); }
+.syntax-active #expression::placeholder { color: #91a2b7; }
+mjx-mstyle[style*="color: black"], mjx-mo[style*="color: black"] { color: #e8eef7 !important; }
+mjx-mstyle[style*="color: purple"], mjx-mo[style*="color: purple"] { color: #e5a2e8 !important; }
+mjx-mstyle[style*="color: teal"], mjx-mo[style*="color: teal"] { color: #6ee1df !important; }
+mjx-mstyle[style*="color: brown"], mjx-mo[style*="color: brown"] { color: #ffad84 !important; }
+@media (max-width: 600px) {
+    .container { padding-top: .25rem; }
+    .calculator > h1 { margin: .25rem 0; padding: 0 .65rem; font-size: 1.45rem; }
+    .panel { padding: .55rem .65rem; margin-top: .35rem; }
+    .panel h2 { margin-bottom: .35rem; }
+    .calculator .expression-editor { margin-left: -.65rem; margin-right: -.65rem; }
+    .angle-setting { margin-bottom: .2rem; }
+    .calculator .expression-input-layer #expression, .expression-highlight { padding: .55rem .65rem; }
+    .expression-editor .math-preview { padding: .3rem 0; }
+    .preview-result:not([hidden]) { padding-bottom: .3rem; }
+    .expression-actions { margin-top: .3rem; }
+    .calculator .calculator-result { margin: .35rem 0 .5rem; }
+    .calculator #conversion-section, .calculator #constant-section { padding-top: .55rem; margin-top: .55rem; }
+    .constant-list { line-height: 1.4; }
+    .calculator .hint { line-height: 1.3; }
+    .saved-row { gap: .3rem; margin-top: .3rem; }
+    .saved-restore { flex-basis: 100%; }
+    .saved-result { margin-top: .15rem; }
+    .examples #examples { gap: .3rem; margin-bottom: .4rem; }
 }
