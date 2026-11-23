@@ -42,6 +42,7 @@
             else {const span=document.createElement('span'); span.className=`syntax-${part.type}`; span.textContent=part.text; layer.append(span);}
         }
         layer.scrollLeft=input.scrollLeft;
+        layer.scrollTop=input.scrollTop;
     }
     const siLabels=['m','kg','s','A','K','mol','cd'];
     function siUnit(dim) {
@@ -147,7 +148,7 @@
     input.addEventListener('input',()=>{ $('result-unit-search').value=''; update(); showSuggestions();});
     $('clear-expression').addEventListener('mousedown',e=>e.preventDefault());
     $('clear-expression').addEventListener('click',()=>{input.value=''; manualUnit=false; $('result-unit-search').value=''; closeMenu(); hideSuggestions(); update(); input.focus();});
-    input.addEventListener('scroll',()=>{$('expression-highlight').scrollLeft=input.scrollLeft;});
+    input.addEventListener('scroll',()=>{$('expression-highlight').scrollLeft=input.scrollLeft; $('expression-highlight').scrollTop=input.scrollTop;});
     $('angle-mode').addEventListener('input',()=>{$('angle-label').textContent=$('angle-mode').value==='1'?'Degrees':'Radians'; update();});
     input.addEventListener('click',showSuggestions);
     // Keep suggestions in place until a click completes: removing them on blur

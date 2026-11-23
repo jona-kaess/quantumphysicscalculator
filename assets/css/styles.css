@@ -76,12 +76,14 @@ label {
 }
 
 input,
+textarea,
 select,
 button {
     font: inherit;
 }
 
 input,
+textarea,
 select {
     width: 100%;
     border: 1px solid var(--border);
@@ -92,6 +94,7 @@ select {
 }
 
 input:focus,
+textarea:focus,
 select:focus {
     outline: 2px solid #d7e6ff;
     border-color: #bfd3f6;
@@ -258,7 +261,10 @@ kbd { font-size: .75rem; opacity: .7; padding-left: .35rem; }
 .expression-input-layer { position: relative; }
 .calculator .expression-input-layer #expression,
 .expression-highlight { font-family: ui-monospace, monospace; font-size: 1.15rem; line-height: 1.5; letter-spacing: normal; padding: .9rem; }
-.expression-highlight { position: absolute; inset: 0; white-space: pre; overflow: hidden; pointer-events: none; color: var(--text); }
+.expression-highlight { position: absolute; inset: 0; white-space: pre-wrap; overflow-wrap: anywhere; overflow: hidden; pointer-events: none; color: var(--text); }
+.calculator .expression-input-layer #expression { display: block; width: 100%; height: 4.5rem; min-height: 4.5rem; resize: none; overflow-y: auto; overflow-x: hidden; white-space: pre-wrap; overflow-wrap: anywhere; scrollbar-width: none; }
+.calculator .expression-input-layer #expression::-webkit-scrollbar { display: none; }
+.math-preview mjx-container, .math-preview mjx-math { max-width: 100%; white-space: normal; overflow-wrap: anywhere; }
 .syntax-active #expression { position: relative; background: transparent; color: transparent; caret-color: var(--text); }
 .syntax-active #expression::placeholder { color: #7d8c9f; opacity: 1; }
 .syntax-active #expression::selection { color: transparent; background: rgba(19,102,214,.25); }
@@ -335,8 +341,8 @@ kbd { font-size: .75rem; opacity: .7; padding-left: .35rem; }
     --error: #e5a0a9;
 }
 body { background: var(--bg); }
-input, select, .expression-editor, .autocomplete-list { background: #181e27; color: var(--text); }
-input:focus, select:focus, .expression-editor:focus-within { outline-color: #536d8a; border-color: #829fbf; }
+input, textarea, select, .expression-editor, .autocomplete-list { background: #181e27; color: var(--text); }
+input:focus, textarea:focus, select:focus, .expression-editor:focus-within { outline-color: #536d8a; border-color: #829fbf; }
 button { background: linear-gradient(180deg, #536f90, #3d5876); color: #e0e4e9; }
 button.secondary, .example-button { background: #2b3644; color: #cbd5e1; border-color: #455466; }
 button.secondary:hover, .example-button:hover { background: #38495b; }
