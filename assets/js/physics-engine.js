@@ -203,7 +203,10 @@
         if(n.kind==='unary') return n.op+latex(n.child);
         if(n.kind==='/') return `\\frac{${latex(n.left)}}{${latex(n.right)}}`;
         if(n.kind==='^') return `{${latex(n.left)}}^{${latex(n.right)}}`;
-        const numeric=n.left.kind==='number' || (n.left.kind==='unary' && n.left.child.kind==='number');
+        const isNumber=node=>node.kind==='number' || (node.kind==='unary' && node.child.kind==='number');
+        // Multiplication is left associative: in x * 0.1V the unit is
+        // attached to the whole preceding product, whose last factor is 0.1.
+        const numeric=isNumber(n.left) || (['*','/'].includes(n.left.kind) && isNumber(n.left.right));
         const unit=n.right.kind==='unit' || (n.right.kind==='^' && n.right.left.kind==='unit');
         if(n.kind==='*' && n.implicit && numeric && unit) return `${latex(n.left)}\\, ${latex(n.right)}`;
         return `${latex(n.left)} ${n.kind==='*'?'\\cdot':n.kind} ${latex(n.right)}`;

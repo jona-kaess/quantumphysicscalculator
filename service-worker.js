@@ -1,4 +1,4 @@
-const CACHE='physics-calculator-a1aa76938f8b';
+const CACHE='physics-calculator-c505a9340085';
 const CORE=['./','index.html','manifest.webmanifest','assets/icon-192.png','assets/icon-512.png','assets/css/styles.css','assets/js/physics-engine.js','assets/js/scipy-constants.js','assets/js/calculator.js','assets/js/pwa.js'];
 self.addEventListener('install',event=>event.waitUntil(caches.open(CACHE).then(cache=>cache.addAll(CORE)).then(()=>self.skipWaiting())));
 self.addEventListener('activate',event=>event.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k.startsWith('physics-calculator-')&&k!==CACHE).map(k=>caches.delete(k)))).then(()=>self.clients.claim())));
