@@ -193,7 +193,13 @@ test('input highlighting recognizes symbols even in incomplete expressions', () 
     assert.deepEqual(engine.highlightTokens('sqrt(1) + (2)').filter(p=>p.text==='(' || p.text===')').map(p=>p.type),['function','function','plain','plain']);
     assert.deepEqual(engine.highlightTokens('1E6sin((pi))+(hbar)').filter(p=>p.text==='(' || p.text===')').map(p=>p.type),['function','plain','plain','function','plain','plain']);
     assert.deepEqual(engine.highlightTokens('sin + (pi) + sin (pi)').filter(p=>p.text==='(' || p.text===')').map(p=>p.type),['plain','plain','function','function']);
+    assert.deepEqual(engine.highlightTokens('hbar*sin((2*pi)) + hbar*(2*pi)').filter(p=>p.text==='(' || p.text===')').map(p=>p.type),['function','plain','plain','function','plain','plain']);
+    assert.deepEqual(engine.highlightTokens('sin(cos(pi) + (pi)').filter(p=>p.text==='(' || p.text===')').map(p=>p.type),['function','function','function','plain','plain']);
     assert.equal(engine.highlightTokens('<script>')[1].type,'plain');
+});
+test('LaTeX scopes constant and unit colors to their own symbols', () => {
+    assert.equal(engine.evaluate('hbar*sin((2*pi)) + hbar*(2*pi)').latex,'{\\color{purple}\\hbar} \\cdot {\\color{brown}\\operatorname{sin}\\left({\\color{black}\\left(2 \\cdot {\\color{purple}\\pi}\\right)}\\right)} + {\\color{purple}\\hbar} \\cdot \\left(2 \\cdot {\\color{purple}\\pi}\\right)');
+    assert.match(engine.evaluate('2 m + 3 m').latex,/\{\\color\{teal\}\\mathrm\{m\}\} \+ 3 \\cdot \{\\color\{teal\}\\mathrm\{m\}\}/);
 });
 test('every registered unit and constant parses and exposes a finite result', () => {
     for(const [key,u] of Object.entries(engine.units)) {const r=engine.evaluate(`1 ${key}`); assert.ok(Number.isFinite(r.value),key); assert.deepEqual(r.dim,u.dim,key);}
