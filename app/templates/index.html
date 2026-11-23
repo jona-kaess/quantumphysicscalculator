@@ -52,6 +52,9 @@
         <p class="error">{{ error }}</p>
         {% elif result is not none %}
         <p class="result">{{ "%.12g"|format(result) }} {{ result_unit }}</p>
+        {% if conversion_equation %}
+        <p class="conversion-equation" aria-label="Conversion formula">\( {{ conversion_equation }} \)</p>
+        {% endif %}
         {% else %}
         <p class="hint">Submit a value to see the converted result.</p>
         {% endif %}

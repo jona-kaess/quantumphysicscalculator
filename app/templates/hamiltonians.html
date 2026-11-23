@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="hero">
+    <h1>Qubit Hamiltonians</h1>
+    <p>Explore energy levels and how they change with the parameters of common qubit models.</p>
+    <div class="panel">
+        <label for="model">Hamiltonian</label>
+        <select id="model">
+            <option value="single">Single qubit — effective two-level system</option>
+            <option value="coupled">Two coupled qubits — transverse coupling</option>
+            <option value="transmon">Transmon — charge-basis model</option>
+        </select>
+        <p id="model-description" class="model-description"></p>
+        <p id="hamiltonian-formula" class="formula"></p>
+        <p class="hint">All energies and energy parameters are expressed as E/h in GHz. Energies are shown without shifting the ground state.</p>
+    </div>
+    <div class="panel">
+        <h2>Parameters</h2>
+        <div id="parameters" class="parameter-grid"></div>
+        <div class="sweep-controls">
+            <div><label for="sweep">Sweep parameter</label><select id="sweep"></select></div>
+            <div><label for="sweep-min">From</label><input id="sweep-min" type="number" step="any"></div>
+            <div><label for="sweep-max">To</label><input id="sweep-max" type="number" step="any"></div>
+        </div>
+        <p id="plot-error" class="error" role="alert"></p>
+    </div>
+    <div class="panel">
+        <h2>Eigenenergies</h2>
+        <p class="hint">The dashed line marks the current parameter value. Curves are sorted by energy at each point.</p>
+        <div class="plot-container"><svg id="energy-plot" viewBox="0 0 760 400" role="img" aria-label="Eigenenergies as a function of the selected parameter"></svg></div>
+        <div id="levels" class="levels" aria-live="polite"></div>
+        <p id="model-note" class="hint model-note"></p>
+    </div>
+</section>
+<script src="{{ url_for('static', filename='js/hamiltonians.js') }}" defer></script>
+{% endblock %}
