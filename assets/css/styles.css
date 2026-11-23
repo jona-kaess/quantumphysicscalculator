@@ -312,35 +312,36 @@ kbd { font-size: .75rem; opacity: .7; padding-left: .35rem; }
 /* Dark palette keeps the expression editor and mathematical symbols legible. */
 :root {
     color-scheme: dark;
-    --bg: #10151e;
-    --card: #1a2330;
-    --text: #e8eef7;
-    --accent: #8bbcff;
-    --accent-strong: #2767ba;
-    --border: #344357;
-    --muted: #aabbd1;
-    --success: #75d5a2;
-    --error: #ff94a5;
+    --bg: #171b22;
+    --card: #202630;
+    --text: #c9d1dc;
+    --accent: #9db8d6;
+    --accent-strong: #42658d;
+    --border: #3a4554;
+    --muted: #a2afbe;
+    --success: #91c8aa;
+    --error: #e5a0a9;
 }
 body { background: var(--bg); }
-input, select, .expression-editor, .autocomplete-list { background: #121a25; color: var(--text); }
-input:focus, select:focus, .expression-editor:focus-within { outline-color: #4775aa; border-color: #77a7e0; }
-button.secondary, .example-button { background: #26364a; color: #e2edfc; border-color: #405675; }
-button.secondary:hover, .example-button:hover { background: #304761; }
-.insert-menu, .conversion-item { background: #202e40; }
-.menu-option { background: #172331; color: var(--text); }
-.autocomplete-option[aria-selected="true"], .autocomplete-option:hover { background: #304761; }
-.dimension-tag { background: #204344; color: #7de0dc; }
+input, select, .expression-editor, .autocomplete-list { background: #181e27; color: var(--text); }
+input:focus, select:focus, .expression-editor:focus-within { outline-color: #536d8a; border-color: #829fbf; }
+button { background: linear-gradient(180deg, #536f90, #3d5876); color: #e0e4e9; }
+button.secondary, .example-button { background: #2b3644; color: #cbd5e1; border-color: #455466; }
+button.secondary:hover, .example-button:hover { background: #38495b; }
+.insert-menu, .conversion-item { background: #273240; }
+.menu-option { background: #202a36; color: var(--text); }
+.autocomplete-option[aria-selected="true"], .autocomplete-option:hover { background: #38495b; }
+.dimension-tag { background: #2a4545; color: #a4d3ce; }
 .preview-row { border-color: var(--border); }
-.calculator { --unit: #6ee1df; --constant: #e5a2e8; }
-.function-color, .expression-highlight .syntax-function { color: #ffad84; }
+.calculator { --unit: #91ccc8; --constant: #cfa8d4; }
+.function-color, .expression-highlight .syntax-function { color: #e5b398; }
 .expression-highlight .syntax-unit { color: var(--unit); }
 .expression-highlight .syntax-constant { color: var(--constant); }
-.syntax-active #expression::placeholder { color: #91a2b7; }
-mjx-mstyle[style*="color: black"], mjx-mo[style*="color: black"] { color: #e8eef7 !important; }
-mjx-mstyle[style*="color: purple"], mjx-mo[style*="color: purple"] { color: #e5a2e8 !important; }
-mjx-mstyle[style*="color: teal"], mjx-mo[style*="color: teal"] { color: #6ee1df !important; }
-mjx-mstyle[style*="color: brown"], mjx-mo[style*="color: brown"] { color: #ffad84 !important; }
+.syntax-active #expression::placeholder { color: #8796a8; }
+mjx-mstyle[style*="color: black"], mjx-mo[style*="color: black"] { color: #c9d1dc !important; }
+mjx-mstyle[style*="color: purple"], mjx-mo[style*="color: purple"] { color: #cfa8d4 !important; }
+mjx-mstyle[style*="color: teal"], mjx-mo[style*="color: teal"] { color: #91ccc8 !important; }
+mjx-mstyle[style*="color: brown"], mjx-mo[style*="color: brown"] { color: #e5b398 !important; }
 @media (max-width: 600px) {
     .container { padding-top: .25rem; }
     .calculator > h1 { margin: .25rem 0; padding: 0 .65rem; font-size: 1.45rem; }
