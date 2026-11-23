@@ -7,7 +7,7 @@
     <link rel="manifest" href="manifest.webmanifest">
     <link rel="apple-touch-icon" href="assets/icon-192.png?v=1a121de6c5da">
     <title>Quantum Physics Calculator</title>
-    <link rel="stylesheet" href="assets/css/styles.css?v=5be3e701e81c">
+    <link rel="stylesheet" href="assets/css/styles.css?v=d0de613d3f96">
     <script>
         window.MathJax = {
             loader: { load: ['[tex]/color'] },
@@ -32,12 +32,12 @@
             <div id="expression-highlight" class="expression-highlight" aria-hidden="true"></div>
             <textarea id="expression" rows="2" inputmode="text" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" placeholder="Try hbar * 10 GHz or 7/8" aria-describedby="input-help" aria-autocomplete="list" aria-controls="autocomplete-list" aria-expanded="false" role="combobox"></textarea>
             </div>
-            <div class="preview-row"><div id="expression-preview" class="math-preview" aria-live="polite" aria-label="Formatted expression" hidden></div><div id="input-prefixes" class="prefix-note" hidden></div><div id="mobile-result" class="preview-result" hidden><span aria-hidden="true">=</span><span id="mobile-result-value" aria-label="Result"></span></div></div>
+            <div class="preview-row"><div id="expression-preview" class="math-preview" aria-live="polite" aria-label="Formatted expression" hidden></div><div id="input-prefixes" class="prefix-note" hidden></div><div id="mobile-result" class="preview-result" hidden><span aria-hidden="true">=</span><span id="mobile-result-value" aria-label="Result"></span></div><p id="calculator-error" class="error" role="status"></p></div>
         </div>
         <div class="mobile-keys" role="group" aria-label="Expression editing keys">
             <button type="button" data-insert="+" aria-label="Plus">+</button><button type="button" data-insert="-" aria-label="Minus">−</button><button type="button" data-insert="*" aria-label="Multiply">*</button><button type="button" data-insert="^" aria-label="Power">^</button><button type="button" data-insert="/" aria-label="Divide">/</button><button type="button" data-insert="(" aria-label="Open parenthesis">(</button><button type="button" data-insert=")" aria-label="Close parenthesis">)</button><button type="button" data-move="-1" aria-label="Move cursor left">←</button><button type="button" data-move="1" aria-label="Move cursor right">→</button>
         </div>
-        <div id="autocomplete-list" class="autocomplete-list" role="listbox" aria-label="Expression suggestions" hidden></div>
+        <div class="autocomplete-anchor"><div id="autocomplete-list" class="autocomplete-list" role="listbox" aria-label="Expression suggestions" hidden></div></div>
         <div class="expression-actions"><button type="button" class="secondary" id="copy-latex">Copy LaTeX</button><button type="button" class="secondary" id="save-calculation">Save calculation</button><div class="angle-setting"><label for="angle-mode">Angle unit</label><span><span class="angle-full">Radians (0–2π)</span><span class="angle-short" aria-hidden="true">Rad</span></span><input id="angle-mode" type="range" min="0" max="1" step="1" value="0" aria-label="Angle unit: radians or degrees"><span><span class="angle-full">Degrees (0–360°)</span><span class="angle-short" aria-hidden="true">Deg</span></span><strong id="angle-label">Radians</strong></div></div><span id="action-status" role="status"></span>
         <div class="calculator-toolbar">
             <button type="button" class="secondary" id="constants-button" aria-expanded="false" aria-controls="insert-menu">Constants <kbd>Ctrl K</kbd></button>
@@ -53,7 +53,6 @@
             <button type="button" class="secondary" id="menu-close">Close</button>
         </div>
         <p id="input-help" class="hint">Use +, −, *, /, ^, !, % and functions such as sqrt(), sin() or mod(a,b). Use euler for Euler’s number, e for elementary charge, and i for √−1. Use ↑/↓ and Enter or Tab to insert suggestions.</p>
-        <p id="calculator-error" class="error" role="status"></p>
     </div>
     <div class="panel" id="result-panel" hidden>
         <span class="eyebrow">RESULT <span id="dimension-tag" class="dimension-tag"></span></span>
@@ -68,8 +67,8 @@
     <div class="panel examples"><h2>Examples</h2><div id="examples"></div><p class="hint">Energy-equivalent units are explicitly named, for example <code>10 GHz_energy</code> uses E = hν. Frequency <code>GHz</code> remains a frequency. Wavelength equivalents are offered for positive energy results.</p></div>
 </section>
 <script src="assets/js/scipy-constants.js?v=fd4097f595e2" defer></script>
-<script src="assets/js/physics-engine.js?v=c326f29565c6" defer></script>
-<script src="assets/js/calculator.js?v=d2dd33fe447f" defer></script>
+<script src="assets/js/physics-engine.js?v=db6edb756828" defer></script>
+<script src="assets/js/calculator.js?v=c87da5728527" defer></script>
 <script src="assets/js/pwa.js?v=99545cea69c7" defer></script>
 
     </main>

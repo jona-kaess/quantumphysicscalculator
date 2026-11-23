@@ -40,6 +40,8 @@ Append `eq` and a target unit, for example `hbar * 25 GHz eq meV` or
 `10 m / 2s eq km/h`. Base units use a readable SI prefix automatically;
 an explicitly entered prefix is retained. Energy results can also
 use energy equivalents such as `eq GHz`, `eq K_energy` or `eq nm_energy`.
+The reverse direction also works, for example `1 GHz eq eV`, `1 rad_s eq eV`
+or `500 nm eq eV`. The result shows the relation and the constants used.
 
 The default output unit follows an explicitly entered unit of the resulting
 dimension when possible. Otherwise, energies involving Planck's constant,
@@ -57,9 +59,13 @@ require an internet connection or a previously cached MathJax copy.
 
 ## Constants and maintenance
 
-The included catalog is generated from all 442 entries of SciPy 1.14.1
-`scipy.constants.physical_constants` (CODATA 2018). It is a local JavaScript file;
-SciPy is only needed when regenerating it, not to use or deploy the site. To
+The source catalog is generated from SciPy 1.14.1
+`scipy.constants.physical_constants` (CODATA 2018). The calculator exposes a
+curated set with conventional, unambiguous symbols (for example `gamma_e`,
+`gamma_p` and `gamma_n`). Ratios and alternate units can be calculated from
+those symbols. Legacy long names remain accepted only for retained constants;
+saved expressions using removed constants need to be updated. SciPy is only
+needed when regenerating the local data file, not to use or deploy the site. To
 regenerate it, install SciPy 1.14.1 separately and run
 `python scripts/generate_scipy_constants.py`. Review the CODATA source label if
 changing SciPy versions.

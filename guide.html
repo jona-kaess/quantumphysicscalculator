@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="theme-color" content="#171b22">
     <title>Calculator guide</title>
-    <link rel="stylesheet" href="assets/css/styles.css?v=5be3e701e81c">
+    <link rel="stylesheet" href="assets/css/styles.css?v=d0de613d3f96">
 </head>
 <body>
 <main class="container guide-page">
@@ -34,7 +34,7 @@
     <h2>Choose an output unit</h2>
     <ul>
         <li>Search under <strong>Choose a unit</strong>, or append <code>eq</code>: <code>10 m / 2s eq km/h</code> or <code>hbar * 25 GHz eq meV</code>. Type <code>eq</code> to see it in suggestions, then type the desired unit.</li>
-        <li>Energy equivalents are marked separately. <code>1 eV eq GHz</code> converts using E = hν; ordinary <code>GHz</code> in an expression is a frequency. <code>GHz_energy</code>, <code>rad_s_energy</code>, <code>K_energy</code>, <code>T_energy</code> and <code>nm_energy</code> are energy equivalents in input.</li>
+        <li>Energy equivalents work both ways: <code>1 eV eq GHz</code> and <code>1 GHz eq eV</code> use E = hν; <code>1 rad_s eq eV</code> uses E = ħω. The result shows the relation and constants. Ordinary <code>GHz</code> is a frequency; <code>GHz_energy</code>, <code>rad_s_energy</code>, <code>K_energy</code>, <code>T_energy</code> and <code>nm_energy</code> are energy equivalents in input.</li>
         <li>The output selects readable SI prefixes automatically for base units; a prefix explicitly entered after <code>eq</code> is retained.</li>
     </ul>
     <figure><img src="assets/images/guide-conversion.png" alt="Result panel showing a frequency energy equivalent and the relation E equals h nu"><figcaption>The result identifies the selected unit and the relation used for an energy equivalent.</figcaption></figure>

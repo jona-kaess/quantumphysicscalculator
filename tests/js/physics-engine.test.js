@@ -4,6 +4,20 @@ const engine = require('../../assets/js/physics-engine.js');
 const close = (actual, expected) => assert.ok(Math.abs(actual-expected) <= Math.max(1e-300,Math.abs(expected)*1e-12), `${actual} != ${expected}`);
 const convert = (result,label) => engine.conversions(result).find(x=>x.label===label).value;
 
+test('energy equivalences work in both directions with the right constants', () => {
+    const request=(source,target)=>engine.requestedConversion(engine.evaluate(source),target,source);
+    close(request('1 THz','eV').value,6.62607015e-34*1e12/1.602176634e-19);
+    close(request('1 eV','Hz').value,1.602176634e-19/6.62607015e-34);
+    close(request('1 rad_s','eV').value,1.0545718176461565e-34/1.602176634e-19);
+    close(request('300 K','eV').value,300*1.380649e-23/1.602176634e-19);
+    close(request('500 nm','eV').value,6.62607015e-34*299792458/500e-9/1.602176634e-19);
+    assert.deepEqual(request('1 Hz','eV').constants,['h','e']);
+    assert.deepEqual(request('1 rad_s','eV').constants,['hbar','e']);
+    assert.throws(()=>request('-1 m','eV'),/positive/);
+    assert.throws(()=>request('1 kg','eV'),/not compatible/);
+    assert.equal(engine.highlightTokens('1 Hz eq eV').find(t=>t.text==='eq').type,'operator');
+});
+
 test('arithmetic, precedence, implicit multiplication and scientific notation', () => {
     close(engine.evaluate('7/8').value,0.875);
     close(engine.evaluate('2(3+4)^2').value,98);
@@ -66,7 +80,7 @@ test('a unit attached to a denominator number stays in the denominator', () => {
         const result=engine.evaluate(expression);
         close(result.value,0.5);
         assert.equal(engine.dimensionName(result.dim),'resistance');
-        assert.match(result.latex,/\\frac\{.*\}\{10 .*\\mathrm\{A\}.*\}/);
+        assert.match(result.latex,/\\frac\{.*\}\{10.*\\mathrm\{A\}.*\}/);
     }
     const spaced=engine.evaluate('5V / 10 A');
     close(spaced.value,0.5);
@@ -121,7 +135,7 @@ test('extended units, SI prefixes and SciPy constants', () => {
     close(engine.evaluate('1 mug').value,1e-9);
     close(engine.evaluate('scipy_electron_mass').value,9.1093837015e-31);
     assert.deepEqual(engine.evaluate('scipy_electron_mass').dim,engine.dimensions.mass);
-    assert.equal(Object.keys(engine.constants).filter(k=>k.startsWith('scipy_')).length,442);
+    assert.equal(Object.keys(engine.constants).filter(k=>k.startsWith('scipy_')).length,0);
     assert.ok(engine.conversions(engine.evaluate('1 J')).some(u=>u.label==='cal'));
     assert.ok(engine.conversions(engine.evaluate('1 F')).some(u=>u.label==='F'));
     assert.equal(engine.units.GHz.base,'Hz');
@@ -211,4 +225,16 @@ test('formatting and defaults for units and equivalent choices', () => {
     for(const [expression,unit] of [['1 m^2','m²'],['1 m^3','m³']]) {const result=engine.evaluate(expression), choices=engine.conversions(result); assert.equal(engine.chooseDefault(result,expression,choices),unit);}
     const e=engine.conversions(engine.evaluate('1 J')); assert.ok(e.some(u=>u.key==='T_energy' && u.label==='T'));
     close(engine.evaluate('electron_mass').value,engine.evaluate('scipy_electron_mass').value);
+});
+test('curated constants use distinct symbols and reject unlisted entries', () => {
+    const items=engine.completions('gyro',4).items;
+    for(const symbol of ['gamma_e','gamma_p','gamma_n']) {
+        assert.ok(items.some(item=>item.symbol===symbol),symbol);
+        assert.match(engine.evaluate(symbol).latex,/\\gamma/);
+        assert.ok(Number.isFinite(engine.evaluate(symbol).value));
+    }
+    assert.throws(()=>engine.evaluate('scipy_electron_mass_energy_equivalent'),/Unknown symbol/);
+    assert.ok(!engine.constantItems().some(item=>item.symbol.startsWith('scipy_')));
+    close(engine.evaluate('electron_mass').value,engine.evaluate('m_e').value);
+    for(const symbol of Object.keys(engine.constants)) assert.ok(!engine.units[symbol],`unit collision: ${symbol}`);
 });

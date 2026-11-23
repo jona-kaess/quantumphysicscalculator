@@ -1,7 +1,7 @@
 (() => {
     const engine=PhysicsEngine, $=id=>document.getElementById(id), input=$('expression');
     let menuMode='', start=0, end=0, resultChoices=[], selectedUnit='', manualUnit=false, suggestions=[], suggestionIndex=0, completionRange=null;
-    let currentLatex='', currentResult=null;
+    let currentLatex='', currentResult=null, currentUsed=[], currentConversion=null;
     const savedKey='physics-calculator-saved-v1';
     const readStorage=(key,fallback)=>{try{return JSON.parse(localStorage.getItem(key))??fallback;}catch{return fallback;}};
     const writeStorage=(key,value)=>{try{localStorage.setItem(key,JSON.stringify(value));return true;}catch{return false;}};
@@ -49,16 +49,36 @@
         const num=[],den=[]; dim.forEach((x,i)=>{if(x) (x>0?num:den).push(siLabels[i]+(Math.abs(x)===1?'':`^${Math.abs(x)}`));});
         return (num.join(' ')||'1')+(den.length?' / '+den.join(' '):'');
     }
+    function showConstants(extra=[]) {
+        const used=[...new Set([...currentUsed,...(currentConversion?.constants||[]),...extra])].filter(key=>engine.constants[key]);
+        $('constant-section').hidden=!used.length; const list=$('constant-list'); list.replaceChildren();
+        used.forEach(key=>{
+            const c=engine.constants[key], el=document.createElement('div'), label=document.createElement('span'), math=document.createElement('span'), source=document.createElement('small');
+            label.textContent=`${c.name}: `; source.textContent=` — ${c.source}`;
+            el.append(label,math,source); list.append(el);
+            renderMath(math,`${c.latex} = ${mathNumber(String(c.sourceValue ?? c.value))}${c.unit?`\\,${mathUnit(c.unit)}`:''}`);
+        });
+    }
     function showResultChoice() {
         const choice=resultChoices.find(row=>row.key===selectedUnit);
         if(!choice) return;
         const scaled=engine.scaledChoice(choice);
         const tex=`${complexNumber(scaled.value,scaled.imag)}\\,\\color{teal}{${mathUnit(scaled.label)}}`;
-        renderMath($('calculator-result'),tex); renderMath($('mobile-result-value'),tex);
-        $('result-relation').hidden=!choice.via;
-        if(choice.via) renderMath($('result-relation'),`\\text{via } ${choice.via}`); else invalidate($('result-relation'));
+        renderMath($('calculator-result'),tex);
+        let preview=tex;
+        if(choice.group==='Energy equivalent' && choice.via) {
+            const key=choice.key.replace(/^eq:/,'').replace(/^(?:Q|R|Y|Z|E|P|T|G|M|k|h|da|d|c|m|u|mu|µ|n|p|f|a|z|y|r|q)(?=Hz|rad_s|K|T)/,'');
+            const factors={Hz_energy:'h',Hz:'h',rad_s_energy:'\\hbar',rad_s:'\\hbar',K_energy:'k_B',K:'k_B',T_energy:'\\mu_B',T:'\\mu_B'};
+            if(key==='nm' || key==='nm_energy') preview=`\\frac{h c}{${tex}}`;
+            else if(factors[key]) preview=`${factors[key]} \\cdot ${tex}`;
+        }
+        renderMath($('mobile-result-value'),preview);
+        const relation=currentConversion?.via||choice.via;
+        $('result-relation').hidden=!relation;
+        if(relation) renderMath($('result-relation'),`\\text{via } ${relation}`); else invalidate($('result-relation'));
         $('result-prefix').hidden=!scaled.prefix;
         if(scaled.prefix) renderMath($('result-prefix'),`\\mathrm{${scaled.prefix==='µ'?'\\mu':scaled.prefix}}:\\; \\times 10^{${scaled.power}}`); else invalidate($('result-prefix'));
+        showConstants(choice.constants||[]);
     }
     function filterResultUnits() {
         const query=$('result-unit-search').value.trim().toLowerCase(), select=$('result-unit'); select.replaceChildren();
@@ -75,26 +95,21 @@
         try {
             const separator=/\s+eq(?:\s+|$)/.exec(text), expression=separator?text.slice(0,separator.index).trim():text, target=separator?text.slice(separator.index+separator[0].length).trim():null;
             const result=engine.evaluate(expression,$('angle-mode').value==='1'?'deg':'rad');
-            const requested=target!==null?engine.requestedConversion(result,target):null;
-            currentResult=result; currentLatex=result.latex; $('calculator-error').textContent=''; panel.hidden=false; $('expression-preview').hidden=false; renderMath($('expression-preview'),result.latex);
+            const requested=target!==null?engine.requestedConversion(result,target,expression):null;
+            currentResult=requested?.convertedResult||result; currentUsed=result.used; currentConversion=requested?.sourceFactor?requested:null;
+            currentLatex=result.latex; $('calculator-error').textContent=''; panel.hidden=false; $('expression-preview').hidden=false;
+            const preview=currentConversion?(currentConversion.sourceReciprocal?`${currentConversion.sourceFactor}{${result.latex}}`:`${currentConversion.sourceFactor} \\cdot \\left(${result.latex}\\right)`):result.latex;
+            renderMath($('expression-preview'),preview);
             $('input-prefixes').hidden=!result.usedPrefixes.length;
             if(result.usedPrefixes.length) renderMath($('input-prefixes'),result.usedPrefixes.map(p=>`\\mathrm{${['µ','mu','u'].includes(p.symbol)?'\\mu':p.symbol}}:\\;\\times 10^{${p.power}}`).join(',\\quad '));
-            $('dimension-tag').textContent=engine.dimensionName(result.dim);
-            resultChoices=engine.conversions(result); if(requested) resultChoices.unshift(requested); $('conversion-section').hidden=!resultChoices.length;
+            $('dimension-tag').textContent=engine.dimensionName(currentResult.dim);
+            resultChoices=engine.conversions(currentResult); if(requested) resultChoices.unshift(requested); $('conversion-section').hidden=!resultChoices.length;
             if(requested) selectedUnit=requested.key;
-            else if(!manualUnit || !resultChoices.some(row=>row.key===selectedUnit)) selectedUnit=engine.chooseDefault(result,expression,resultChoices);
+            else if(!manualUnit || !resultChoices.some(row=>row.key===selectedUnit)) selectedUnit=engine.chooseDefault(currentResult,expression,resultChoices);
             if(resultChoices.length) {filterResultUnits(); showResultChoice();}
-            else { const unit=siUnit(result.dim), tex=`${complexNumber(result.value,result.imag)}${unit==='1'?'':`\\,${mathUnit(unit)}`}`; renderMath($('calculator-result'),tex); renderMath($('mobile-result-value'),tex); $('result-relation').hidden=true; $('result-prefix').hidden=true; }
+            else { const unit=siUnit(result.dim), tex=`${complexNumber(result.value,result.imag)}${unit==='1'?'':`\\,${mathUnit(unit)}`}`; renderMath($('calculator-result'),tex); renderMath($('mobile-result-value'),tex); $('result-relation').hidden=true; $('result-prefix').hidden=true; showConstants(); }
             $('mobile-result').hidden=false;
-            $('temperature-note').hidden=engine.dimensionName(result.dim)!=='temperature';
-            $('constant-section').hidden=!result.used.length; const constants=$('constant-list'); constants.replaceChildren();
-            result.used.forEach(key=>{
-                const c=engine.constants[key], el=document.createElement('div'), label=document.createElement('span'), math=document.createElement('span'), source=document.createElement('small');
-                label.textContent=`${c.name}: `; source.textContent=` — ${c.source}`;
-                el.append(label,math,source); constants.append(el);
-                const value=String(c.sourceValue ?? c.value);
-                renderMath(math,`${c.latex} = ${mathNumber(value)}${c.unit?`\\,${mathUnit(c.unit)}`:''}`);
-            });
+            $('temperature-note').hidden=engine.dimensionName(currentResult.dim)!=='temperature';
         } catch(err) {currentResult=null; currentLatex=''; panel.hidden=true; $('calculator-error').textContent=err.message; $('expression-preview').hidden=true; $('input-prefixes').hidden=true; invalidate($('expression-preview'));}
     }
     function hideSuggestions() { $('autocomplete-list').hidden=true; input.setAttribute('aria-expanded','false'); input.removeAttribute('aria-activedescendant'); suggestions=[]; }

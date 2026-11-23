@@ -51,12 +51,9 @@
     }
     U.kcal.prefix='k'; U.kcal.base='cal'; U.kWh.prefix='k'; U.kWh.base='Wh'; U.kg.prefix='k'; U.kg.base='g';
     const constants={h:{name:'Planck constant',value:H,dim:[2,1,-1,0,0,0,0],unit:'J s',latex:'h'},hbar:{name:'Reduced Planck constant',value:HBAR,dim:[2,1,-1,0,0,0,0],unit:'J s',latex:'\\hbar'},k_B:{name:'Boltzmann constant',value:KB,dim:[2,1,-2,0,-1,0,0],unit:'J/K',latex:'k_B'},e:{name:'Elementary charge',value:E,dim:D.charge,unit:'C',latex:'e'},c:{name:'Speed of light in vacuum',value:C,dim:D.velocity,unit:'m/s',latex:'c'},mu_B:{name:'Bohr magneton',value:MUB,dim:[2,0,0,1,0,0,0],unit:'J/T',latex:'\\mu_B'},N_A:{name:'Avogadro constant',value:6.02214076e23,dim:[0,0,0,0,0,-1,0],unit:'1/mol',latex:'N_A'},pi:{name:'Pi',value:Math.PI,dim:D.scalar,unit:'',latex:'\\pi'}};
-    for(const [symbol, entry] of Object.entries(scipyConstants || {})) {
-        const short=symbol.replace(/^scipy_/, '');
-        const item={...entry,latex:`\\mathrm{${short.replaceAll('_','\\_')}}`};
-        constants[symbol]=item;
-        if(/^[A-Za-zµ_][A-Za-z0-9µ_]*$/.test(short) && !U[short] && !constants[short]) constants[short]=item;
-    }
+    // Curated standalone symbols; conversions and ratios can be expressed
+    // using these quantities and units. Numerical values remain CODATA 2018.
+    // Symbols follow https://physics.nist.gov/cuu/pdf/all.pdf.
     const commonAliases={
         'electron mass':['m_e','m_e'], 'proton mass':['m_p','m_p'], 'neutron mass':['m_n','m_n'],
         'fine-structure constant':['alpha','\\alpha'], 'vacuum electric permittivity':['epsilon_0','\\epsilon_0'],
@@ -66,11 +63,47 @@
         'mag. flux quantum':['Phi_0','\\Phi_0'], 'Josephson constant':['K_J','K_J'],
         'von Klitzing constant':['R_K','R_K'], 'atomic mass constant':['m_u','m_u'],
         'Faraday constant':['F_const','F'], 'electron g factor':['g_e','g_e'], 'proton g factor':['g_p','g_p'],
-        'neutron g factor':['g_n','g_n'], 'Planck length':['l_P','l_P'], 'Planck mass':['m_P','m_P'], 'Planck time':['t_P','t_P']
+        'neutron g factor':['g_n','g_n'], 'Planck length':['l_P','l_P'], 'Planck mass':['m_P','m_P'], 'Planck time':['t_P','t_P'],
+        'electron gyromag. ratio':['gamma_e','\\gamma_e'], 'proton gyromag. ratio':['gamma_p','\\gamma_p'], 'neutron gyromag. ratio':['gamma_n','\\gamma_n'],
+        'shielded proton gyromag. ratio':['gamma_p_shielded',"{\\gamma'_p}"], 'shielded helion gyromag. ratio':['gamma_h_shielded',"{\\gamma'_h}"],
+        'electron mag. mom.':['mu_e','\\mu_e'], 'proton mag. mom.':['mu_p','\\mu_p'], 'neutron mag. mom.':['mu_n','\\mu_n'],
+        'muon mag. mom.':['mu_mu','\\mu_\\mu'], 'deuteron mag. mom.':['mu_d','\\mu_d'], 'triton mag. mom.':['mu_t','\\mu_t'],
+        'helion mag. mom.':['mu_h','\\mu_h'], 'nuclear magneton':['mu_N','\\mu_N'],
+        'muon mass':['m_mu','m_\\mu'], 'tau mass':['m_tau','m_\\tau'], 'deuteron mass':['m_d','m_d'],
+        'triton mass':['m_t','m_t'], 'helion mass':['m_h','m_h'], 'alpha particle mass':['m_alpha','m_\\alpha'],
+        'electron molar mass':['M_e','M_e'], 'proton molar mass':['M_p','M_p'], 'neutron molar mass':['M_n','M_n'],
+        'muon molar mass':['M_mu','M_\\mu'], 'tau molar mass':['M_tau','M_\\tau'], 'deuteron molar mass':['M_d','M_d'],
+        'triton molar mass':['M_t','M_t'], 'helion molar mass':['M_h','M_h'], 'alpha particle molar mass':['M_alpha','M_\\alpha'],
+        'electron relative atomic mass':['A_r_e','A_r(e)'], 'proton relative atomic mass':['A_r_p','A_r(p)'], 'neutron relative atomic mass':['A_r_n','A_r(n)'],
+        'deuteron relative atomic mass':['A_r_d','A_r(d)'], 'triton relative atomic mass':['A_r_t','A_r(t)'], 'helion relative atomic mass':['A_r_h','A_r(h)'], 'alpha particle relative atomic mass':['A_r_alpha','A_r(\\alpha)'],
+        'muon g factor':['g_mu','g_\\mu'], 'deuteron g factor':['g_d','g_d'], 'triton g factor':['g_t','g_t'], 'helion g factor':['g_h','g_h'],
+        'electron mag. mom. anomaly':['a_e','a_e'], 'muon mag. mom. anomaly':['a_mu','a_\\mu'],
+        'characteristic impedance of vacuum':['Z_0','Z_0'], 'classical electron radius':['r_e','r_e'],
+        'proton rms charge radius':['r_p','r_p'], 'deuteron rms charge radius':['r_d','r_d'],
+        'Compton wavelength':['lambda_C','\\lambda_C'], 'reduced Compton wavelength':['lambda_C_bar','\\bar{\\lambda}_C'],
+        'muon Compton wavelength':['lambda_C_mu','\\lambda_{C,\\mu}'], 'proton Compton wavelength':['lambda_C_p','\\lambda_{C,p}'],
+        'neutron Compton wavelength':['lambda_C_n','\\lambda_{C,n}'], 'tau Compton wavelength':['lambda_C_tau','\\lambda_{C,\\tau}'],
+        'reduced muon Compton wavelength':['lambda_C_mu_bar','\\bar{\\lambda}_{C,\\mu}'], 'reduced proton Compton wavelength':['lambda_C_p_bar','\\bar{\\lambda}_{C,p}'],
+        'reduced neutron Compton wavelength':['lambda_C_n_bar','\\bar{\\lambda}_{C,n}'], 'reduced tau Compton wavelength':['lambda_C_tau_bar','\\bar{\\lambda}_{C,\\tau}'],
+        'conductance quantum':['G_0','G_0'], 'Hartree energy':['E_h','E_h'],
+        'Planck temperature':['T_P','T_P'], 'Thomson cross section':['sigma_T','\\sigma_T'],
+        'first radiation constant':['c_1','c_1'], 'second radiation constant':['c_2','c_2'],
+        'Wien wavelength displacement law constant':['b_Wien','b'], 'Wien frequency displacement law constant':['b_nu','b_\\nu'],
+        'standard acceleration of gravity':['g_0','g_0'], 'molar mass constant':['M_u','M_u']
     };
     for(const [name,[symbol,latex]] of Object.entries(commonAliases)) {
         const original=Object.values(scipyConstants || {}).find(c=>c.name===name);
         if(original) constants[symbol]={...original,latex};
+    }
+    // Retain old spellings only for constants that have a curated symbol, so
+    // existing saved expressions keep working without listing duplicate names.
+    const legacyAliases={};
+    for(const [old,entry] of Object.entries(scipyConstants || {})) {
+        const symbol=Object.keys(constants).find(key=>constants[key].name.toLowerCase()===entry.name.toLowerCase());
+        if(!symbol) continue;
+        legacyAliases[old]=symbol;
+        const short=old.replace(/^scipy_/, '');
+        if(!U[short] && !constants[short]) legacyAliases[short]=symbol;
     }
     for(const [symbol,constant] of Object.entries(constants)) if(!constant.source) constant.source=symbol==='pi'?'Mathematical constant':'SciPy 1.14.1 / CODATA 2018';
     const FUNCTIONS={sqrt:'Square root',sin:'Sine',cos:'Cosine',tan:'Tangent',asin:'Inverse sine',acos:'Inverse cosine',atan:'Inverse tangent',sinh:'Hyperbolic sine',cosh:'Hyperbolic cosine',tanh:'Hyperbolic tangent',ln:'Natural logarithm',log:'Base-10 logarithm',exp:'Exponential',abs:'Absolute value',re:'Real part',im:'Imaginary part',Re:'Real part',Im:'Imaginary part',conj:'Complex conjugate',arg:'Complex argument',Arg:'Complex argument',floor:'Round down',ceil:'Round up',factorial:'Factorial',mod:'Remainder (two arguments)',pow:'Power (two arguments)',recip:'Reciprocal',percent:'Percentage',tenpow:'10 to the power'};
@@ -102,7 +135,7 @@
             }
             if(t.type==='name' && t.value==='i') return {kind:'imaginary'};
             if(t.type==='name' && t.value==='euler') return {kind:'euler'};
-            if(t.type==='name') {if(!U[t.value]&&!constants[t.value]) throw Error(`Unknown symbol “${t.value}”. Use uppercase E for scientific notation.`); if(constants[t.value]) used.add(t.value); for(const key of U[t.value]?.constants||[]) used.add(key); if(U[t.value]?.prefix) usedPrefixes.set(U[t.value].prefix,Math.round(Math.log10(prefixes[U[t.value].prefix]))); return {kind:U[t.value]?'unit':'constant',text:t.value};}
+            if(t.type==='name') {const symbol=U[t.value]?t.value:(legacyAliases[t.value]||t.value); if(!U[symbol]&&!constants[symbol]) throw Error(`Unknown symbol “${t.value}”. Use uppercase E for scientific notation.`); if(constants[symbol]) used.add(symbol); for(const key of U[symbol]?.constants||[]) used.add(key); if(U[symbol]?.prefix) usedPrefixes.set(U[symbol].prefix,Math.round(Math.log10(prefixes[U[symbol].prefix]))); return {kind:U[symbol]?'unit':'constant',text:symbol};}
             if(t.type==='(') {const node=add(); if(!peek()||take().type!==')') throw Error('Missing closing parenthesis.'); return {kind:'group',child:node};}
             throw Error(`Expected a number, unit, constant or parenthesis.`);
         }
@@ -225,7 +258,7 @@
         }
         const choices=Object.values(U).filter(u=>same(u.dim,result.dim) && !u.absolute && !u.symbol.includes('_energy') && !['deltaC','deltaF'].includes(u.symbol));
         // Show a concise set of common units, plus physically defined energy equivalences.
-        const list=choices.filter(u=>!scalar(result.dim) && !u.prefix).map(u=>({key:u.symbol,label:u.symbol,value:result.value/u.factor,group:u.group,prefixable:prefixable.includes(u.symbol)})).filter(u=>Number.isFinite(u.value));
+        const list=choices.filter(u=>!scalar(result.dim) && !u.prefix).map(u=>({key:u.symbol,label:u.symbol,value:result.value/u.factor,group:u.group,constants:u.constants||[],prefixable:prefixable.includes(u.symbol)})).filter(u=>Number.isFinite(u.value));
         if(same(result.dim,D.velocity)) list.push({label:'m/s',value:result.value,group:'Velocity'},{label:'km/h',value:result.value*3.6,group:'Velocity'});
         if(same(result.dim,D.acceleration)) list.push({label:'m/s²',value:result.value,group:'Acceleration'});
         for(const [dimension,label,group] of [
@@ -239,13 +272,32 @@
             ['specific heat capacity','J/(kg K)','Specific heat capacity']
         ]) if(same(result.dim,D[dimension])) list.push({label,value:result.value,group});
         if(same(result.dim,D.temperature)) {if(!result.temperatureDifference) list.push({label:'°C',value:Math.abs(result.value-273.15)<1e-10?0:result.value-273.15,group:'Absolute temperature'},{label:'°F',value:Math.abs(result.value*9/5-459.67)<1e-10?0:result.value*9/5-459.67,group:'Absolute temperature'}); if(!result.absolute) list.push({label:'Δ°C',value:result.value,group:'Temperature difference'},{label:'Δ°F',value:result.value*9/5,group:'Temperature difference'});}
-        if(same(result.dim,D.energy)) {for(const [key,label,via] of [['Hz_energy','Hz','E = h\\nu'],['rad_s_energy','rad/s','E = \\hbar\\omega'],['K_energy','K','E = k_B T'],['T_energy','T','E = \\mu_B B']]) list.push({key,label,via,value:result.value/U[key].factor,group:'Energy equivalent',prefixable:true}); if(result.value>0) list.push({key:'nm_energy',label:'nm',via:'E = hc/\\lambda',value:H*C/result.value*1e9,group:'Energy equivalent'});}
+        if(same(result.dim,D.energy)) {for(const [key,label,via,used] of [['Hz_energy','Hz','E = h\\nu',['h']],['rad_s_energy','rad/s','E = \\hbar\\omega',['hbar']],['K_energy','K','E = k_B T',['k_B']],['T_energy','T','E = \\mu_B B',['mu_B']]]) list.push({key,label,via,constants:used,value:result.value/U[key].factor,group:'Energy equivalent',prefixable:true}); if(result.value>0 && !result.imag) list.push({key:'nm_energy',label:'nm',via:'E = hc/\\lambda',constants:['h','c'],value:H*C/result.value*1e9,group:'Energy equivalent'});}
         return list.map(row=>({...row,key:row.key||row.label}));
     }
-    function requestedConversion(result, target) {
+    function requestedConversion(result, target, source='') {
         target=target.trim();
         if(!target) throw Error('Enter a unit after eq.');
         const choices=conversions(result), unit=U[target];
+        // A target energy unit may be requested from a frequency, temperature,
+        // magnetic flux density or wavelength. Preserve the original dimensions
+        // unless this conversion is explicitly requested.
+        if(unit && same(unit.dim,D.energy) && !same(result.dim,D.energy)) {
+            let factor, via, used, prefix;
+            if(same(result.dim,D.frequency)) {
+                const angular=result.angle || tokenize(source).some(t=>t.type==='name' && (U[t.value]?.base||t.value)==='rad_s');
+                factor=angular?HBAR:H; via=angular?'E = \\hbar\\omega':'E = h\\nu'; used=[angular?'hbar':'h']; prefix=angular?'\\hbar':'h';
+            } else if(same(result.dim,D.temperature)) {factor=KB; via='E = k_B T'; used=['k_B']; prefix='k_B';}
+            else if(same(result.dim,D.magnetic)) {factor=MUB; via='E = \\mu_B B'; used=['mu_B']; prefix='\\mu_B';}
+            else if(same(result.dim,D.length)) {
+                if(result.imag || result.value<=0) throw Error('Wavelength must be positive and real.');
+                via='E = hc/\\lambda'; used=['h','c']; prefix='\\frac{hc}';
+            } else throw Error('The requested energy unit is not compatible with this result.');
+            const energy={...result,value:factor===undefined?H*C/result.value:result.value*factor,imag:factor===undefined?0:(result.imag||0)*factor,dim:D.energy,absolute:false,temperatureDifference:false};
+            const choice=requestedConversion(energy,target);
+            if((unit.base||target)==='eV') used.push('e');
+            return {...choice,via,constants:used,convertedResult:energy,sourceFactor:prefix,sourceReciprocal:factor===undefined};
+        }
         const special={degC:'°C',degF:'°F',deltaC:'Δ°C',deltaF:'Δ°F'};
         if(unit && special[target]) {
             const choice=choices.find(row=>row.key===special[target]);
@@ -271,7 +323,7 @@
         let reference;
         try {reference=evaluate('1 '+target);} catch {throw Error('Enter a valid unit after eq.');}
         if(!same(result.dim,reference.dim) || reference.absolute || reference.imag || !reference.value) throw Error('The requested unit is not compatible with the result.');
-        return {key:'eq:'+target,label:target.replaceAll('rad_s','rad/s'),group:unit?.group||dimensionName(result.dim),value:result.value/reference.value,imag:(result.imag||0)/reference.value,prefixable:!!unit && !unit.prefix && prefixable.includes(target)};
+        return {key:'eq:'+target,label:target.replaceAll('rad_s','rad/s'),group:unit?.group||dimensionName(result.dim),constants:unit?.constants||[],value:result.value/reference.value,imag:(result.imag||0)/reference.value,prefixable:!!unit && !unit.prefix && prefixable.includes(target)};
     }
     function searchItems(items, query) {
         const original=query.trim(); query=original.toLowerCase();
@@ -294,7 +346,7 @@
         while((match=pattern.exec(text))) {
             if(match.index>end) parts.push({text:text.slice(end,match.index),type:'plain'});
             const symbol=match[0];
-            let type=Object.hasOwn(FUNCTIONS,symbol)?'function':Object.hasOwn(U,symbol)?'unit':Object.hasOwn(constants,symbol)||['i','euler'].includes(symbol)?'constant':'plain';
+            let type=symbol==='eq'?'operator':Object.hasOwn(FUNCTIONS,symbol)?'function':Object.hasOwn(U,symbol)?'unit':Object.hasOwn(constants,symbol)||['i','euler'].includes(symbol)?'constant':'plain';
             if(symbol==='(') {const isFunction=previousType==='function' && /^\s*$/.test(text.slice(end,match.index)); parentheses.push(isFunction); if(isFunction) type='function';}
             else if(symbol===')' && parentheses.pop()) type='function';
             parts.push({text:symbol,type}); previousType=symbol==='('||symbol===')'?'plain':type; end=pattern.lastIndex;
