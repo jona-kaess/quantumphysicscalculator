@@ -371,7 +371,8 @@ mjx-mstyle[style*="color: brown"], mjx-mo[style*="color: brown"] { color: #e5b39
     .panel h2 { margin-bottom: .35rem; }
     .calculator .expression-editor { margin-left: -.65rem; margin-right: -.65rem; }
     .angle-setting { margin-bottom: .2rem; }
-    .calculator .expression-input-layer #expression, .expression-highlight { padding: .55rem .65rem; }
+    .calculator .expression-input-layer #expression, .expression-highlight { padding: .2rem .4rem; line-height: 1.35; }
+    .calculator .expression-input-layer #expression { height: 3.2rem; min-height: 3.2rem; }
     .expression-editor .math-preview { padding: .3rem 0; }
     .preview-result:not([hidden]) { padding-bottom: .3rem; }
     .expression-actions { margin-top: .3rem; }
