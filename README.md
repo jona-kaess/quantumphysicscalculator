@@ -151,3 +151,8 @@ Other available customary units include inches, feet, miles, acres, pounds,
 pound-force, horsepower and BTU. The unit menu lists the supported set.
 Dimensional analysis identifies many common physical dimensions; dimensions
 shared by different physical quantities are labeled together when appropriate.
+
+A unit written directly after a number in a denominator belongs to that number:
+`5V / 10A` means `5V / (10 A)`. A space after the denominator number leaves
+the multiplication outside the division: `5V / 10 A` means `(5V / 10) * A`.
+Parentheses can always be used to make the intended grouping explicit.

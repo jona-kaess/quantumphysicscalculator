@@ -75,9 +75,9 @@
         while(i<text.length) {
             if (/\s/.test(text[i])) { i++; continue; }
             const rest=text.slice(i), num=rest.match(/^(?:\d+(?:\.\d*)?|\.\d+)(?:E[+-]?\d+)?/), ident=rest.match(/^[A-Za-zµ_][A-Za-z0-9µ_]*/);
-            if(num) { result.push({type:'number',value:num[0]}); i+=num[0].length; continue; }
-            if(ident) { result.push({type:'name',value:ident[0]}); i+=ident[0].length; continue; }
-            if('+-*/^()'.includes(text[i])) {result.push({type:text[i],value:text[i++]}); continue;}
+            if(num) { result.push({type:'number',value:num[0],start:i,end:i+num[0].length}); i+=num[0].length; continue; }
+            if(ident) { result.push({type:'name',value:ident[0],start:i,end:i+ident[0].length}); i+=ident[0].length; continue; }
+            if('+-*/^()'.includes(text[i])) {result.push({type:text[i],value:text[i],start:i,end:i+1}); i++; continue;}
             throw Error(`Unexpected character “${text[i]}”.`);
         }
         return result;
@@ -94,7 +94,21 @@
         }
         function power() { let n=primary(); if(peek()?.type==='^') {take(); n={kind:'^',left:n,right:unary()};} return n; }
         function unary() {if(peek()?.type==='-'||peek()?.type==='+') {const op=take().type; return {kind:'unary',op,child:unary()};} return power();}
-        function multiply() {let n=unary(); while(peek() && (['*','/','number','name','('].includes(peek().type))) {const implicit=['number','name','('].includes(peek().type); const op=implicit?'*':take().type; n={kind:op,left:n,right:unary(),implicit};} return n;}
+        function multiply() {
+            let n=unary();
+            while(peek() && (['*','/','number','name','('].includes(peek().type))) {
+                const implicit=['number','name','('].includes(peek().type), op=implicit?'*':take().type;
+                let right=unary();
+                // A unit touching a denominator's number belongs to that quantity:
+                // 5V / 10A = 5V / (10 A), while 5V / 10 A = (5V / 10) * A.
+                const previous=tokens[pos-1], next=peek();
+                if(op==='/' && previous?.type==='number' && next?.type==='name' && previous.end===next.start && Object.hasOwn(U,next.value)) {
+                    right={kind:'*',left:right,right:power(),implicit:true};
+                }
+                n={kind:op,left:n,right,implicit};
+            }
+            return n;
+        }
         function add() {let n=multiply(); while(peek() && ['+','-'].includes(peek().type)) {const op=take().type;n={kind:op,left:n,right:multiply()};}return n;}
         if(!tokens.length) throw Error('Enter an expression to get started.'); const tree=add(); if(pos<tokens.length) throw Error('Unexpected closing parenthesis.'); return {tree,used:[...used],usedPrefixes:[...usedPrefixes].map(([symbol,power])=>({symbol,power}))};
     }

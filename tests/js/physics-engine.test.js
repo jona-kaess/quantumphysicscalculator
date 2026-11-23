@@ -13,6 +13,22 @@ test('arithmetic, precedence, implicit multiplication and scientific notation', 
     assert.match(engine.evaluate('7/8').latex,/\\frac\{7\}\{8\}/);
     assert.match(engine.evaluate('1E6').latex,/10\^\{6\}/);
 });
+test('a unit attached to a denominator number stays in the denominator', () => {
+    for (const expression of ['5V / 10A', '5V/10A', '5 V / 10A']) {
+        const result=engine.evaluate(expression);
+        close(result.value,0.5);
+        assert.equal(engine.dimensionName(result.dim),'resistance');
+        assert.match(result.latex,/\\frac\{.*\}\{10 .*\\mathrm\{A\}.*\}/);
+    }
+    const spaced=engine.evaluate('5V / 10 A');
+    close(spaced.value,0.5);
+    assert.equal(engine.dimensionName(spaced.dim),'power');
+    const power=engine.evaluate('5V / 10A^2');
+    assert.deepEqual(power.dim,[2,1,-3,-3,0,0,0]);
+    close(engine.evaluate('5V / -10A').value,-0.5);
+    close(engine.evaluate('5V / 1E1A').value,0.5);
+    assert.equal(engine.dimensionName(engine.evaluate('1/2m * 3s').dim),'composite quantity');
+});
 test('constants, dimensions, unit prefixes and energy equivalents', () => {
     const a=engine.evaluate('hbar * 10GHz'); close(a.value,6.62607015e-34/(2*Math.PI)*1e10);
     assert.equal(engine.dimensionName(a.dim),'energy'); assert.deepEqual(a.used,['hbar']);
