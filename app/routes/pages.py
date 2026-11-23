@@ -6,6 +6,11 @@ from app.utils.validators import ValidationError, format_with_si_prefix, validat
 pages_bp = Blueprint("pages", __name__)
 
 
+@pages_bp.get("/calculator")
+def calculator():
+    return render_template("calculator.html")
+
+
 @pages_bp.get("/hamiltonians")
 def hamiltonians():
     return render_template("hamiltonians.html")

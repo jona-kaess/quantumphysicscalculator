@@ -15,6 +15,13 @@ class AppTestCase(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertIn(b"Quantum Physics Calculator", response.data)
 
+    def test_physics_calculator_page(self):
+        response = self.client.get("/calculator")
+        self.assertEqual(response.status_code, 200)
+        self.assertIn(b'physics-engine.js', response.data)
+        self.assertIn(b'calculator.js', response.data)
+        self.assertIn(b'id="expression"', response.data)
+
     def test_health_endpoint(self):
         response = self.client.get("/api/v1/health")
         self.assertEqual(response.status_code, 200)

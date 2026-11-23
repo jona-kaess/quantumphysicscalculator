@@ -16,6 +16,7 @@
 <body>
     <main class="container">
         <nav class="main-nav" aria-label="Main navigation">
+            <a href="{{ url_for('pages.calculator') }}" {% if request.endpoint == 'pages.calculator' %}aria-current="page"{% endif %}>Physics calculator</a>
             <a href="{{ url_for('pages.home') }}" {% if request.endpoint == 'pages.home' %}aria-current="page"{% endif %}>Unit converter</a>
             <a href="{{ url_for('pages.hamiltonians') }}" {% if request.endpoint == 'pages.hamiltonians' %}aria-current="page"{% endif %}>Qubit Hamiltonians</a>
         </nav>

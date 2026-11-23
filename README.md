@@ -105,3 +105,22 @@ The homepage will be available at:
 - Conversion logic is isolated in `app/services/conversion_service.py`.
 - Input validation is isolated in `app/utils/validators.py`.
 - New conversion rules can be added to the conversion map in one place.
+
+## Interactive physics calculator
+
+Open `/calculator` for the client-side expression calculator. It supports arithmetic,
+parentheses, powers, implicit multiplication, SI units and physical constants.
+Use uppercase `E` for scientific notation (`1E6`); lowercase `e` is the elementary
+charge. Use Ctrl+K to insert a constant and Ctrl+E to browse units by quantity.
+
+Examples: `hbar * 10 GHz`, `2 kg * 9.81 m / s^2`, `20 degC - 10 degC`.
+Frequency units (`Hz`, `rad_s`) have frequency dimensions. Use the explicitly
+marked energy equivalents (`Hz_energy`, `rad_s_energy`, `K_energy`,
+`T_energy` or `nm_energy`) for the corresponding physical energy relation.
+Celsius and Fahrenheit are absolute temperatures; `deltaC` and `deltaF` denote
+temperature differences. Plain K can represent either, and the results show both
+interpretations when appropriate. A positive wavelength is required for `nm_energy`.
+MathJax is loaded from a CDN for formatted equations, so rendering requires network
+access; the arithmetic itself runs locally in the browser.
+
+Run the calculator engine unit tests with `node tests/js/physics-engine.test.js`.
