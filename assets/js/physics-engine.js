@@ -189,7 +189,7 @@
     function latex(n) {
         if(n.kind==='imaginary') return 'i';
         if(n.kind==='euler') return '\\mathrm{e}';
-        if(n.kind==='function') { const args=n.args.map(latex); if(n.name==='sqrt') return `\\sqrt{${args[0]}}`; if(n.name==='abs') return `\\left|${args[0]}\\right|`; return `\\operatorname{${n.name}}\\left(${args.join(', ')}\\right)`; }
+        if(n.kind==='function') { const args=n.args.map(latex); if(n.name==='sqrt') return `\\color{blue}{\\sqrt{\\color{black}{${args[0]}}}}`; if(n.name==='abs') return `\\color{blue}{\\left|\\color{black}{${args[0]}}\\right|}`; return `\\color{blue}{\\operatorname{${n.name}}}\\left(${args.join(', ')}\\right)`; }
         if(n.kind==='postfix') return `{${latex(n.child)}}${n.op==='%'?'\\%':'!'}`;
         if(n.kind==='number') {const parts=n.text.split('E'); return parts.length===2?`${parts[0]}\\times 10^{${Number(parts[1])}}`:n.text;}
         if(n.kind==='unit') return `\\color{teal}{\\mathrm{${n.text.replaceAll('_','\\_')}}}`;

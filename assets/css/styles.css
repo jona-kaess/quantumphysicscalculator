@@ -197,6 +197,7 @@ kbd { font-size: .75rem; opacity: .7; padding-left: .35rem; }
 .menu-option span { font-size: .8rem; color: var(--muted); }
 .unit-color { color: var(--unit); font-weight: 700; }
 .constant-color { color: var(--constant); }
+.function-color { color: #145ab8; font-weight: 700; }
 .preview-box { border-top: 1px solid var(--border); padding-top: .8rem; margin-top: .9rem; }
 .eyebrow { color: var(--muted); font-size: .73rem; font-weight: 700; letter-spacing: .08em; }
 .math-preview { min-height: 2rem; padding: .65rem 0; overflow-x: auto; font-size: 1.2rem; }

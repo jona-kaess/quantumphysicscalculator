@@ -86,7 +86,7 @@
         suggestions.forEach((item,index)=>{
             const option=document.createElement('button'), symbol=document.createElement('strong'), description=document.createElement('span');
             option.type='button'; option.id=`completion-${index}`; option.className='autocomplete-option'; option.setAttribute('role','option');
-            symbol.className=item.type==='unit'?'unit-color':'constant-color'; symbol.textContent=item.symbol; description.textContent=`${item.name} · ${item.type}`;
+            symbol.className=item.type==='unit'?'unit-color':item.type==='function'?'function-color':'constant-color'; symbol.textContent=item.symbol; description.textContent=`${item.name} · ${item.type}`;
             option.append(symbol,description); option.addEventListener('mousedown',e=>e.preventDefault()); option.addEventListener('click',()=>acceptSuggestion(index)); list.append(option);
         });
         list.hidden=false; input.setAttribute('aria-expanded','true'); markSuggestion();
@@ -107,7 +107,7 @@
         // A typed prefixed symbol still finds its base unit without adding prefixed duplicates.
         const prefixed=menuMode==='units'?Object.values(engine.units).find(u=>u.prefix && u.symbol===query):null;
         const search=prefixed?prefixed.base:query;
-        engine.searchItems(data,search).forEach(x=>{const b=document.createElement('button'); b.type='button'; b.className='menu-option'; const sym=document.createElement('strong'),name=document.createElement('span'); sym.className=menuMode==='units'?'unit-color':'constant-color'; sym.textContent=x.symbol; name.textContent=x.name; b.append(sym,name); b.addEventListener('click',()=>insert(x.symbol)); list.append(b);});
+        engine.searchItems(data,search).forEach(x=>{const b=document.createElement('button'); b.type='button'; b.className='menu-option'; const sym=document.createElement('strong'),name=document.createElement('span'); sym.className=menuMode==='units'?'unit-color':menuMode==='functions'&&Object.hasOwn(engine.functions,x.symbol)?'function-color':'constant-color'; sym.textContent=x.symbol; name.textContent=x.name; b.append(sym,name); b.addEventListener('click',()=>insert(x.symbol)); list.append(b);});
         if(!list.childElementCount) list.textContent='No matching items.';
     }
     function openMenu(mode) {

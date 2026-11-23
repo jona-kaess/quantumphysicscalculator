@@ -22,6 +22,8 @@ test('scientific functions, powers, factorial, percent and modulo', () => {
     assert.throws(()=>engine.evaluate('mod(1,0)'),/zero/);
     assert.throws(()=>engine.evaluate('sqrt()'));
     assert.throws(()=>engine.evaluate('mod(1)'),/2 arguments/);
+    assert.match(engine.evaluate('sin(pi)').latex,/\\color\{blue\}.*\\operatorname\{sin\}/);
+    assert.match(engine.evaluate('sqrt(4 m^2)').latex,/\\color\{blue\}.*\\sqrt/);
 });
 test('radian and degree modes and explicit angle units', () => {
     const near=(actual,expected)=>assert.ok(Math.abs(actual-expected)<1e-12,`${actual} != ${expected}`);
