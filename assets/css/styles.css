@@ -239,3 +239,17 @@ kbd { font-size: .75rem; opacity: .7; padding-left: .35rem; }
 .angle-setting label { color: var(--text); }
 .angle-setting input[type="range"] { width: 3.5rem; padding: 0; accent-color: var(--accent); }
 .angle-setting strong { color: var(--accent); }
+
+/* A non-interactive mirror colors the text while the native input keeps editing,
+   selection, keyboard shortcuts and accessibility behavior. */
+.expression-input-layer { position: relative; }
+.calculator .expression-input-layer #expression,
+.expression-highlight { font-family: ui-monospace, monospace; font-size: 1.15rem; line-height: 1.5; letter-spacing: normal; padding: .9rem; }
+.expression-highlight { position: absolute; inset: 0; white-space: pre; overflow: hidden; pointer-events: none; color: var(--text); }
+.syntax-active #expression { position: relative; background: transparent; color: transparent; caret-color: var(--text); }
+.syntax-active #expression::placeholder { color: #7d8c9f; opacity: 1; }
+.syntax-active #expression::selection { color: transparent; background: rgba(19,102,214,.25); }
+.expression-highlight .syntax-unit { color: #087e8b; }
+.expression-highlight .syntax-constant { color: #a14b9e; }
+.expression-highlight .syntax-function { color: #145ab8; }
+@media (forced-colors: active) { .syntax-active #expression { color: CanvasText; } .expression-highlight { display: none; } }

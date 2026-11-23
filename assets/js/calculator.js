@@ -25,6 +25,15 @@
         }).catch(()=>{});
     }
     function invalidate(box) {versions.set(box,(versions.get(box)||0)+1);box.textContent='';}
+    function highlightExpression() {
+        const layer=$('expression-highlight');
+        layer.replaceChildren();
+        for(const part of engine.highlightTokens(input.value)) {
+            if(part.type==='plain') layer.append(document.createTextNode(part.text));
+            else {const span=document.createElement('span'); span.className=`syntax-${part.type}`; span.textContent=part.text; layer.append(span);}
+        }
+        layer.scrollLeft=input.scrollLeft;
+    }
     const siLabels=['m','kg','s','A','K','mol','cd'];
     function siUnit(dim) {
         const num=[],den=[]; dim.forEach((x,i)=>{if(x) (x>0?num:den).push(siLabels[i]+(Math.abs(x)===1?'':`^${Math.abs(x)}`));});
@@ -48,6 +57,7 @@
         if(matches.some(row=>row.key===selectedUnit)) select.value=selectedUnit;
     }
     function update() {
+        highlightExpression();
         const text=input.value.trim(), panel=$('result-panel');
         if(!text) { $('calculator-error').textContent=''; $('expression-preview').hidden=true; $('input-prefixes').hidden=true; invalidate($('expression-preview')); panel.hidden=true; return; }
         try {
@@ -119,6 +129,7 @@
         populateMenu(); $('menu-search').focus();
     }
     input.addEventListener('input',()=>{ $('result-unit-search').value=''; update(); showSuggestions();});
+    input.addEventListener('scroll',()=>{$('expression-highlight').scrollLeft=input.scrollLeft;});
     $('angle-mode').addEventListener('input',()=>{$('angle-label').textContent=$('angle-mode').value==='1'?'Degrees':'Radians'; update();});
     input.addEventListener('click',showSuggestions);
     input.addEventListener('blur',()=>setTimeout(()=>{if(document.activeElement!==input) {hideSuggestions(); update();}},0));
@@ -136,4 +147,6 @@
     $('menu-search').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault(); $('menu-items').querySelector('button')?.click();}});
     document.addEventListener('keydown',e=>{if((e.ctrlKey||e.metaKey)&&['k','e','y'].includes(e.key.toLowerCase())) {e.preventDefault();openMenu({k:'constants',e:'units',y:'functions'}[e.key.toLowerCase()]);} else if(e.key==='Escape'&&!$('insert-menu').hidden){closeMenu();input.focus();}});
     ['hbar * 10 GHz','7/8','1E6 eV','20 degC - 10 degC','2 kg * 9.81 m / s^2','10 GHz_energy'].forEach(example=>{const b=document.createElement('button');b.type='button';b.className='example-button';b.textContent=example;b.addEventListener('click',()=>{input.value=example;input.focus();manualUnit=false;$('result-unit-search').value='';update();});$('examples').append(b);});
+    $('expression-highlight').parentElement.classList.add('syntax-active');
+    highlightExpression();
 })();

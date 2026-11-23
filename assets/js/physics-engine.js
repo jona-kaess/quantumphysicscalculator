@@ -240,6 +240,21 @@
         });
         return [...seen.values()];
     }
+    // Highlight independently of parsing so partially typed expressions remain usable.
+    function highlightTokens(text) {
+        const pattern=/(?:\d+(?:\.\d*)?|\.\d+)(?:E[+-]?\d+)?|[A-Za-zµ_][A-Za-z0-9µ_]*|[()]/g;
+        const parts=[], parentheses=[]; let end=0, match;
+        while((match=pattern.exec(text))) {
+            if(match.index>end) parts.push({text:text.slice(end,match.index),type:'plain'});
+            const symbol=match[0];
+            let type=Object.hasOwn(FUNCTIONS,symbol)?'function':Object.hasOwn(U,symbol)?'unit':Object.hasOwn(constants,symbol)||['i','euler'].includes(symbol)?'constant':'plain';
+            if(symbol==='(') {const previous=text.slice(0,match.index).match(/[A-Za-zµ_][A-Za-z0-9µ_]*\s*$/); const isFunction=!!previous && Object.hasOwn(FUNCTIONS,previous[0].trim()); parentheses.push(isFunction); if(isFunction) type='function';}
+            else if(symbol===')' && parentheses.pop()) type='function';
+            parts.push({text:symbol,type}); end=pattern.lastIndex;
+        }
+        if(end<text.length) parts.push({text:text.slice(end),type:'plain'});
+        return parts;
+    }
     function completions(text, cursor) {
         const before=text.slice(0,cursor), token=before.match(/[A-Za-zµ_][A-Za-z0-9µ_]*$/);
         if(!token) return {start:cursor,end:cursor,items:[]};
@@ -264,5 +279,5 @@
         if(!found) return {value:choice.value,imag:choice.imag||0,label:choice.label,power:0,prefix:''};
         const [prefix,power]=found; return {value:choice.value/10**power,imag:(choice.imag||0)/10**power,label:prefix+choice.label,power,prefix};
     }
-    return {units:U,constants,functions:FUNCTIONS,dimensions:D,parse,evaluate,conversions,dimensionName,searchItems,constantItems,completions,chooseDefault,scaledChoice};
+    return {units:U,constants,functions:FUNCTIONS,dimensions:D,parse,evaluate,conversions,dimensionName,searchItems,constantItems,highlightTokens,completions,chooseDefault,scaledChoice};
 });

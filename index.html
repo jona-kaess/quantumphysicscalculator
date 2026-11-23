@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Quantum Physics Calculator</title>
-    <link rel="stylesheet" href="assets/css/styles.css?v=1ee1f2997c21">
+    <link rel="stylesheet" href="assets/css/styles.css?v=e3c30fda27d8">
     <script>
         window.MathJax = {
             loader: { load: ['[tex]/color'] },
@@ -29,7 +29,10 @@
         <div class="angle-setting"><label for="angle-mode">Angle unit</label><span>Radians (0–2π)</span><input id="angle-mode" type="range" min="0" max="1" step="1" value="0" aria-label="Angle unit: radians or degrees"><span>Degrees (0–360°)</span><strong id="angle-label">Radians</strong></div>
         <label for="expression">Expression</label>
         <div class="expression-editor">
+            <div class="expression-input-layer">
+            <div id="expression-highlight" class="expression-highlight" aria-hidden="true"></div>
             <input id="expression" type="text" autocomplete="off" spellcheck="false" placeholder="Try hbar * 10 GHz or 7/8" aria-describedby="input-help" aria-autocomplete="list" aria-controls="autocomplete-list" aria-expanded="false" role="combobox">
+            </div>
             <div id="expression-preview" class="math-preview" aria-live="polite" aria-label="Formatted expression" hidden></div>
             <div id="input-prefixes" class="prefix-note" hidden></div>
         </div>
@@ -62,8 +65,8 @@
     <div class="panel examples"><h2>Examples</h2><div id="examples"></div><p class="hint">Energy-equivalent units are explicitly named, for example <code>10 GHz_energy</code> uses E = hν. Frequency <code>GHz</code> remains a frequency. Wavelength equivalents are offered for positive energy results.</p></div>
 </section>
 <script src="assets/js/scipy-constants.js?v=fd4097f595e2" defer></script>
-<script src="assets/js/physics-engine.js?v=99a00acac955" defer></script>
-<script src="assets/js/calculator.js?v=d334cbdc348e" defer></script>
+<script src="assets/js/physics-engine.js?v=8a8322d8e47e" defer></script>
+<script src="assets/js/calculator.js?v=0eeee5e5d8b1" defer></script>
 
     </main>
 </body>

@@ -180,6 +180,19 @@ test('live completions include short constants and base units, preserve token bo
     assert.equal(engine.searchItems([{symbol:'MHz',name:'megahertz'}, {symbol:'mHz',name:'millihertz'}],'mHz')[0].symbol,'mHz');
     assert.deepEqual(engine.completions('1 + ',4).items,[]);
 });
+test('input highlighting recognizes symbols even in incomplete expressions', () => {
+    const parts=engine.highlightTokens('sqrt(hbar * 10GHz) + sin(1E6');
+    const find=text=>parts.find(part=>part.text===text);
+    assert.equal(find('sqrt').type,'function');
+    assert.equal(find('hbar').type,'constant');
+    assert.equal(find('GHz').type,'unit');
+    assert.equal(find('sin').type,'function');
+    assert.equal(find('1E6').type,'plain');
+    assert.equal(parts.map(part=>part.text).join(''),'sqrt(hbar * 10GHz) + sin(1E6');
+    assert.equal(engine.highlightTokens('e euler i').filter(p=>p.type==='constant').length,3);
+    assert.deepEqual(engine.highlightTokens('sqrt(1) + (2)').filter(p=>p.text==='(' || p.text===')').map(p=>p.type),['function','function','plain','plain']);
+    assert.equal(engine.highlightTokens('<script>')[1].type,'plain');
+});
 test('every registered unit and constant parses and exposes a finite result', () => {
     for(const [key,u] of Object.entries(engine.units)) {const r=engine.evaluate(`1 ${key}`); assert.ok(Number.isFinite(r.value),key); assert.deepEqual(r.dim,u.dim,key);}
     for(const [key,c] of Object.entries(engine.constants)) {const r=engine.evaluate(key); close(r.value,c.value); assert.deepEqual(r.used,[key]);}
