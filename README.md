@@ -9,7 +9,7 @@ qubit Hamiltonians are preserved on the `legacy-converter-hamiltonians` branch.
 
 Open `index.html` in a browser or serve this directory with any static HTTP server,
 for example `python3 -m http.server 5000`. MathJax is loaded from a CDN for
-formatted equations; calculations and plots run locally, including offline.
+formatted equations; calculations run locally, including offline.
 
 For GitHub Pages, select **Deploy from a branch**, then choose **main** and **/(root)**.
 All navigation and asset paths are relative and work under a repository subpath.
@@ -40,8 +40,8 @@ Append `eq` and a target unit, for example `hbar * 25 GHz eq meV` or
 `10 m / 2s eq km/h`. Base units use a readable SI prefix automatically;
 an explicitly entered prefix is retained. Energy results can also
 use energy equivalents such as `eq GHz`, `eq K_energy` or `eq nm_energy`.
-The reverse direction also works, for example `1 GHz eq eV`, `1 rad_s eq eV`
-or `500 nm eq eV`. The result shows the relation and the constants used.
+Conversions between equivalents also work, for example `1 GHz eq K`,
+`1 rad_s eq eV` or `500 nm eq Hz`. The result shows the relations and constants used.
 
 The default output unit follows an explicitly entered unit of the resulting
 dimension when possible. Otherwise, energies involving Planck's constant,
@@ -56,6 +56,16 @@ The calculator can be installed as a PWA through a compatible browser on HTTPS
 (or localhost). After the first online visit its application files are cached
 for offline use. MathJax is loaded from a CDN, so formatted mathematics may
 require an internet connection or a previously cached MathJax copy.
+
+## Android
+
+The `android` project packages the same static application in a WebView.
+With JDK 17 or newer, Gradle 8.13 and Android SDK 35 installed, run
+`gradle -p android assembleDebug`. The debug APK is written to
+`android/app/build/outputs/apk/debug/app-debug.apk`. Debug builds are signed
+with the local Android debug key and are intended for personal installation;
+publishing updates requires a persistent release signing key. The bundled site
+works offline; MathJax is fetched from its CDN unless already cached.
 
 ## Constants and maintenance
 
@@ -81,7 +91,7 @@ node tests/js/static-site.test.js
 
 ## Scientific functions and angles
 
-Use the angle switch above the expression to choose radians or degrees for
+Use the angle switch beside the action buttons to choose radians or degrees for
 `sin`, `cos`, `tan`, `asin`, `acos`, `atan`, and `arg`. Explicit `deg` or `rad`
 units are honored independently of the switch; hyperbolic functions are
 unitless and unaffected by it.

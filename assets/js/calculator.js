@@ -1,7 +1,7 @@
 (() => {
     const engine=PhysicsEngine, $=id=>document.getElementById(id), input=$('expression');
     let menuMode='', start=0, end=0, resultChoices=[], selectedUnit='', manualUnit=false, suggestions=[], suggestionIndex=0, completionRange=null;
-    let currentLatex='', currentResult=null, currentUsed=[], currentConversion=null;
+    let currentLatex='', currentResult=null, currentUsed=[], currentConversion=null, currentInputPrefixes=[];
     const savedKey='physics-calculator-saved-v1';
     const readStorage=(key,fallback)=>{try{return JSON.parse(localStorage.getItem(key))??fallback;}catch{return fallback;}};
     const writeStorage=(key,value)=>{try{localStorage.setItem(key,JSON.stringify(value));return true;}catch{return false;}};
@@ -59,17 +59,27 @@
             renderMath(math,`${c.latex} = ${mathNumber(String(c.sourceValue ?? c.value))}${c.unit?`\\,${mathUnit(c.unit)}`:''}`);
         });
     }
+    function showInputPrefixes(resultPrefix=null) {
+        const prefixes=[...currentInputPrefixes];
+        if(resultPrefix?.symbol && !prefixes.some(p=>p.power===resultPrefix.power && (p.symbol===resultPrefix.symbol || ['u','mu','µ'].includes(p.symbol) && ['u','mu','µ'].includes(resultPrefix.symbol)))) prefixes.push(resultPrefix);
+        $('input-prefixes').hidden=!prefixes.length;
+        if(prefixes.length) renderMath($('input-prefixes'),prefixes.map(p=>`\\mathrm{${['µ','mu','u'].includes(p.symbol)?'\\mu':p.symbol}}:\\;\\times 10^{${p.power}}`).join(',\\quad '));
+        else invalidate($('input-prefixes'));
+    }
     function showResultChoice() {
         const choice=resultChoices.find(row=>row.key===selectedUnit);
         if(!choice) return;
         const scaled=engine.scaledChoice(choice);
+        const unit=engine.units[choice.key.replace(/^eq:/,'')], explicitPrefix=unit?.prefix && engine.units[unit.base] ? {symbol:unit.prefix,power:Math.round(Math.log10(unit.factor/engine.units[unit.base].factor))} : null;
+        showInputPrefixes(scaled.prefix?{symbol:scaled.prefix,power:scaled.power}:explicitPrefix);
         const tex=`${complexNumber(scaled.value,scaled.imag)}\\,\\color{teal}{${mathUnit(scaled.label)}}`;
         renderMath($('calculator-result'),tex);
         let preview=tex;
         if(choice.group==='Energy equivalent' && choice.via) {
             const key=choice.key.replace(/^eq:/,'').replace(/^(?:Q|R|Y|Z|E|P|T|G|M|k|h|da|d|c|m|u|mu|µ|n|p|f|a|z|y|r|q)(?=Hz|rad_s|K|T)/,'');
             const factors={Hz_energy:'h',Hz:'h',rad_s_energy:'\\hbar',rad_s:'\\hbar',K_energy:'k_B',K:'k_B',T_energy:'\\mu_B',T:'\\mu_B'};
-            if(key==='nm' || key==='nm_energy') preview=`\\frac{h c}{${tex}}`;
+            if(choice.temperatureKelvin!==undefined) preview=`k_B \\cdot ${mathNumber(String(choice.temperatureKelvin))}\\,\\mathrm{K}`;
+            else if(choice.reciprocal || key==='nm' || key==='nm_energy') preview=`\\frac{h c}{${tex}}`;
             else if(factors[key]) preview=`${factors[key]} \\cdot ${tex}`;
         }
         renderMath($('mobile-result-value'),preview);
@@ -100,8 +110,7 @@
             currentLatex=result.latex; $('calculator-error').textContent=''; panel.hidden=false; $('expression-preview').hidden=false;
             const preview=currentConversion?(currentConversion.sourceReciprocal?`${currentConversion.sourceFactor}{${result.latex}}`:`${currentConversion.sourceFactor} \\cdot \\left(${result.latex}\\right)`):result.latex;
             renderMath($('expression-preview'),preview);
-            $('input-prefixes').hidden=!result.usedPrefixes.length;
-            if(result.usedPrefixes.length) renderMath($('input-prefixes'),result.usedPrefixes.map(p=>`\\mathrm{${['µ','mu','u'].includes(p.symbol)?'\\mu':p.symbol}}:\\;\\times 10^{${p.power}}`).join(',\\quad '));
+            currentInputPrefixes=result.usedPrefixes; showInputPrefixes();
             $('dimension-tag').textContent=engine.dimensionName(currentResult.dim);
             resultChoices=engine.conversions(currentResult); if(requested) resultChoices.unshift(requested); $('conversion-section').hidden=!resultChoices.length;
             if(requested) selectedUnit=requested.key;
@@ -244,6 +253,8 @@
         const number=value=>String(value).replace(/e([+-]?\d+)/,'E$1');
         const value=scaled.imag?`(${number(scaled.value)} + (${number(scaled.imag)}) * i)`:number(scaled.value);
         let unit=scaled.label.replace('Δ°C','deltaC').replace('Δ°F','deltaF').replace('°C','degC').replace('°F','degF').replaceAll('²','^2').replaceAll('³','^3').replaceAll('rad/s','rad_s');
+        if(choice?.reciprocal) return {tex,expression:`h*c/(${value} ${unit})`};
+        if(choice?.temperatureKelvin!==undefined) return {tex,expression:`${number(choice.temperatureKelvin)} K_energy`};
         if(choice?.group==='Energy equivalent') unit=choice.key==='nm_energy'||choice.key==='eq:nm'||choice.key==='eq:nm_energy'?'nm_energy':unit+'_energy';
         return {tex,expression:unit==='1'?value:`${value} ${unit}`};
     }

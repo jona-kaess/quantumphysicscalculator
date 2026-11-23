@@ -282,10 +282,14 @@
         // A target energy unit may be requested from a frequency, temperature,
         // magnetic flux density or wavelength. Preserve the original dimensions
         // unless this conversion is explicitly requested.
-        if(unit && same(unit.dim,D.energy) && !same(result.dim,D.energy)) {
+        const sourceAngular=same(result.dim,D.frequency) && (result.angle || tokenize(source).some(t=>t.type==='name' && (U[t.value]?.base||t.value)==='rad_s'));
+        const targetAngular=unit && (unit.base||target)==='rad_s';
+        const equivalentTarget=unit && (same(unit.dim,D.energy) || same(unit.dim,D.frequency) || same(unit.dim,D.temperature) || same(unit.dim,D.magnetic) || same(unit.dim,D.length));
+        const angularChange=unit && same(result.dim,D.frequency) && same(unit.dim,D.frequency) && !!sourceAngular!==!!targetAngular;
+        if(equivalentTarget && !same(result.dim,D.energy) && (!same(unit.dim,result.dim) || angularChange)) {
             let factor, via, used, prefix;
             if(same(result.dim,D.frequency)) {
-                const angular=result.angle || tokenize(source).some(t=>t.type==='name' && (U[t.value]?.base||t.value)==='rad_s');
+                const angular=sourceAngular;
                 factor=angular?HBAR:H; via=angular?'E = \\hbar\\omega':'E = h\\nu'; used=[angular?'hbar':'h']; prefix=angular?'\\hbar':'h';
             } else if(same(result.dim,D.temperature)) {factor=KB; via='E = k_B T'; used=['k_B']; prefix='k_B';}
             else if(same(result.dim,D.magnetic)) {factor=MUB; via='E = \\mu_B B'; used=['mu_B']; prefix='\\mu_B';}
@@ -296,16 +300,26 @@
             const energy={...result,value:factor===undefined?H*C/result.value:result.value*factor,imag:factor===undefined?0:(result.imag||0)*factor,dim:D.energy,absolute:false,temperatureDifference:false};
             const choice=requestedConversion(energy,target);
             if((unit.base||target)==='eV') used.push('e');
-            return {...choice,via,constants:used,convertedResult:energy,sourceFactor:prefix,sourceReciprocal:factor===undefined};
+            return {...choice,via:[via,choice.via].filter((v,i,a)=>v && a.indexOf(v)===i).join(',\\quad '),constants:[...new Set([...used,...(choice.constants||[])])],convertedResult:energy,sourceFactor:prefix,sourceReciprocal:factor===undefined};
         }
         const special={degC:'°C',degF:'°F',deltaC:'Δ°C',deltaF:'Δ°F'};
         if(unit && special[target]) {
+            if(same(result.dim,D.energy)) {
+                if(result.imag) throw Error('Temperature equivalent must be real.');
+                const kelvin=result.value/KB;
+                const value=target==='degC'?kelvin-273.15:target==='degF'?kelvin*9/5-459.67:target==='deltaF'?kelvin*9/5:kelvin;
+                return {key:'eq:'+target,label:special[target],group:'Energy equivalent',via:'E = k_B T',constants:['k_B'],value,prefixable:false,temperatureKelvin:kelvin};
+            }
             const choice=choices.find(row=>row.key===special[target]);
             if(!choice) throw Error('That temperature unit is not compatible with this result.');
             return {...choice,key:'eq:'+target,prefixable:false};
         }
         if(unit && same(result.dim,D.energy)) {
             const base=unit.base || target;
+            if(same(unit.dim,D.length)) {
+                if(result.imag || result.value<=0) throw Error('Wavelength requires a positive, real energy.');
+                return {key:'eq:'+target,label:target,group:'Energy equivalent',via:'E = hc/\\lambda',constants:['h','c'],value:H*C/result.value/unit.factor,prefixable:!unit.prefix && prefixable.includes(target),reciprocal:true};
+            }
             const equivalent=target==='nm'?'nm_energy':{Hz:'Hz_energy',rad_s:'rad_s_energy',K:'K_energy',T:'T_energy'}[base];
             const direct=target.endsWith('_energy')?target:equivalent;
             if(direct) {

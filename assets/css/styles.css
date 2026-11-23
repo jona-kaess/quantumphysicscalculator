@@ -172,18 +172,6 @@ code {
     }
 }
 
-.model-description { margin: 0.8rem 0 0.4rem !important; }
-.formula { font-size: 1.15rem; overflow-x: auto; padding: 0.5rem 0; }
-.parameter-grid, .sweep-controls { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 0.8rem; }
-.parameter-grid label, .sweep-controls label { display: block; margin-bottom: 0.35rem; }
-.sweep-controls { margin-top: 1.2rem; padding-top: 1rem; border-top: 1px solid var(--border); }
-#plot-error:not(:empty) { margin-top: 0.8rem; }
-.plot-container { width: 100%; overflow-x: auto; }
-#energy-plot { display: block; width: 100%; min-width: 480px; }
-.axis-text { font-family: sans-serif; font-size: 12px; fill: #49617f; }
-.levels { display: flex; flex-wrap: wrap; gap: 0.5rem 1.5rem; font-weight: 600; }
-.model-note { margin-top: 0.8rem !important; font-size: 0.9rem; }
-
 .calculator { --unit: #087e8b; --constant: #a14b9e; }
 .calculator #expression { margin-top: .5rem; font-family: ui-monospace, monospace; font-size: 1.15rem; padding: .9rem; }
 .calculator-toolbar { display: flex; flex-wrap: wrap; gap: .55rem; margin: .7rem 0; }
@@ -344,7 +332,6 @@ kbd { font-size: .75rem; opacity: .7; padding-left: .35rem; }
     .menu-items { grid-template-columns: repeat(auto-fit, minmax(135px, 1fr)); max-height: min(200px, 30vh); overscroll-behavior: contain; }
     .autocomplete-list { max-height: min(180px, 28vh); overscroll-behavior: contain; }
     .autocomplete-option { min-height: 44px; }
-    .plot-container { overscroll-behavior-x: contain; }
 }
 
 /* Dark palette keeps the expression editor and mathematical symbols legible. */

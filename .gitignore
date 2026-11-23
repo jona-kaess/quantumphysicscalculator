@@ -31,5 +31,7 @@ dist/
 # IDE and OS files
 .vscode/
 .idea/
+.gradle/
+android/local.properties
 .DS_Store
 Thumbs.db
