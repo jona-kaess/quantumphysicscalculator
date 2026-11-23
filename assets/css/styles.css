@@ -216,7 +216,7 @@ kbd { font-size: .75rem; opacity: .7; padding-left: .35rem; }
 
 /* The editable source and its formatted rendering share one input surface. */
 .expression-editor { margin-top: .5rem; border: 1px solid var(--border); border-radius: 10px; background: white; overflow: hidden; }
-.expression-editor { height: 210px; display: flex; flex-direction: column; }
+.expression-editor { height: 180px; display: flex; flex-direction: column; }
 .expression-input-layer { flex: 0 0 auto; }
 .expression-editor .preview-row { flex: 0 1 auto; min-height: 0; overflow: auto; }
 .expression-editor .prefix-note { flex: 0 0 auto; }
@@ -232,6 +232,7 @@ kbd { font-size: .75rem; opacity: .7; padding-left: .35rem; }
 .preview-row::-webkit-scrollbar { display: none; }
 .preview-row:has(.math-preview[hidden]) { display: none; }
 .expression-editor .math-preview { margin: 0; padding: .65rem 0 .8rem; min-height: 0; overflow: visible; flex: 1 0 auto; }
+.expression-editor .math-preview { max-height: 3.5em; overflow-y: auto; scrollbar-width: none; }
 .preview-result:not([hidden]) { display: flex; align-items: baseline; gap: .4rem; flex: 0 0 auto; white-space: nowrap; font-size: 1.2rem; }
 
 .prefix-note { color: var(--muted); font-size: .82rem; margin: .1rem .9rem .65rem; }
@@ -370,6 +371,7 @@ mjx-mstyle[style*="color: brown"], mjx-mo[style*="color: brown"] { color: #e5b39
     .panel { padding: .55rem .65rem; margin-top: .35rem; }
     .panel h2 { margin-bottom: .35rem; }
     .calculator .expression-editor { margin-left: -.65rem; margin-right: -.65rem; }
+    .calculator .expression-editor { height: 155px; }
     .angle-setting { margin-bottom: .2rem; }
     .calculator .expression-input-layer #expression, .expression-highlight { padding: .2rem .4rem; line-height: 1.35; }
     .calculator .expression-input-layer #expression { height: 3.2rem; min-height: 3.2rem; }
