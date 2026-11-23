@@ -191,7 +191,7 @@
         const value=scaled.imag?`(${number(scaled.value)} + (${number(scaled.imag)}) * i)`:number(scaled.value);
         let unit=scaled.label.replace('Δ°C','deltaC').replace('Δ°F','deltaF').replace('°C','degC').replace('°F','degF').replaceAll('²','^2').replaceAll('³','^3').replaceAll('rad/s','rad_s');
         if(choice?.group==='Energy equivalent') unit=choice.key==='nm_energy'||choice.key==='eq:nm'||choice.key==='eq:nm_energy'?'nm_energy':unit+'_energy';
-        return {tex,expression:unit==='1'?value:`${value} * (${unit})`};
+        return {tex,expression:unit==='1'?value:`${value} ${unit}`};
     }
     function renderSaved() {
         const list=$('saved-list'), entries=readStorage(savedKey,[]); list.replaceChildren();

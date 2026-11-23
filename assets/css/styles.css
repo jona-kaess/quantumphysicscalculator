@@ -213,6 +213,10 @@ kbd { font-size: .75rem; opacity: .7; padding-left: .35rem; }
 
 /* The editable source and its formatted rendering share one input surface. */
 .expression-editor { margin-top: .5rem; border: 1px solid var(--border); border-radius: 10px; background: white; overflow: hidden; }
+.expression-editor { height: 150px; display: flex; flex-direction: column; }
+.expression-input-layer { flex: 0 0 auto; }
+.expression-editor .preview-row { flex: 0 1 auto; min-height: 0; overflow: auto; }
+.expression-editor .prefix-note { flex: 0 0 auto; }
 .expression-editor:focus-within { outline: 2px solid #d7e6ff; border-color: #bfd3f6; }
 .calculator .expression-editor #expression { margin: 0; border: 0; border-radius: 0; outline: 0; }
 .preview-row { display: flex; align-items: baseline; gap: .7rem; margin: 0 .9rem; border-top: 1px solid #e7edf6; overflow-x: auto; }
