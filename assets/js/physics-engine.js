@@ -189,7 +189,7 @@
     function latex(n) {
         if(n.kind==='imaginary') return 'i';
         if(n.kind==='euler') return '\\mathrm{e}';
-        if(n.kind==='function') { const args=n.args.map(latex); if(n.name==='sqrt') return `\\color{blue}{\\sqrt{\\color{black}{${args[0]}}}}`; if(n.name==='abs') return `\\color{blue}{\\left|\\color{black}{${args[0]}}\\right|}`; return `\\color{blue}{\\operatorname{${n.name}}}\\left(${args.join(', ')}\\right)`; }
+        if(n.kind==='function') { const args=n.args.map(latex); if(n.name==='sqrt') return `{\\color{brown}\\sqrt{{\\color{black}${args[0]}}}}`; if(n.name==='abs') return `{\\color{brown}\\left|{\\color{black}${args[0]}}\\right|}`; return `{\\color{brown}\\operatorname{${n.name}}\\left({\\color{black}${args.join(', ')}}\\right)}`; }
         if(n.kind==='postfix') return `{${latex(n.child)}}${n.op==='%'?'\\%':'!'}`;
         if(n.kind==='number') {const parts=n.text.split('E'); return parts.length===2?`${parts[0]}\\times 10^{${Number(parts[1])}}`:n.text;}
         if(n.kind==='unit') return `\\color{teal}{\\mathrm{${n.text.replaceAll('_','\\_')}}}`;
@@ -243,14 +243,14 @@
     // Highlight independently of parsing so partially typed expressions remain usable.
     function highlightTokens(text) {
         const pattern=/(?:\d+(?:\.\d*)?|\.\d+)(?:E[+-]?\d+)?|[A-Za-zµ_][A-Za-z0-9µ_]*|[()]/g;
-        const parts=[], parentheses=[]; let end=0, match;
+        const parts=[], parentheses=[]; let end=0, match, previousType='plain';
         while((match=pattern.exec(text))) {
             if(match.index>end) parts.push({text:text.slice(end,match.index),type:'plain'});
             const symbol=match[0];
             let type=Object.hasOwn(FUNCTIONS,symbol)?'function':Object.hasOwn(U,symbol)?'unit':Object.hasOwn(constants,symbol)||['i','euler'].includes(symbol)?'constant':'plain';
-            if(symbol==='(') {const previous=text.slice(0,match.index).match(/[A-Za-zµ_][A-Za-z0-9µ_]*\s*$/); const isFunction=!!previous && Object.hasOwn(FUNCTIONS,previous[0].trim()); parentheses.push(isFunction); if(isFunction) type='function';}
+            if(symbol==='(') {const isFunction=previousType==='function' && /^\s*$/.test(text.slice(end,match.index)); parentheses.push(isFunction); if(isFunction) type='function';}
             else if(symbol===')' && parentheses.pop()) type='function';
-            parts.push({text:symbol,type}); end=pattern.lastIndex;
+            parts.push({text:symbol,type}); previousType=symbol==='('||symbol===')'?'plain':type; end=pattern.lastIndex;
         }
         if(end<text.length) parts.push({text:text.slice(end),type:'plain'});
         return parts;

@@ -22,8 +22,8 @@ test('scientific functions, powers, factorial, percent and modulo', () => {
     assert.throws(()=>engine.evaluate('mod(1,0)'),/zero/);
     assert.throws(()=>engine.evaluate('sqrt()'));
     assert.throws(()=>engine.evaluate('mod(1)'),/2 arguments/);
-    assert.match(engine.evaluate('sin(pi)').latex,/\\color\{blue\}.*\\operatorname\{sin\}/);
-    assert.match(engine.evaluate('sqrt(4 m^2)').latex,/\\color\{blue\}.*\\sqrt/);
+    assert.match(engine.evaluate('sin(pi)').latex,/\\color\{brown\}.*\\operatorname\{sin\}/);
+    assert.match(engine.evaluate('sqrt(4 m^2)').latex,/\\color\{brown\}.*\\sqrt/);
 });
 test('radian and degree modes and explicit angle units', () => {
     const near=(actual,expected)=>assert.ok(Math.abs(actual-expected)<1e-12,`${actual} != ${expected}`);
@@ -191,6 +191,8 @@ test('input highlighting recognizes symbols even in incomplete expressions', () 
     assert.equal(parts.map(part=>part.text).join(''),'sqrt(hbar * 10GHz) + sin(1E6');
     assert.equal(engine.highlightTokens('e euler i').filter(p=>p.type==='constant').length,3);
     assert.deepEqual(engine.highlightTokens('sqrt(1) + (2)').filter(p=>p.text==='(' || p.text===')').map(p=>p.type),['function','function','plain','plain']);
+    assert.deepEqual(engine.highlightTokens('1E6sin((pi))+(hbar)').filter(p=>p.text==='(' || p.text===')').map(p=>p.type),['function','plain','plain','function','plain','plain']);
+    assert.deepEqual(engine.highlightTokens('sin + (pi) + sin (pi)').filter(p=>p.text==='(' || p.text===')').map(p=>p.type),['plain','plain','function','function']);
     assert.equal(engine.highlightTokens('<script>')[1].type,'plain');
 });
 test('every registered unit and constant parses and exposes a finite result', () => {
