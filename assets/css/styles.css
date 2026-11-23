@@ -270,10 +270,12 @@ kbd { font-size: .75rem; opacity: .7; padding-left: .35rem; }
 
 /* Keep touch targets and the editor usable when the on-screen keyboard is open. */
 @media (max-width: 600px) {
-    .container { padding: .75rem .75rem 2rem; }
+    .container { padding: .75rem 0 2rem; }
+    .calculator > h1 { padding: 0 .85rem; }
     .hero h1 { margin-top: .5rem; font-size: 1.65rem; }
     .calculator > p { display: none; }
-    .panel { padding: .85rem; margin-top: .75rem; }
+    .panel { padding: .85rem; margin-top: .75rem; border: 0; border-radius: 0; box-shadow: none; }
+    .calculator .panel + .panel { border-top: 1px solid var(--border); }
     input, select { font-size: 16px; min-height: 44px; }
     button { min-height: 44px; }
     .angle-setting { gap: .4rem; flex-wrap: nowrap; white-space: nowrap; margin-bottom: .55rem; }
@@ -282,8 +284,12 @@ kbd { font-size: .75rem; opacity: .7; padding-left: .35rem; }
     .angle-short { display: inline; }
     .angle-setting strong { display: none; }
     .calculator .expression-input-layer #expression, .expression-highlight { padding: .75rem; font-size: 1rem; }
-    .preview-row { margin: 0 .75rem; }
-    .expression-editor .math-preview { margin: 0; padding: .5rem 0; }
+    .preview-row { margin: 0 .75rem; flex-wrap: wrap; gap: 0 .5rem; overflow: visible; }
+    .expression-editor .math-preview { flex: 1 0 max-content; max-width: 100%; min-width: 0; margin: 0; padding: .5rem 0; overflow-x: auto; scrollbar-width: none; }
+    .preview-result:not([hidden]) { flex: 0 1 auto; max-width: 100%; min-width: 0; padding-bottom: .5rem; }
+    #mobile-result-value { min-width: 0; overflow-x: auto; scrollbar-width: none; }
+    .calculator .calculator-result { max-width: 100%; overflow-x: auto; scrollbar-width: none; }
+    .expression-editor .math-preview::-webkit-scrollbar, #mobile-result-value::-webkit-scrollbar, .calculator .calculator-result::-webkit-scrollbar { display: none; }
     .calculator-toolbar { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: .35rem; margin: .55rem 0; }
     .calculator-toolbar button { padding: .5rem .2rem; font-size: .88rem; }
     .calculator-toolbar kbd { display: none; }
