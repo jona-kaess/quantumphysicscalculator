@@ -262,8 +262,11 @@ kbd { font-size: .75rem; opacity: .7; padding-left: .35rem; }
 .clear-expression { margin: 0; padding: .4rem .7rem; color: var(--accent); background: transparent; }
 .clear-expression[hidden] { display: none; }
 .mobile-result { display: none; }
-.expression-actions { display: flex; align-items: center; flex-wrap: wrap; gap: .4rem; margin-top: .5rem; }
-.expression-actions button { margin: 0; padding: .45rem .65rem; font-size: .85rem; }
+.expression-actions { display: flex; align-items: center; flex-wrap: nowrap; gap: .4rem; margin-top: .5rem; }
+.expression-actions button { flex: 0 0 auto; margin: 0; padding: .45rem .65rem; font-size: .85rem; white-space: nowrap; }
+.expression-actions .angle-setting { flex: 0 0 auto; flex-wrap: nowrap; gap: .3rem; margin: 0 0 0 auto; white-space: nowrap; }
+.expression-actions .angle-setting label, .expression-actions .angle-full, .expression-actions .angle-setting strong { display: none; }
+.expression-actions .angle-short { display: inline; }
 #action-status { color: var(--muted); font-size: .85rem; }
 .saved-row { display: flex; flex-wrap: wrap; gap: .5rem; margin-top: .5rem; }
 .saved-restore { display: flex; flex: 1; min-width: 0; flex-wrap: wrap; align-items: baseline; gap: .25rem .7rem; overflow-wrap: anywhere; text-align: left; }
@@ -357,6 +360,10 @@ mjx-mstyle[style*="color: brown"], mjx-mo[style*="color: brown"] { color: #e5b39
     .expression-editor .math-preview { padding: .3rem 0; }
     .preview-result:not([hidden]) { padding-bottom: .3rem; }
     .expression-actions { margin-top: .3rem; }
+    .expression-actions { gap: .25rem; }
+    .expression-actions button { padding: .35rem .4rem; font-size: .75rem; }
+    .expression-actions .angle-setting { gap: .15rem; font-size: .75rem; }
+    .expression-actions .angle-setting input[type="range"] { flex-basis: 2rem; width: 2rem; }
     .calculator .calculator-result { margin: .35rem 0 .5rem; }
     .calculator #conversion-section, .calculator #constant-section { padding-top: .55rem; margin-top: .55rem; }
     .constant-list { line-height: 1.4; }

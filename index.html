@@ -7,7 +7,7 @@
     <link rel="manifest" href="manifest.webmanifest">
     <link rel="apple-touch-icon" href="assets/icon-192.png?v=1a121de6c5da">
     <title>Quantum Physics Calculator</title>
-    <link rel="stylesheet" href="assets/css/styles.css?v=7be3965bdb6a">
+    <link rel="stylesheet" href="assets/css/styles.css?v=4a3ae52ca4ba">
     <script>
         window.MathJax = {
             loader: { load: ['[tex]/color'] },
@@ -25,7 +25,7 @@
     <h1>Physics calculator</h1>
     <p>Calculate with numbers, units and physical constants. Dimensions are checked automatically.</p>
     <div class="panel">
-        <div class="angle-setting"><label for="angle-mode">Angle unit</label><span><span class="angle-full">Radians (0–2π)</span><span class="angle-short" aria-hidden="true">Rad</span></span><input id="angle-mode" type="range" min="0" max="1" step="1" value="0" aria-label="Angle unit: radians or degrees"><span><span class="angle-full">Degrees (0–360°)</span><span class="angle-short" aria-hidden="true">Deg</span></span><strong id="angle-label">Radians</strong></div>
+
         <div class="expression-heading"><label for="expression">Expression</label><button type="button" id="clear-expression" class="clear-expression" hidden>Clear</button></div>
         <div class="expression-editor">
             <div class="expression-input-layer">
@@ -36,7 +36,7 @@
             <div id="input-prefixes" class="prefix-note" hidden></div>
         </div>
         <div id="autocomplete-list" class="autocomplete-list" role="listbox" aria-label="Expression suggestions" hidden></div>
-        <div class="expression-actions"><button type="button" class="secondary" id="copy-latex">Copy LaTeX</button><button type="button" class="secondary" id="save-calculation">Save calculation</button><span id="action-status" role="status"></span></div>
+        <div class="expression-actions"><button type="button" class="secondary" id="copy-latex">Copy LaTeX</button><button type="button" class="secondary" id="save-calculation">Save calculation</button><div class="angle-setting"><label for="angle-mode">Angle unit</label><span><span class="angle-full">Radians (0–2π)</span><span class="angle-short" aria-hidden="true">Rad</span></span><input id="angle-mode" type="range" min="0" max="1" step="1" value="0" aria-label="Angle unit: radians or degrees"><span><span class="angle-full">Degrees (0–360°)</span><span class="angle-short" aria-hidden="true">Deg</span></span><strong id="angle-label">Radians</strong></div></div><span id="action-status" role="status"></span>
         <div class="calculator-toolbar">
             <button type="button" class="secondary" id="constants-button" aria-expanded="false" aria-controls="insert-menu">Constants <kbd>Ctrl K</kbd></button>
             <button type="button" class="secondary" id="units-button" aria-expanded="false" aria-controls="insert-menu">Units <kbd>Ctrl E</kbd></button>
