@@ -26,6 +26,7 @@
     <h1>Physics calculator</h1>
     <p>Calculate with numbers, units and physical constants. Dimensions are checked automatically.</p>
     <div class="panel">
+        <div class="angle-setting"><label for="angle-mode">Angle unit</label><span>Radians (0–2π)</span><input id="angle-mode" type="range" min="0" max="1" step="1" value="0" aria-label="Angle unit: radians or degrees"><span>Degrees (0–360°)</span><strong id="angle-label">Radians</strong></div>
         <label for="expression">Expression</label>
         <div class="expression-editor">
             <input id="expression" type="text" autocomplete="off" spellcheck="false" placeholder="Try hbar * 10 GHz or 7/8" aria-describedby="input-help" aria-autocomplete="list" aria-controls="autocomplete-list" aria-expanded="false" role="combobox">
@@ -36,8 +37,9 @@
         <div class="calculator-toolbar">
             <button type="button" class="secondary" id="constants-button" aria-expanded="false" aria-controls="insert-menu">Constants <kbd>Ctrl K</kbd></button>
             <button type="button" class="secondary" id="units-button" aria-expanded="false" aria-controls="insert-menu">Units <kbd>Ctrl E</kbd></button>
+            <button type="button" class="secondary" id="functions-button" aria-expanded="false" aria-controls="insert-menu">Functions <kbd>Ctrl Y</kbd></button>
         </div>
-        <p id="input-help" class="hint">Use +, −, *, /, ^ and parentheses. Scientific notation uses uppercase E, for example 1E6. Units may follow a number directly. Use ↑/↓ and Enter or Tab to insert suggestions.</p>
+        <p id="input-help" class="hint">Use +, −, *, /, ^, !, % and functions such as sqrt(), sin() or mod(a,b). Use euler for Euler’s number, e for elementary charge, and i for √−1. Use ↑/↓ and Enter or Tab to insert suggestions.</p>
         <div id="insert-menu" class="insert-menu" hidden>
             <label for="menu-search">Search</label>
             <input id="menu-search" type="search" placeholder="Search by name or symbol">

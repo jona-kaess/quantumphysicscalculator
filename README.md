@@ -53,3 +53,22 @@ Run with Node.js:
 node tests/js/physics-engine.test.js
 node tests/js/static-site.test.js
 ```
+
+## Scientific functions and angles
+
+Use the angle switch above the expression to choose radians or degrees for
+`sin`, `cos`, `tan`, `asin`, `acos`, `atan`, and `arg`. Explicit `deg` or `rad`
+units are honored independently of the switch; hyperbolic functions are
+unitless and unaffected by it.
+
+Functions can be typed or inserted with **Ctrl+Y**: `sqrt`, `sin`, `cos`,
+`tan`, `asin`, `acos`, `atan`, `sinh`, `cosh`, `tanh`, `ln`, `log` (base 10),
+`exp`, `abs`, `re`/`Re`, `im`/`Im`, `conj`, `arg`/`Arg`, `floor`, `ceil`,
+`factorial`, `mod`, `pow`, `recip`, `percent`, and `tenpow`. `mod(a,b)`
+uses the signed remainder, and `pow(a,b)` computes a power. Postfix `!` and
+`%` are also supported. Factorials require integers from 0 to 170. Use `i` for
+the imaginary unit and `euler` for Euler's number; `e` remains the elementary
+charge. Complex arithmetic, roots, logarithms, and trigonometric/hyperbolic
+functions are supported; inverse trigonometric functions currently accept real
+arguments only. `sqrt` preserves dimensional powers, while trigonometric and
+logarithmic functions require dimensionless arguments.

@@ -13,6 +13,43 @@ test('arithmetic, precedence, implicit multiplication and scientific notation', 
     assert.match(engine.evaluate('7/8').latex,/\\frac\{7\}\{8\}/);
     assert.match(engine.evaluate('1E6').latex,/10\^\{6\}/);
 });
+test('scientific functions, powers, factorial, percent and modulo', () => {
+    const cases=[['sqrt(9)',3],['sin(pi/2)',1],['cos(0)',1],['tan(pi/4)',1],['sinh(1)',Math.sinh(1)],['cosh(1)',Math.cosh(1)],['tanh(1)',Math.tanh(1)],['ln(euler)',1],['log(100)',2],['exp(1)',Math.E],['tenpow(3)',1000],['abs(-4)',4],['factorial(5)',120],['5!',120],['50%',0.5],['percent(50)',0.5],['mod(11,3)',2],['pow(2,3)',8],['recip(4)',0.25],['floor(1.8)',1],['ceil(1.2)',2],['asin(1)',Math.PI/2],['acos(1)',0],['atan(1)',Math.PI/4]];
+    for(const [expression,expected] of cases) assert.ok(Math.abs(engine.evaluate(expression).value-expected)<1e-12,expression);
+    assert.deepEqual(engine.evaluate('sqrt(9 m^2)').dim,engine.dimensions.length);
+    assert.throws(()=>engine.evaluate('sin(1 m)'),/dimensionless/);
+    assert.throws(()=>engine.evaluate('(-1)!'),/Factorial/);
+    assert.throws(()=>engine.evaluate('mod(1,0)'),/zero/);
+    assert.throws(()=>engine.evaluate('sqrt()'));
+    assert.throws(()=>engine.evaluate('mod(1)'),/2 arguments/);
+});
+test('radian and degree modes and explicit angle units', () => {
+    const near=(actual,expected)=>assert.ok(Math.abs(actual-expected)<1e-12,`${actual} != ${expected}`);
+    near(engine.evaluate('sin(90)','deg').value,1);
+    near(engine.evaluate('sin(pi/2)','rad').value,1);
+    near(engine.evaluate('sin(90 deg)','deg').value,1);
+    near(engine.evaluate('sin(90 deg)','rad').value,1);
+    near(engine.evaluate('sin(45deg+45deg)','deg').value,1);
+    near(engine.evaluate('sin(180deg/2)','deg').value,1);
+    near(engine.evaluate('asin(1)','deg').value,90);
+    near(engine.evaluate('arg(i)','deg').value,90);
+    near(engine.evaluate('sinh(1)','deg').value,Math.sinh(1));
+});
+test('complex arithmetic, functions and units', () => {
+    const near=(a,b)=>assert.ok(Math.abs(a-b)<1e-12,`${a} != ${b}`);
+    let x=engine.evaluate('(1+2i)*(3-4i)'); near(x.value,11); near(x.imag,2);
+    x=engine.evaluate('sqrt(-1)'); near(x.value,0); near(x.imag,1);
+    x=engine.evaluate('ln(-1)'); near(x.value,0); near(x.imag,Math.PI);
+    near(engine.evaluate('abs(3+4i)').value,5);
+    near(engine.evaluate('re(3+4i)').value,3); near(engine.evaluate('im(3+4i)').value,4);
+    near(engine.evaluate('Re(3+4i)').value,3); near(engine.evaluate('Im(3+4i)').value,4);
+    near(engine.evaluate('Arg(i)','deg').value,90);
+    near(engine.evaluate('conj(3+4i)').imag,-4);
+    x=engine.evaluate('(1+2i)*V'); assert.equal(engine.dimensionName(x.dim),'voltage');
+    const row=engine.conversions(x).find(v=>v.key==='V'); near(row.value,1); near(row.imag,2);
+    assert.throws(()=>engine.evaluate('asin(i)'),/real argument/);
+    assert.throws(()=>engine.evaluate('1/(0+0i)'),/zero/);
+});
 test('a unit attached to a denominator number stays in the denominator', () => {
     for (const expression of ['5V / 10A', '5V/10A', '5 V / 10A']) {
         const result=engine.evaluate(expression);

@@ -233,3 +233,8 @@ kbd { font-size: .75rem; opacity: .7; padding-left: .35rem; }
 .autocomplete-option[aria-selected="true"], .autocomplete-option:hover { background: #eef3fd; filter: none; }
 .autocomplete-option strong, .autocomplete-option span { min-width: 0; overflow-wrap: anywhere; }
 .autocomplete-option span { color: var(--muted); font-size: .83rem; }
+
+.angle-setting { display: flex; align-items: center; gap: .6rem; flex-wrap: wrap; margin-bottom: 1rem; color: var(--muted); font-size: .85rem; }
+.angle-setting label { color: var(--text); }
+.angle-setting input[type="range"] { width: 3.5rem; padding: 0; accent-color: var(--accent); }
+.angle-setting strong { color: var(--accent); }

@@ -68,6 +68,7 @@
         if(original) constants[symbol]={...original,latex};
     }
     for(const [symbol,constant] of Object.entries(constants)) if(!constant.source) constant.source=symbol==='pi'?'Mathematical constant':'SciPy 1.14.1 / CODATA 2018';
+    const FUNCTIONS={sqrt:'Square root',sin:'Sine',cos:'Cosine',tan:'Tangent',asin:'Inverse sine',acos:'Inverse cosine',atan:'Inverse tangent',sinh:'Hyperbolic sine',cosh:'Hyperbolic cosine',tanh:'Hyperbolic tangent',ln:'Natural logarithm',log:'Base-10 logarithm',exp:'Exponential',abs:'Absolute value',re:'Real part',im:'Imaginary part',Re:'Real part',Im:'Imaginary part',conj:'Complex conjugate',arg:'Complex argument',Arg:'Complex argument',floor:'Round down',ceil:'Round up',factorial:'Factorial',mod:'Remainder (two arguments)',pow:'Power (two arguments)',recip:'Reciprocal',percent:'Percentage',tenpow:'10 to the power'};
     const same=(a,b)=>a.every((v,i)=>Math.abs(v-b[i])<1e-10);
     const scalar=d=>same(d,D.scalar);
     function tokenize(text) {
@@ -77,7 +78,7 @@
             const rest=text.slice(i), num=rest.match(/^(?:\d+(?:\.\d*)?|\.\d+)(?:E[+-]?\d+)?/), ident=rest.match(/^[A-Za-zµ_][A-Za-z0-9µ_]*/);
             if(num) { result.push({type:'number',value:num[0],start:i,end:i+num[0].length}); i+=num[0].length; continue; }
             if(ident) { result.push({type:'name',value:ident[0],start:i,end:i+ident[0].length}); i+=ident[0].length; continue; }
-            if('+-*/^()'.includes(text[i])) {result.push({type:text[i],value:text[i],start:i,end:i+1}); i++; continue;}
+            if('+-*/^(),!%'.includes(text[i])) {result.push({type:text[i],value:text[i],start:i,end:i+1}); i++; continue;}
             throw Error(`Unexpected character “${text[i]}”.`);
         }
         return result;
@@ -88,11 +89,19 @@
         function primary() {
             const t=take(); if(!t) throw Error('Expression is incomplete.');
             if(t.type==='number') return {kind:'number',text:t.value};
+            if(t.type==='name' && Object.hasOwn(FUNCTIONS,t.value)) {
+                if(!peek()||take().type!=='(') throw Error(`Use ${t.value}(...) with parentheses.`);
+                const args=[add()]; while(peek()?.type===',') {take(); args.push(add());}
+                if(!peek()||take().type!==')') throw Error('Missing closing parenthesis.');
+                return {kind:'function',name:({Re:'re',Im:'im',Arg:'arg'})[t.value]||t.value,args};
+            }
+            if(t.type==='name' && t.value==='i') return {kind:'imaginary'};
+            if(t.type==='name' && t.value==='euler') return {kind:'euler'};
             if(t.type==='name') {if(!U[t.value]&&!constants[t.value]) throw Error(`Unknown symbol “${t.value}”. Use uppercase E for scientific notation.`); if(constants[t.value]) used.add(t.value); for(const key of U[t.value]?.constants||[]) used.add(key); if(U[t.value]?.prefix) usedPrefixes.set(U[t.value].prefix,Math.round(Math.log10(prefixes[U[t.value].prefix]))); return {kind:U[t.value]?'unit':'constant',text:t.value};}
             if(t.type==='(') {const node=add(); if(!peek()||take().type!==')') throw Error('Missing closing parenthesis.'); return {kind:'group',child:node};}
             throw Error(`Expected a number, unit, constant or parenthesis.`);
         }
-        function power() { let n=primary(); if(peek()?.type==='^') {take(); n={kind:'^',left:n,right:unary()};} return n; }
+        function power() { let n=primary(); while(peek() && ['!','%'].includes(peek().type)) n={kind:'postfix',op:take().type,child:n}; if(peek()?.type==='^') {take(); n={kind:'^',left:n,right:unary()};} return n; }
         function unary() {if(peek()?.type==='-'||peek()?.type==='+') {const op=take().type; return {kind:'unary',op,child:unary()};} return power();}
         function multiply() {
             let n=unary();
@@ -112,28 +121,70 @@
         function add() {let n=multiply(); while(peek() && ['+','-'].includes(peek().type)) {const op=take().type;n={kind:op,left:n,right:multiply()};}return n;}
         if(!tokens.length) throw Error('Enter an expression to get started.'); const tree=add(); if(pos<tokens.length) throw Error('Unexpected closing parenthesis.'); return {tree,used:[...used],usedPrefixes:[...usedPrefixes].map(([symbol,power])=>({symbol,power}))};
     }
-    function evaluateNode(n) {
+    function evaluateNode(n, angleMode='rad') {
+        const evaluateChild=node=>evaluateNode(node,angleMode);
+        const imaginary=q=>q.imag??0;
+        const number=(r,i=0,dim=D.scalar)=>({value:r,imag:i,dim});
+        const multiplication=(a,b)=>[a.value*b.value-imaginary(a)*imaginary(b),a.value*imaginary(b)+imaginary(a)*b.value];
+        const divide=(a,b)=>{const d=b.value*b.value+imaginary(b)*imaginary(b); if(!d) throw Error('Division by zero.'); return [(a.value*b.value+imaginary(a)*imaginary(b))/d,(imaginary(a)*b.value-a.value*imaginary(b))/d];};
+        const cpow=(a,b)=>{ if(!imaginary(a) && !imaginary(b) && (a.value>=0 || Number.isInteger(b.value))) return [a.value**b.value,0]; const magnitude=Math.hypot(a.value,imaginary(a)); if(!magnitude) throw Error('Undefined power of zero.'); const l=Math.log(magnitude), phi=Math.atan2(imaginary(a)||0,a.value), r=Math.exp(b.value*l-imaginary(b)*phi), t=b.value*phi+imaginary(b)*l; return [r*Math.cos(t),r*Math.sin(t)]; };
+        if(n.kind==='imaginary') return number(0,1);
+        if(n.kind==='euler') return number(Math.E);
+        if(n.kind==='postfix') return evaluateChild({kind:'function',name:n.op==='!'?'factorial':'percent',args:[n.child]});
+        if(n.kind==='function') {
+            const expected=['mod','pow'].includes(n.name)?2:1;
+            if(n.args.length!==expected) throw Error(`${n.name} expects ${expected} argument${expected===1?'':'s'}.`);
+            const a=evaluateChild(n.args[0]), ai=imaginary(a), dimless=scalar(a.dim), out=(v,i=0,dim=D.scalar)=>number(v,i,dim);
+            if(a.absolute||a.absoluteUnit||a.wavelengthUnit) throw Error('Functions cannot be applied to absolute temperature or wavelength units.');
+            if(n.name==='sqrt') {const [r,i]=cpow(a,number(0.5)); return out(r,i,a.dim.map(d=>d/2));}
+            if(n.name==='abs') return out(Math.hypot(a.value,ai),0,a.dim);
+            if(n.name==='re') return out(a.value,0,a.dim);
+            if(n.name==='im') return out(ai,0,a.dim);
+            if(n.name==='conj') return out(a.value,-ai,a.dim);
+            if(n.name==='arg') {if(!a.value&&!ai) throw Error('The argument of zero is undefined.'); return out(Math.atan2(ai,a.value)*(angleMode==='deg'?180/Math.PI:1));}
+            if(n.name==='percent') return out(a.value/100,ai/100,a.dim);
+            if(n.name==='recip') {const [r,i]=divide(number(1),a);return out(r,i,a.dim.map(d=>-d));}
+            if(n.name==='pow') return evaluateChild({kind:'^',left:n.args[0],right:n.args[1]});
+            if(n.name==='mod') {const b=evaluateChild(n.args[1]); if(!same(a.dim,b.dim)||ai||imaginary(b)) throw Error('mod requires real arguments with matching dimensions.'); if(!b.value) throw Error('Division by zero.'); return out(a.value%b.value,0,a.dim);}
+            if(!dimless) throw Error(`${n.name} requires a dimensionless argument.`);
+            if(n.name==='factorial') {if(ai||!Number.isInteger(a.value)||a.value<0||a.value>170) throw Error('Factorial requires an integer from 0 to 170.'); let v=1; for(let i=2;i<=a.value;i++)v*=i; return out(v);}
+            if(['floor','ceil'].includes(n.name)) {if(ai) throw Error(`${n.name} requires a real argument.`);return out(Math[n.name](a.value));}
+            if(['asin','acos','atan'].includes(n.name)) {if(ai) throw Error(`${n.name} currently requires a real argument.`); const v=Math[n.name](a.value);if(!Number.isFinite(v)) throw Error(`${n.name} argument is outside its real domain.`);return out(v*(angleMode==='deg'?180/Math.PI:1));}
+            let x=a.value,y=ai;
+            if(['sin','cos','tan'].includes(n.name) && angleMode==='deg' && !a.angle) {x*=Math.PI/180;y*=Math.PI/180;}
+            const sin=[Math.sin(x)*Math.cosh(y),Math.cos(x)*Math.sinh(y)], cos=[Math.cos(x)*Math.cosh(y),-Math.sin(x)*Math.sinh(y)];
+            const sinh=[Math.sinh(x)*Math.cos(y),Math.cosh(x)*Math.sin(y)], cosh=[Math.cosh(x)*Math.cos(y),Math.sinh(x)*Math.sin(y)];
+            if(n.name==='sin') return out(...sin); if(n.name==='cos') return out(...cos); if(n.name==='tan') return out(...divide(number(...sin),number(...cos)));
+            if(n.name==='sinh') return out(...sinh); if(n.name==='cosh') return out(...cosh); if(n.name==='tanh') return out(...divide(number(...sinh),number(...cosh)));
+            if(n.name==='ln'||n.name==='log') {if(!x&&!y) throw Error('Logarithm of zero is undefined.'); const base=n.name==='log'?Math.LN10:1; return out(Math.log(Math.hypot(x,y))/base,Math.atan2(y||0,x)/base);}
+            if(n.name==='exp'||n.name==='tenpow') {const scale=n.name==='tenpow'?Math.LN10:1, r=Math.exp(x*scale); return out(r*Math.cos(y*scale),r*Math.sin(y*scale));}
+            throw Error(`Unsupported function ${n.name}.`);
+        }
         if(n.kind==='number') return {value:Number(n.text),dim:D.scalar};
-        if(n.kind==='unit') {const u=U[n.text]; return {value:u.factor,dim:u.dim,unit:n.text,absoluteUnit:!!u.absolute,wavelengthUnit:!!u.wavelength,temperatureDifference:n.text==='deltaC'||n.text==='deltaF'};}
+        if(n.kind==='unit') {const u=U[n.text]; return {value:u.factor,dim:u.dim,unit:n.text,angle:n.text==='deg'||n.text==='rad',absoluteUnit:!!u.absolute,wavelengthUnit:!!u.wavelength,temperatureDifference:n.text==='deltaC'||n.text==='deltaF'};}
         if(n.kind==='constant') {const c=constants[n.text]; return {value:c.value,dim:c.dim};}
-        if(n.kind==='group') return evaluateNode(n.child);
-        if(n.kind==='unary') {const a=evaluateNode(n.child); if(a.absolute) throw Error('An absolute temperature cannot be negated.'); return {...a,value:n.op==='-'?-a.value:a.value};}
-        const a=evaluateNode(n.left), b=evaluateNode(n.right);
+        if(n.kind==='group') return evaluateChild(n.child);
+        if(n.kind==='unary') {const a=evaluateChild(n.child); if(a.absolute) throw Error('An absolute temperature cannot be negated.'); return {...a,value:n.op==='-'?-a.value:a.value,imag:n.op==='-'?-imaginary(a):imaginary(a)};}
+        const a=evaluateChild(n.left), b=evaluateChild(n.right);
         if(n.kind==='+'||n.kind==='-') {
             if(!same(a.dim,b.dim)) throw Error('Cannot add or subtract quantities with different dimensions.');
             if(a.absolute && b.absolute && n.kind==='+') throw Error('Two absolute temperatures cannot be added.');
             if(!a.absolute && b.absolute && n.kind==='-') throw Error('Cannot subtract an absolute temperature from a difference.');
-            return {value:n.kind==='+'?a.value+b.value:a.value-b.value,dim:a.dim,absolute:a.absolute&&b.absolute?false:(a.absolute||b.absolute),temperatureDifference:!!(a.absolute&&b.absolute || a.temperatureDifference||b.temperatureDifference) && !(a.absolute!==b.absolute && (a.absolute||b.absolute))};
+            return {value:n.kind==='+'?a.value+b.value:a.value-b.value,imag:n.kind==='+'?imaginary(a)+imaginary(b):imaginary(a)-imaginary(b),dim:a.dim,angle:!!(a.angle&&b.angle),absolute:a.absolute&&b.absolute?false:(a.absolute||b.absolute),temperatureDifference:!!(a.absolute&&b.absolute || a.temperatureDifference||b.temperatureDifference) && !(a.absolute!==b.absolute && (a.absolute||b.absolute))};
         }
-        if(n.kind==='^') {if(a.absolute||a.absoluteUnit||!scalar(b.dim)||b.absolute) throw Error('A power must be dimensionless and cannot contain an absolute temperature.'); return {value:a.value**b.value,dim:a.dim.map(x=>x*b.value)};}
-        if(n.kind==='*' && ((scalar(a.dim)&&b.absoluteUnit)||(scalar(b.dim)&&a.absoluteUnit))) {const number=scalar(a.dim)?a:b, u=U[(scalar(a.dim)?b:a).unit]; return {value:(number.value+u.offset)*u.factor,dim:u.dim,absolute:true};}
-        if(n.kind==='*' && ((scalar(a.dim)&&b.wavelengthUnit)||(scalar(b.dim)&&a.wavelengthUnit))) {const number=scalar(a.dim)?a:b; if(number.value<=0) throw Error('Wavelength must be positive.'); return {value:H*C/(number.value*1e-9),dim:D.energy};}
+        if(n.kind==='^') {if(a.absolute||a.absoluteUnit||!scalar(b.dim)||b.absolute||(!scalar(a.dim)&&imaginary(b))) throw Error('A power must be dimensionless and cannot contain an absolute temperature.'); const [r,i]=cpow(a,b); return {value:r,imag:i,dim:a.dim.map(x=>x*b.value)};}
+        if(n.kind==='*' && ((scalar(a.dim)&&b.absoluteUnit)||(scalar(b.dim)&&a.absoluteUnit))) {const number=scalar(a.dim)?a:b, u=U[(scalar(a.dim)?b:a).unit]; if(imaginary(number)) throw Error('Absolute temperatures must be real.'); return {value:(number.value+u.offset)*u.factor,dim:u.dim,absolute:true};}
+        if(n.kind==='*' && ((scalar(a.dim)&&b.wavelengthUnit)||(scalar(b.dim)&&a.wavelengthUnit))) {const number=scalar(a.dim)?a:b; if(number.value<=0 || imaginary(number)) throw Error('Wavelength must be positive and real.'); return {value:H*C/(number.value*1e-9),dim:D.energy};}
         if(a.wavelengthUnit||b.wavelengthUnit) throw Error('Enter a positive value before nm_energy.');
         if(a.absolute||b.absolute||a.absoluteUnit||b.absoluteUnit) throw Error('Absolute Celsius and Fahrenheit values cannot be multiplied or divided. Use deltaC or deltaF for differences.');
-        if(n.kind==='/' && b.value===0) throw Error('Division by zero.');
-        return {value:n.kind==='*'?a.value*b.value:a.value/b.value,dim:a.dim.map((v,i)=>v+(n.kind==='*'?b.dim[i]:-b.dim[i])),temperatureDifference:!!(a.temperatureDifference&&scalar(b.dim)||b.temperatureDifference&&scalar(a.dim)&&n.kind==='*')};
+        const [real,imag]=n.kind==='*'?multiplication(a,b):divide(a,b);
+        return {value:real,imag,angle:!!(n.kind==='*'&&(a.angle||b.angle)||n.kind==='/'&&a.angle&&!b.angle&&scalar(b.dim)),dim:a.dim.map((v,i)=>v+(n.kind==='*'?b.dim[i]:-b.dim[i])),temperatureDifference:!!(a.temperatureDifference&&scalar(b.dim)||b.temperatureDifference&&scalar(a.dim)&&n.kind==='*')};
     }
     function latex(n) {
+        if(n.kind==='imaginary') return 'i';
+        if(n.kind==='euler') return '\\mathrm{e}';
+        if(n.kind==='function') { const args=n.args.map(latex); if(n.name==='sqrt') return `\\sqrt{${args[0]}}`; if(n.name==='abs') return `\\left|${args[0]}\\right|`; return `\\operatorname{${n.name}}\\left(${args.join(', ')}\\right)`; }
+        if(n.kind==='postfix') return `{${latex(n.child)}}${n.op==='%'?'\\%':'!'}`;
         if(n.kind==='number') {const parts=n.text.split('E'); return parts.length===2?`${parts[0]}\\times 10^{${Number(parts[1])}}`:n.text;}
         if(n.kind==='unit') return `\\color{teal}{\\mathrm{${n.text.replaceAll('_','\\_')}}}`;
         if(n.kind==='constant') return `\\color{purple}{${constants[n.text].latex}}`;
@@ -143,9 +194,13 @@
         if(n.kind==='^') return `{${latex(n.left)}}^{${latex(n.right)}}`;
         return `${latex(n.left)} ${n.kind==='*'?'\\cdot':n.kind} ${latex(n.right)}`;
     }
-    function evaluate(text) {const parsed=parse(text), result=evaluateNode(parsed.tree); if(!Number.isFinite(result.value) || result.dim.some(x=>!Number.isFinite(x))) throw Error('Result is not finite.'); if(result.absoluteUnit||result.wavelengthUnit) throw Error('Enter a numerical value before this unit.'); if(result.absolute && result.value<0) throw Error('Absolute temperature cannot be below zero kelvin.'); return {...result,latex:latex(parsed.tree),used:parsed.used,usedPrefixes:parsed.usedPrefixes};}
+    function evaluate(text, angleMode='rad') {if(!['rad','deg'].includes(angleMode)) throw Error('Unknown angle mode.'); const parsed=parse(text), result=evaluateNode(parsed.tree,angleMode); if(!Number.isFinite(result.value) || !Number.isFinite(result.imag??0) || result.dim.some(x=>!Number.isFinite(x))) throw Error('Result is not finite.'); if(result.absoluteUnit||result.wavelengthUnit) throw Error('Enter a numerical value before this unit.'); if(result.absolute && result.value<0) throw Error('Absolute temperature cannot be below zero kelvin.'); return {...result,latex:latex(parsed.tree),used:parsed.used,usedPrefixes:parsed.usedPrefixes};}
     function dimensionName(dim) {const name=Object.entries(D).find(([,d])=>same(d,dim))?.[0]; return name==='magnetic'?'magnetic flux density':name==='pressure'?'pressure / energy density':name||'composite quantity';}
     function conversions(result) {
+        if(result.imag) {
+            const real=conversions({...result,imag:0}), imag=conversions({...result,value:result.imag,imag:0});
+            return real.filter(row=>row.key!=='nm_energy'&&!['Absolute temperature','Temperature difference'].includes(row.group)).map(row=>({...row,imag:imag.find(other=>other.key===row.key)?.value??0}));
+        }
         const choices=Object.values(U).filter(u=>same(u.dim,result.dim) && !u.absolute && !u.symbol.includes('_energy') && !['deltaC','deltaF'].includes(u.symbol));
         // Show a concise set of common units, plus physically defined energy equivalences.
         const list=choices.filter(u=>!scalar(result.dim) && !u.prefix).map(u=>({key:u.symbol,label:u.symbol,value:result.value/u.factor,group:u.group,prefixable:prefixable.includes(u.symbol)})).filter(u=>Number.isFinite(u.value));
@@ -184,7 +239,7 @@
         if(!token) return {start:cursor,end:cursor,items:[]};
         const query=token[0].toLowerCase();
         const unitItems=Object.values(U).filter(u=>!u.prefix || (query.length>=2 && u.symbol.toLowerCase().startsWith(query))).map(u=>({symbol:u.symbol,name:u.name,type:'unit'}));
-        const pool=[...constantItems(),...unitItems];
+        const pool=[...constantItems(),...Object.entries(FUNCTIONS).map(([symbol,name])=>({symbol,name,type:'function'})),{symbol:'i',name:'Imaginary unit',type:'constant'},{symbol:'euler',name:'Euler number',type:'constant'},...unitItems];
         const items=searchItems(pool,token[0]).filter(x=>x.symbol.toLowerCase().startsWith(query)||x.name.toLowerCase().startsWith(query)).slice(0,8);
         const remainder=text.slice(cursor).match(/^[A-Za-z0-9µ_]*/)[0];
         return {start:cursor-token[0].length,end:cursor+remainder.length,items};
@@ -196,11 +251,12 @@
         return choices.find(row=>row.label===preferred && row.group!=='Energy equivalent')?.key || choices[0]?.key || choices[0]?.label || '';
     }
     function scaledChoice(choice) {
-        if(!choice.prefixable || !choice.value) return {value:choice.value,label:choice.label,power:0,prefix:''};
+        const magnitude=Math.hypot(choice.value,choice.imag||0);
+        if(!choice.prefixable || !magnitude) return {value:choice.value,imag:choice.imag||0,label:choice.label,power:0,prefix:''};
         const scales=[['Q',30],['R',27],['Y',24],['Z',21],['E',18],['P',15],['T',12],['G',9],['M',6],['k',3],['',0],['m',-3],['µ',-6],['n',-9],['p',-12],['f',-15],['a',-18],['z',-21],['y',-24],['r',-27],['q',-30]];
-        const found=scales.find(([,power])=>Math.abs(choice.value)/10**power>=1 && Math.abs(choice.value)/10**power<1000);
-        if(!found) return {value:choice.value,label:choice.label,power:0,prefix:''};
-        const [prefix,power]=found; return {value:choice.value/10**power,label:prefix+choice.label,power,prefix};
+        const found=scales.find(([,power])=>magnitude/10**power>=1 && magnitude/10**power<1000);
+        if(!found) return {value:choice.value,imag:choice.imag||0,label:choice.label,power:0,prefix:''};
+        const [prefix,power]=found; return {value:choice.value/10**power,imag:(choice.imag||0)/10**power,label:prefix+choice.label,power,prefix};
     }
-    return {units:U,constants,dimensions:D,parse,evaluate,conversions,dimensionName,searchItems,constantItems,completions,chooseDefault,scaledChoice};
+    return {units:U,constants,functions:FUNCTIONS,dimensions:D,parse,evaluate,conversions,dimensionName,searchItems,constantItems,completions,chooseDefault,scaledChoice};
 });
