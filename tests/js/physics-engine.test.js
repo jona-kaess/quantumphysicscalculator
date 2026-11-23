@@ -35,6 +35,15 @@ test('radian and degree modes and explicit angle units', () => {
     near(engine.evaluate('arg(i)','deg').value,90);
     near(engine.evaluate('sinh(1)','deg').value,Math.sinh(1));
 });
+test('trigonometric cardinal zeros do not erase genuinely small values', () => {
+    assert.equal(engine.evaluate('sin(360)','deg').value,0);
+    assert.equal(engine.evaluate('sin(180)','deg').value,0);
+    assert.equal(engine.evaluate('sin(2*pi)','rad').value,0);
+    assert.equal(engine.evaluate('cos(90)','deg').value,0);
+    assert.equal(engine.evaluate('sin(1E-16)','rad').value,1e-16);
+    assert.ok(Math.abs(engine.evaluate('sin(pi+1E-12)','rad').value)>1e-13);
+    assert.throws(()=>engine.evaluate('tan(90)','deg'),/zero/);
+});
 test('complex arithmetic, functions and units', () => {
     const near=(a,b)=>assert.ok(Math.abs(a-b)<1e-12,`${a} != ${b}`);
     let x=engine.evaluate('(1+2i)*(3-4i)'); near(x.value,11); near(x.imag,2);

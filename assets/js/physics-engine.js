@@ -152,7 +152,13 @@
             if(['asin','acos','atan'].includes(n.name)) {if(ai) throw Error(`${n.name} currently requires a real argument.`); const v=Math[n.name](a.value);if(!Number.isFinite(v)) throw Error(`${n.name} argument is outside its real domain.`);return out(v*(angleMode==='deg'?180/Math.PI:1));}
             let x=a.value,y=ai;
             if(['sin','cos','tan'].includes(n.name) && angleMode==='deg' && !a.angle) {x*=Math.PI/180;y*=Math.PI/180;}
-            const sin=[Math.sin(x)*Math.cosh(y),Math.cos(x)*Math.sinh(y)], cos=[Math.cos(x)*Math.cosh(y),-Math.sin(x)*Math.sinh(y)];
+            // Correct roundoff at nonzero multiples of π/2 without rounding
+            // genuinely small angles (or small values elsewhere) to zero.
+            const halfTurns=Math.round(x/(Math.PI/2));
+            const atCardinal=halfTurns!==0 && Math.abs(x)<1e6 && Math.abs(x-halfTurns*(Math.PI/2))<=2*Number.EPSILON*Math.abs(x);
+            const sinX=atCardinal && halfTurns%2===0 ? 0 : Math.sin(x);
+            const cosX=atCardinal && Math.abs(halfTurns%2)===1 ? 0 : Math.cos(x);
+            const sin=[sinX*Math.cosh(y),cosX*Math.sinh(y)], cos=[cosX*Math.cosh(y),-sinX*Math.sinh(y)];
             const sinh=[Math.sinh(x)*Math.cos(y),Math.cosh(x)*Math.sin(y)], cosh=[Math.cosh(x)*Math.cos(y),Math.sinh(x)*Math.sin(y)];
             if(n.name==='sin') return out(...sin); if(n.name==='cos') return out(...cos); if(n.name==='tan') return out(...divide(number(...sin),number(...cos)));
             if(n.name==='sinh') return out(...sinh); if(n.name==='cosh') return out(...cosh); if(n.name==='tanh') return out(...divide(number(...sinh),number(...cosh)));
