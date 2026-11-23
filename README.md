@@ -137,3 +137,17 @@ when upgrading.
 The unit picker starts at **Any**, so its search includes every unit. Enter selects
 the best matching result. Common SI prefixes include `u`, `mu`, and `µ` for micro;
 for example, `mm`, `ml`, and `mug`.
+
+The expression field offers live completions for constants and units. Use the
+arrow keys and Enter or Tab to accept a suggestion; Escape dismisses it. Common
+constants also have short names such as `m_e`, `alpha`, and `epsilon_0`.
+Unit pickers show base symbols and the result uses an automatically chosen SI
+prefix, with its power of ten shown below the value. Frequency as an energy
+equivalent shows its defining relation separately.
+
+US customary and UK imperial liquid measures are distinguished: for example,
+`gal_US` and `gal_UK`, `pt_US` and `pt_UK`, or `fl_oz_US` and `fl_oz_UK`.
+Other available customary units include inches, feet, miles, acres, pounds,
+pound-force, horsepower and BTU. The unit menu lists the supported set.
+Dimensional analysis identifies many common physical dimensions; dimensions
+shared by different physical quantities are labeled together when appropriate.

@@ -217,3 +217,19 @@ kbd { font-size: .75rem; opacity: .7; padding-left: .35rem; }
 .expression-editor:focus-within { outline: 2px solid #d7e6ff; border-color: #bfd3f6; }
 .calculator .expression-editor #expression { margin: 0; border: 0; border-radius: 0; outline: 0; }
 .expression-editor .math-preview { margin: 0 .9rem; padding: .65rem 0 .8rem; border-top: 1px solid #e7edf6; min-height: 0; }
+
+.prefix-note { color: var(--muted); font-size: .82rem; margin: .1rem .9rem .65rem; }
+.result-relation { margin: -.7rem 0 .35rem !important; color: var(--muted); }
+.calculator .result-relation, .calculator #result-prefix { margin-left: 0; }
+.constant-list small { color: var(--muted); }
+
+.menu-option { min-width: 0; overflow-wrap: anywhere; word-break: break-word; }
+.menu-option strong, .menu-option span { min-width: 0; overflow-wrap: anywhere; word-break: break-word; }
+.menu-items { min-width: 0; }
+
+.autocomplete-list { display: grid; gap: .2rem; padding: .35rem; border: 1px solid var(--border); border-radius: 10px; background: #fff; box-shadow: 0 8px 20px rgba(18,36,69,.1); margin-top: .3rem; max-height: 260px; overflow-y: auto; }
+.autocomplete-list[hidden] { display: none; }
+.autocomplete-option { display: flex; gap: .65rem; align-items: baseline; margin: 0; padding: .5rem; background: transparent; color: var(--text); text-align: left; min-width: 0; overflow-wrap: anywhere; }
+.autocomplete-option[aria-selected="true"], .autocomplete-option:hover { background: #eef3fd; filter: none; }
+.autocomplete-option strong, .autocomplete-option span { min-width: 0; overflow-wrap: anywhere; }
+.autocomplete-option span { color: var(--muted); font-size: .83rem; }

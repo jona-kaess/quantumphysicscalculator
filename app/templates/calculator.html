@@ -6,14 +6,16 @@
     <div class="panel">
         <label for="expression">Expression</label>
         <div class="expression-editor">
-            <input id="expression" type="text" autocomplete="off" spellcheck="false" placeholder="Try hbar * 10 GHz or 7/8" aria-describedby="input-help">
+            <input id="expression" type="text" autocomplete="off" spellcheck="false" placeholder="Try hbar * 10 GHz or 7/8" aria-describedby="input-help" aria-autocomplete="list" aria-controls="autocomplete-list" aria-expanded="false" role="combobox">
             <div id="expression-preview" class="math-preview" aria-live="polite" aria-label="Formatted expression" hidden></div>
+            <div id="input-prefixes" class="prefix-note" hidden></div>
         </div>
+        <div id="autocomplete-list" class="autocomplete-list" role="listbox" aria-label="Expression suggestions" hidden></div>
         <div class="calculator-toolbar">
             <button type="button" class="secondary" id="constants-button" aria-expanded="false" aria-controls="insert-menu">Constants <kbd>Ctrl K</kbd></button>
             <button type="button" class="secondary" id="units-button" aria-expanded="false" aria-controls="insert-menu">Units <kbd>Ctrl E</kbd></button>
         </div>
-        <p id="input-help" class="hint">Use +, −, *, /, ^ and parentheses. Scientific notation uses uppercase E, for example 1E6. Units may follow a number directly.</p>
+        <p id="input-help" class="hint">Use +, −, *, /, ^ and parentheses. Scientific notation uses uppercase E, for example 1E6. Units may follow a number directly. Use ↑/↓ and Enter or Tab to insert suggestions.</p>
         <div id="insert-menu" class="insert-menu" hidden>
             <label for="menu-search">Search</label>
             <input id="menu-search" type="search" placeholder="Search by name or symbol">
@@ -26,7 +28,9 @@
     </div>
     <div class="panel" id="result-panel" hidden>
         <span class="eyebrow">RESULT <span id="dimension-tag" class="dimension-tag"></span></span>
-        <p class="calculator-result"><span id="calculator-result"></span> <span id="result-unit-label" class="unit-color"></span></p>
+        <p class="calculator-result" id="calculator-result"></p>
+        <p id="result-relation" class="result-relation" hidden></p>
+        <p id="result-prefix" class="prefix-note" hidden></p>
         <div id="conversion-section"><label for="result-unit-search">Choose a unit</label><input id="result-unit-search" type="search" placeholder="Search units"><select id="result-unit" aria-label="Result unit"></select><p id="result-unit-empty" class="hint" hidden>No matching units.</p></div>
         <div id="constant-section" hidden><h2>Constants used</h2><div id="constant-list" class="constant-list"></div><p class="hint">Values from SciPy 1.14.1 / CODATA 2018; exact SI definitions where applicable.</p></div>
         <p class="hint temperature-note" id="temperature-note" hidden>Absolute temperature conversions assume K is an absolute temperature. Use deltaC or deltaF for differences; absolute °C and °F values cannot be multiplied or divided.</p>
