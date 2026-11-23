@@ -1,11 +1,10 @@
 (() => {
     const engine=PhysicsEngine, $=id=>document.getElementById(id), input=$('expression');
     let menuMode='', start=0, end=0, resultChoices=[], selectedUnit='', manualUnit=false, suggestions=[], suggestionIndex=0, completionRange=null;
-    let lastResult=null, lastText='', answer=null, currentLatex='', enteringAnswer=false;
-    const savedKey='physics-calculator-saved-v1', answerKey='physics-calculator-answer-v1';
+    let currentLatex='';
+    const savedKey='physics-calculator-saved-v1';
     const readStorage=(key,fallback)=>{try{return JSON.parse(localStorage.getItem(key))??fallback;}catch{return fallback;}};
     const writeStorage=(key,value)=>{try{localStorage.setItem(key,JSON.stringify(value));return true;}catch{return false;}};
-    answer=readStorage(answerKey,null); if(answer && Array.isArray(answer.dim) && answer.dim.length===7 && Number.isFinite(answer.value)) engine.setAnswer(answer); else answer=null;
     const versions=new WeakMap();
     const fmt=x=>Number(x.toPrecision(9)).toString().replace(/e([+-]?\d+)/,'E$1');
     const mathNumber=x=>String(x).replace(/[eE]([+-]?\d+)/,(_,power)=>`\\times 10^{${Number(power)}}`);
@@ -72,7 +71,7 @@
             const separator=/\s+eq(?:\s+|$)/.exec(text), expression=separator?text.slice(0,separator.index).trim():text, target=separator?text.slice(separator.index+separator[0].length).trim():null;
             const result=engine.evaluate(expression,$('angle-mode').value==='1'?'deg':'rad');
             const requested=target!==null?engine.requestedConversion(result,target):null;
-            lastResult=result; lastText=text; currentLatex=result.latex; $('calculator-error').textContent=''; panel.hidden=false; $('expression-preview').hidden=false; renderMath($('expression-preview'),result.latex);
+            currentLatex=result.latex; $('calculator-error').textContent=''; panel.hidden=false; $('expression-preview').hidden=false; renderMath($('expression-preview'),result.latex);
             $('input-prefixes').hidden=!result.usedPrefixes.length;
             if(result.usedPrefixes.length) renderMath($('input-prefixes'),result.usedPrefixes.map(p=>`\\mathrm{${['µ','mu','u'].includes(p.symbol)?'\\mu':p.symbol}}:\\;\\times 10^{${p.power}}`).join(',\\quad '));
             $('dimension-tag').textContent=engine.dimensionName(result.dim);
@@ -141,19 +140,9 @@
         if(mode==='units') {const sel=$('unit-group');sel.replaceChildren(); ['Any',...[...new Set(Object.values(engine.units).map(u=>u.group))].sort()].forEach(group=>{const o=document.createElement('option');o.value=group;o.textContent=group;sel.append(o);});}
         populateMenu(); $('menu-search').focus();
     }
-    function rememberAnswer(nextText='') {if(lastResult && (!/\bANS\b/.test(lastText) || !/\bANS\b/.test(nextText))) {answer=lastResult; engine.setAnswer(answer); writeStorage(answerKey,answer);}}
-    input.addEventListener('input',()=>{
-        // A is also the ampere unit. While the user types A → AN → ANS,
-        // retain the answer from before that token instead of saving 1 A.
-        const beforeCursor=input.value.slice(0,input.selectionStart);
-        const answerToken=/(?:^|[^A-Za-z0-9_µ])A(?:N(?:S)?)?$/.test(beforeCursor);
-        if(!answerToken || !enteringAnswer) rememberAnswer(input.value);
-        enteringAnswer=answerToken;
-        $('result-unit-search').value=''; update(); showSuggestions();
-    });
-    window.addEventListener('pagehide',()=>rememberAnswer());
+    input.addEventListener('input',()=>{ $('result-unit-search').value=''; update(); showSuggestions();});
     $('clear-expression').addEventListener('mousedown',e=>e.preventDefault());
-    $('clear-expression').addEventListener('click',()=>{rememberAnswer(); enteringAnswer=false; input.value=''; manualUnit=false; $('result-unit-search').value=''; closeMenu(); hideSuggestions(); update(); input.focus();});
+    $('clear-expression').addEventListener('click',()=>{input.value=''; manualUnit=false; $('result-unit-search').value=''; closeMenu(); hideSuggestions(); update(); input.focus();});
     input.addEventListener('scroll',()=>{$('expression-highlight').scrollLeft=input.scrollLeft;});
     $('angle-mode').addEventListener('input',()=>{$('angle-label').textContent=$('angle-mode').value==='1'?'Degrees':'Radians'; update();});
     input.addEventListener('click',showSuggestions);
@@ -187,11 +176,18 @@
     function renderSaved() {
         const list=$('saved-list'), entries=readStorage(savedKey,[]); list.replaceChildren();
         if(!Array.isArray(entries)||!entries.length) {list.textContent='No saved calculations yet.'; return;}
-        entries.forEach((item,index)=>{const row=document.createElement('div'), restore=document.createElement('button'), remove=document.createElement('button'); row.className='saved-row'; restore.type=remove.type='button'; restore.className='secondary saved-restore'; remove.className='secondary'; restore.textContent=item.expression; remove.textContent='Delete'; remove.setAttribute('aria-label',`Delete ${item.expression}`);
-            restore.addEventListener('click',()=>{if(item.answer && /\bANS\b/.test(item.expression)) {answer=item.answer; engine.setAnswer(answer); writeStorage(answerKey,answer);} input.value=item.expression; $('angle-mode').value=item.angle==='deg'?'1':'0'; $('angle-label').textContent=item.angle==='deg'?'Degrees':'Radians'; selectedUnit=item.unit||''; manualUnit=!!selectedUnit; $('result-unit-search').value=''; update(); input.focus();});
-            remove.addEventListener('click',()=>{entries.splice(index,1); if(!writeStorage(savedKey,entries)) $('action-status').textContent='Could not update browser storage.'; renderSaved();}); row.append(restore,remove); list.append(row);});
+        entries.forEach((item,index)=>{const row=document.createElement('div'), restore=document.createElement('button'), remove=document.createElement('button'); row.className='saved-row'; restore.type=remove.type='button'; restore.className='secondary saved-restore'; remove.className='secondary'; restore.textContent=item.expression; restore.setAttribute('aria-label',`Restore ${item.expression}`); remove.textContent='Delete'; remove.setAttribute('aria-label',`Delete ${item.expression}`);
+            restore.addEventListener('click',()=>{ input.value=item.expression; $('angle-mode').value=item.angle==='deg'?'1':'0'; $('angle-label').textContent=item.angle==='deg'?'Degrees':'Radians'; selectedUnit=item.unit||''; manualUnit=!!selectedUnit; $('result-unit-search').value=''; update(); input.focus();});
+            remove.addEventListener('click',()=>{entries.splice(index,1); if(!writeStorage(savedKey,entries)) $('action-status').textContent='Could not update browser storage.'; renderSaved();}); row.append(restore,remove); list.append(row);
+            try {
+                const match=/\s+eq\s+([A-Za-z0-9µ_/*^().\-\s]+)$/.exec(item.expression);
+                const expression=match?item.expression.slice(0,match.index):item.expression;
+                const suffix=match?`\\;\\mathrm{eq}\\;\\mathrm{${match[1].replaceAll('_','\\_').replace(/\s+/g,'\\,')}}`:'';
+                renderMath(restore,engine.formatExpression(expression)+suffix);
+            } catch { /* Keep the original text for entries that cannot be parsed. */ }
+        });
     }
-    $('save-calculation').addEventListener('click',()=>{if(!currentLatex) {$('action-status').textContent='Enter a valid expression first.'; return;} const entries=readStorage(savedKey,[]); if(!Array.isArray(entries)) return; entries.unshift({expression:input.value,angle:$('angle-mode').value==='1'?'deg':'rad',unit:selectedUnit,answer:/\bANS\b/.test(input.value)?answer:null}); $('action-status').textContent=writeStorage(savedKey,entries)?'Calculation saved.':'Could not save in browser storage.'; renderSaved();});
+    $('save-calculation').addEventListener('click',()=>{if(!currentLatex) {$('action-status').textContent='Enter a valid expression first.'; return;} const entries=readStorage(savedKey,[]); if(!Array.isArray(entries)) return; entries.unshift({expression:input.value,angle:$('angle-mode').value==='1'?'deg':'rad',unit:selectedUnit}); $('action-status').textContent=writeStorage(savedKey,entries)?'Calculation saved.':'Could not save in browser storage.'; renderSaved();});
     document.addEventListener('keydown',e=>{if((e.ctrlKey||e.metaKey)&&['k','e','y'].includes(e.key.toLowerCase())) {e.preventDefault();openMenu({k:'constants',e:'units',y:'functions'}[e.key.toLowerCase()]);} else if(e.key==='Escape'&&!$('insert-menu').hidden){closeMenu();input.focus();}});
     ['hbar * 10 GHz','7/8','1E6 eV','20 degC - 10 degC','2 kg * 9.81 m / s^2','10 GHz_energy'].forEach(example=>{const b=document.createElement('button');b.type='button';b.className='example-button';b.textContent=example;b.addEventListener('click',()=>{input.value=example;input.focus();manualUnit=false;$('result-unit-search').value='';update();});$('examples').append(b);});
     $('expression-highlight').parentElement.classList.add('syntax-active');

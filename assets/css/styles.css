@@ -266,7 +266,7 @@ kbd { font-size: .75rem; opacity: .7; padding-left: .35rem; }
 .expression-actions button { margin: 0; padding: .45rem .65rem; font-size: .85rem; }
 #action-status { color: var(--muted); font-size: .85rem; }
 .saved-row { display: flex; gap: .5rem; margin-top: .5rem; }
-.saved-restore { flex: 1; min-width: 0; overflow-wrap: anywhere; text-align: left; }
+.saved-restore { flex: 1; min-width: 0; overflow-x: auto; overflow-wrap: anywhere; text-align: left; }
 
 /* Keep touch targets and the editor usable when the on-screen keyboard is open. */
 @media (max-width: 600px) {

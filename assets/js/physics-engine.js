@@ -57,8 +57,6 @@
         constants[symbol]=item;
         if(/^[A-Za-zµ_][A-Za-z0-9µ_]*$/.test(short) && !U[short] && !constants[short]) constants[short]=item;
     }
-    let answer=null;
-    function setAnswer(value) { answer=value ? {...value,dim:[...value.dim]} : null; }
     const commonAliases={
         'electron mass':['m_e','m_e'], 'proton mass':['m_p','m_p'], 'neutron mass':['m_n','m_n'],
         'fine-structure constant':['alpha','\\alpha'], 'vacuum electric permittivity':['epsilon_0','\\epsilon_0'],
@@ -102,7 +100,6 @@
                 if(!peek()||take().type!==')') throw Error('Missing closing parenthesis.');
                 return {kind:'function',name:({Re:'re',Im:'im',Arg:'arg'})[t.value]||t.value,args};
             }
-            if(t.type==='name' && t.value==='ANS') return {kind:'answer'};
             if(t.type==='name' && t.value==='i') return {kind:'imaginary'};
             if(t.type==='name' && t.value==='euler') return {kind:'euler'};
             if(t.type==='name') {if(!U[t.value]&&!constants[t.value]) throw Error(`Unknown symbol “${t.value}”. Use uppercase E for scientific notation.`); if(constants[t.value]) used.add(t.value); for(const key of U[t.value]?.constants||[]) used.add(key); if(U[t.value]?.prefix) usedPrefixes.set(U[t.value].prefix,Math.round(Math.log10(prefixes[U[t.value].prefix]))); return {kind:U[t.value]?'unit':'constant',text:t.value};}
@@ -136,7 +133,6 @@
         const multiplication=(a,b)=>[a.value*b.value-imaginary(a)*imaginary(b),a.value*imaginary(b)+imaginary(a)*b.value];
         const divide=(a,b)=>{const d=b.value*b.value+imaginary(b)*imaginary(b); if(!d) throw Error('Division by zero.'); return [(a.value*b.value+imaginary(a)*imaginary(b))/d,(imaginary(a)*b.value-a.value*imaginary(b))/d];};
         const cpow=(a,b)=>{ if(!imaginary(a) && !imaginary(b) && (a.value>=0 || Number.isInteger(b.value))) return [a.value**b.value,0]; const magnitude=Math.hypot(a.value,imaginary(a)); if(!magnitude) throw Error('Undefined power of zero.'); const l=Math.log(magnitude), phi=Math.atan2(imaginary(a)||0,a.value), r=Math.exp(b.value*l-imaginary(b)*phi), t=b.value*phi+imaginary(b)*l; return [r*Math.cos(t),r*Math.sin(t)]; };
-        if(n.kind==='answer') {if(!answer) throw Error('No previous answer yet.'); return {...answer,dim:[...answer.dim]};}
         if(n.kind==='imaginary') return number(0,1);
         if(n.kind==='euler') return number(Math.E);
         if(n.kind==='postfix') return evaluateChild({kind:'function',name:n.op==='!'?'factorial':'percent',args:[n.child]});
@@ -196,7 +192,6 @@
         return {value:real,imag,angle:!!(n.kind==='*'&&(a.angle||b.angle)||n.kind==='/'&&a.angle&&!b.angle&&scalar(b.dim)),dim:a.dim.map((v,i)=>v+(n.kind==='*'?b.dim[i]:-b.dim[i])),temperatureDifference:!!(a.temperatureDifference&&scalar(b.dim)||b.temperatureDifference&&scalar(a.dim)&&n.kind==='*')};
     }
     function latex(n) {
-        if(n.kind==='answer') return '{\\color{purple}\\mathrm{ANS}}';
         if(n.kind==='imaginary') return 'i';
         if(n.kind==='euler') return '\\mathrm{e}';
         if(n.kind==='function') { const args=n.args.map(latex); if(n.name==='sqrt') return `{\\color{brown}\\sqrt{{\\color{black}${args[0]}}}}`; if(n.name==='abs') return `{\\color{brown}\\left|{\\color{black}${args[0]}}\\right|}`; return `{\\color{brown}\\operatorname{${n.name}}\\left({\\color{black}${args.join(', ')}}\\right)}`; }
@@ -288,7 +283,7 @@
         while((match=pattern.exec(text))) {
             if(match.index>end) parts.push({text:text.slice(end,match.index),type:'plain'});
             const symbol=match[0];
-            let type=Object.hasOwn(FUNCTIONS,symbol)?'function':Object.hasOwn(U,symbol)?'unit':Object.hasOwn(constants,symbol)||['i','euler','ANS'].includes(symbol)?'constant':'plain';
+            let type=Object.hasOwn(FUNCTIONS,symbol)?'function':Object.hasOwn(U,symbol)?'unit':Object.hasOwn(constants,symbol)||['i','euler'].includes(symbol)?'constant':'plain';
             if(symbol==='(') {const isFunction=previousType==='function' && /^\s*$/.test(text.slice(end,match.index)); parentheses.push(isFunction); if(isFunction) type='function';}
             else if(symbol===')' && parentheses.pop()) type='function';
             parts.push({text:symbol,type}); previousType=symbol==='('||symbol===')'?'plain':type; end=pattern.lastIndex;
@@ -301,7 +296,7 @@
         if(!token) return {start:cursor,end:cursor,items:[]};
         const query=token[0].toLowerCase();
         const unitItems=Object.values(U).filter(u=>!u.prefix || (query.length>=2 && u.symbol.toLowerCase().startsWith(query))).map(u=>({symbol:u.symbol,name:u.name,type:'unit'}));
-        const pool=[...constantItems(),...Object.entries(FUNCTIONS).map(([symbol,name])=>({symbol,name,type:'function'})),{symbol:'ANS',name:'Previous answer',type:'constant'},{symbol:'i',name:'Imaginary unit',type:'constant'},{symbol:'euler',name:'Euler number',type:'constant'},...unitItems];
+        const pool=[...constantItems(),...Object.entries(FUNCTIONS).map(([symbol,name])=>({symbol,name,type:'function'})),{symbol:'i',name:'Imaginary unit',type:'constant'},{symbol:'euler',name:'Euler number',type:'constant'},...unitItems];
         const items=searchItems(pool,token[0]).filter(x=>x.symbol.toLowerCase().startsWith(query)||x.name.toLowerCase().startsWith(query)).slice(0,8);
         const remainder=text.slice(cursor).match(/^[A-Za-z0-9µ_]*/)[0];
         return {start:cursor-token[0].length,end:cursor+remainder.length,items};
@@ -336,5 +331,6 @@
         if(!found) return {value:choice.value,imag:choice.imag||0,label:choice.label,power:0,prefix:''};
         const [prefix,power]=found; return {value:choice.value/10**power,imag:(choice.imag||0)/10**power,label:prefix+choice.label,power,prefix};
     }
-    return {units:U,constants,functions:FUNCTIONS,dimensions:D,parse,evaluate,setAnswer,conversions,requestedConversion,dimensionName,searchItems,constantItems,highlightTokens,completions,chooseDefault,scaledChoice};
+    function formatExpression(text) {return latex(parse(text).tree);}
+    return {units:U,constants,functions:FUNCTIONS,dimensions:D,parse,evaluate,formatExpression,conversions,requestedConversion,dimensionName,searchItems,constantItems,highlightTokens,completions,chooseDefault,scaledChoice};
 });

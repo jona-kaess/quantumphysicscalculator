@@ -45,12 +45,9 @@ dimension when possible. Otherwise, energies involving Planck's constant,
 Boltzmann's constant or the Bohr magneton default to electronvolts; other
 results use standard units. A manually selected output unit takes precedence.
 
-`ANS` uses the previous valid result, including its dimensions and temperature
-type. The answer is kept while editing an expression containing `ANS`, and is
-updated when starting another expression. Save calculations to restore their
-expression, angle setting, selected result unit and any referenced `ANS` later;
-they are stored locally in this browser. The Copy LaTeX button copies the
-formatted input expression. On small screens, type names to use autocomplete.
+Saved calculations retain their expression, angle setting and selected result
+unit locally in this browser. The Copy LaTeX button copies the formatted input
+expression. On small screens, type names to use autocomplete.
 
 The calculator can be installed as a PWA through a compatible browser on HTTPS
 (or localhost). After the first online visit its application files are cached

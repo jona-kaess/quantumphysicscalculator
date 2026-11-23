@@ -205,14 +205,6 @@ test('every registered unit and constant parses and exposes a finite result', ()
     for(const [key,u] of Object.entries(engine.units)) {const r=engine.evaluate(`1 ${key}`); assert.ok(Number.isFinite(r.value),key); assert.deepEqual(r.dim,u.dim,key);}
     for(const [key,c] of Object.entries(engine.constants)) {const r=engine.evaluate(key); close(r.value,c.value); assert.deepEqual(r.used,[key]);}
 });
-test('ANS preserves dimensions, complex values and absolute temperature', () => {
-    engine.setAnswer(null); assert.throws(()=>engine.evaluate('ANS'),/No previous answer/);
-    engine.setAnswer(engine.evaluate('2 m')); close(engine.evaluate('ANS / 2s').value,1); assert.deepEqual(engine.evaluate('ANS / 2s').dim,engine.dimensions.velocity);
-    engine.setAnswer(engine.evaluate('2 + 3i')); close(engine.evaluate('ANS * 2').imag,6);
-    engine.setAnswer(engine.evaluate('20 degC')); close(engine.evaluate('ANS - 10 degC').value,10);
-    assert.throws(()=>engine.evaluate('ANS * 2'),/Absolute/);
-    engine.setAnswer(null);
-});
 test('formatting and defaults for units and equivalent choices', () => {
     assert.match(engine.evaluate('20 degC').latex,/\^\\circ/);
     assert.match(engine.evaluate('1 ohm').latex,/\\Omega/);
