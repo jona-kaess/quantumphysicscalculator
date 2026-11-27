@@ -220,7 +220,7 @@ kbd { font-size: .75rem; opacity: .7; padding-left: .35rem; }
 .preview-row { scrollbar-width: none; }
 .preview-row::-webkit-scrollbar { display: none; }
 .preview-row:has(.math-preview[hidden]):not(:has(#calculator-error:not(:empty))) { display: none; }
-.expression-editor .math-preview { margin: 0; padding: .65rem 0 .8rem; min-height: 0; overflow: visible; flex: 1 0 auto; }
+.expression-editor .math-preview { margin: 0; padding: .3rem 0; min-height: 0; overflow: visible; flex: 1 0 auto; }
 .expression-editor .math-preview { max-height: 3.5em; overflow-y: auto; scrollbar-width: none; }
 .preview-result:not([hidden]) { display: flex; align-items: baseline; gap: .4rem; flex: 0 0 auto; white-space: nowrap; font-size: 1.2rem; }
 
@@ -255,7 +255,8 @@ kbd { font-size: .75rem; opacity: .7; padding-left: .35rem; }
 .expression-highlight { position: absolute; inset: 0; white-space: pre-wrap; overflow-wrap: anywhere; overflow: hidden; pointer-events: none; color: var(--text); }
 .calculator .expression-input-layer #expression { display: block; width: 100%; height: 4.5rem; min-height: 4.5rem; resize: none; overflow-y: auto; overflow-x: hidden; white-space: pre-wrap; overflow-wrap: anywhere; scrollbar-width: none; }
 .calculator .expression-input-layer #expression::-webkit-scrollbar { display: none; }
-.math-preview mjx-container, .math-preview mjx-math { max-width: 100%; white-space: normal; overflow-wrap: anywhere; line-height: 1.55; }
+.math-preview mjx-container, .math-preview mjx-math { max-width: 100%; white-space: normal; overflow-wrap: anywhere; }
+.math-preview mjx-math { line-height: normal; }
 .syntax-active #expression { position: relative; background: transparent; color: transparent; caret-color: var(--text); }
 .syntax-active #expression::placeholder { color: #7d8c9f; opacity: 1; }
 .syntax-active #expression::selection { color: transparent; background: rgba(19,102,214,.25); }

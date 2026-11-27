@@ -8,7 +8,7 @@
     const versions=new WeakMap();
     const fmt=x=>{
         const rounded=Number(x.toPrecision(9));
-        if(rounded && (Math.abs(rounded)<1e-3 || Math.abs(rounded)>=1e9)) return rounded.toExponential().replace(/e([+-]?\d+)/,'E$1');
+        if(rounded && (Math.abs(rounded)<1e-2 || Math.abs(rounded)>=1e9)) return rounded.toExponential().replace(/e([+-]?\d+)/,'E$1');
         return rounded.toString().replace(/e([+-]?\d+)/,'E$1');
     };
     const mathNumber=x=>String(x).replace(/[eE]([+-]?\d+)/,(_,power)=>`\\times 10^{${Number(power)}}`);

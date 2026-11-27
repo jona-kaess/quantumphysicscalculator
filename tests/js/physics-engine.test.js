@@ -24,7 +24,11 @@ test('arithmetic, precedence, implicit multiplication and scientific notation', 
     close(engine.evaluate('-2^2').value,-4);
     close(engine.evaluate('1E6 + 2E-3').value,1000000.002);
     close(engine.evaluate('10GHz').value,1e10);
-    assert.match(engine.evaluate('7/8').latex,/\\frac\{7\}\{8\}/);
+    assert.match(engine.evaluate('7/8').latex,/\\tfrac\{7\}\{8\}/);
+    for (const expression of ['4 fF/m^2','4fF/m^2','-4 mF/m^2']) {
+        assert.match(engine.evaluate(expression).latex,/^-?4\\,\\tfrac\{/);
+    }
+    assert.match(engine.evaluate('4 V / 10 A').latex,/^\\tfrac\{/);
     assert.match(engine.evaluate('1E6').latex,/10\^\{6\}/);
 });
 test('scientific functions, powers, factorial, percent and modulo', () => {
@@ -80,7 +84,7 @@ test('a unit attached to a denominator number stays in the denominator', () => {
         const result=engine.evaluate(expression);
         close(result.value,0.5);
         assert.equal(engine.dimensionName(result.dim),'resistance');
-        assert.match(result.latex,/\\frac\{.*\}\{10.*\\mathrm\{A\}.*\}/);
+        assert.match(result.latex,/\\tfrac\{.*\}\{10.*\\mathrm\{A\}.*\}/);
     }
     const spaced=engine.evaluate('5V / 10 A');
     close(spaced.value,0.5);
@@ -237,4 +241,24 @@ test('curated constants use distinct symbols and reject unlisted entries', () =>
     assert.ok(!engine.constantItems().some(item=>item.symbol.startsWith('scipy_')));
     close(engine.evaluate('electron_mass').value,engine.evaluate('m_e').value);
     for(const symbol of Object.keys(engine.constants)) assert.ok(!engine.units[symbol],`unit collision: ${symbol}`);
+});
+
+
+test('double-star powers and CGS units', () => {
+    close(engine.evaluate('2**3**2').value,512);
+    close(engine.evaluate('-2**2').value,-4);
+    close(engine.evaluate('2 m**2').value,2);
+    assert.match(engine.evaluate('2**3').latex,/\^/);
+    for (const [symbol, value, dimension] of [
+        ['cm',0.01,'length'],['g',0.001,'mass'],['dyn',1e-5,'force'],
+        ['erg',1e-7,'energy'],['Ba',0.1,'pressure / energy density'],['Gal',0.01,'acceleration'],
+        ['P',0.1,null],['St',1e-4,null],['G',1e-4,'magnetic flux density'],['Mx',1e-8,'magnetic flux']
+    ]) {
+        const result=engine.evaluate('1 '+symbol);
+        close(result.value,value);
+        if(dimension) assert.equal(engine.dimensionName(result.dim),dimension);
+        if(symbol!=='cm') assert.ok(engine.conversions(result).some(choice=>choice.key===symbol));
+        close(engine.requestedConversion(result,symbol,'1 '+symbol).value,1);
+    }
+    close(engine.requestedConversion(engine.evaluate('1 erg'),'J','1 erg').value,1e-7);
 });

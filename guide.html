@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="theme-color" content="#171b22">
     <title>Calculator guide</title>
-    <link rel="stylesheet" href="assets/css/styles.css?v=38e9622e3f76">
+    <link rel="stylesheet" href="assets/css/styles.css?v=ba953239f241">
 </head>
 <body>
 <main class="container guide-page">
@@ -16,7 +16,7 @@
 
     <h2>Calculate</h2>
     <ul>
-        <li><code>7/8</code>, <code>2*(3+4)</code>, <code>2^3</code>, <code>5!</code>, <code>50%</code> and <code>mod(11,3)</code> work as expected.</li>
+        <li><code>7/8</code>, <code>2*(3+4)</code>, <code>2^3</code> (or <code>2**3</code>), <code>5!</code>, <code>50%</code> and <code>mod(11,3)</code> work as expected.</li>
         <li>For scientific notation use uppercase <code>E</code>: <code>1E6</code> or <code>1E-3</code>. Lowercase <code>e</code> is the elementary charge; <code>euler</code> is Euler’s number.</li>
         <li>For complex numbers use <code>i</code>, for example <code>(2+3i)*2</code>.</li>
     </ul>
@@ -25,6 +25,7 @@
     <ul>
         <li>Write a unit next to a number: <code>10GHz</code>, <code>2 kg</code> or <code>3 m/s</code>. Prefixes such as <code>m</code>, <code>k</code>, <code>G</code>, <code>u</code>, <code>mu</code> and <code>µ</code> are supported.</li>
         <li>Examples: <code>hbar * 25 GHz</code>, <code>k_B * 300 K</code> and <code>2 kg * 9.81 m / s^2</code>. Used constants and their values appear below the result.</li>
+        <li>CGS units include centimetres (<code>cm</code>), grams (<code>g</code>), seconds (<code>s</code>), <code>dyn</code>, <code>erg</code>, <code>Ba</code>, <code>Gal</code>, <code>P</code>, <code>St</code>, <code>G</code> and <code>Mx</code>. CGS electromagnetic conventions differ; these magnetic units are converted to their SI equivalents.</li>
         <li>Other examples include <code>1 in</code>, <code>1 gal_US</code>, <code>1 gal_UK</code>, <code>1 F</code>, <code>1 G</code> and <code>1 kcal</code>. US and UK volume units have separate names.</li>
         <li>Dimensions must match when adding or subtracting. <code>5V / 10A</code> divides two quantities; <code>5V / 10 A</code> multiplies by A after division. Parentheses make the order explicit.</li>
         <li>On a keyboard, use <kbd>Ctrl K</kbd> for constants, <kbd>Ctrl E</kbd> for units and <kbd>Ctrl Y</kbd> for functions. You can also type a name and select a suggestion; use ↑/↓ and Enter or Tab on a keyboard.</li>

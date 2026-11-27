@@ -25,6 +25,12 @@
     unit('min','minute','Time',60,'time'); unit('hr','hour','Time',3600,'time'); unit('L','litre','Volume',1e-3,'length',{dim:[3,0,0,0,0,0,0]});
     unit('l','litre','Volume',1e-3,'length',{dim:[3,0,0,0,0,0,0]});
     unit('F','farad','Capacitance',1,'scalar',{dim:[-2,-1,4,2,0,0,0]}); unit('H','henry','Inductance',1,'scalar',{dim:[2,1,-2,-2,0,0,0]}); unit('S','siemens','Conductance',1,'scalar',{dim:[-2,-1,3,2,0,0,0]}); unit('Wb','weber','Magnetic flux',1,'scalar',{dim:[2,1,-2,-1,0,0,0]});
+    // CGS mechanical and Gaussian magnetic units, expressed in SI base units.
+    unit('dyn','dyne (CGS)','Force',1e-5,'force'); unit('erg','erg (CGS)','Energy',1e-7,'energy');
+    unit('Ba','barye (CGS)','Pressure',0.1,'pressure'); unit('Gal','gal (CGS)','Acceleration',0.01,'acceleration');
+    unit('P','poise (CGS)','Dynamic viscosity',0.1,'scalar',{dim:[-1,1,-1,0,0,0,0]});
+    unit('St','stokes (CGS)','Kinematic viscosity',1e-4,'scalar',{dim:[2,0,-1,0,0,0,0]});
+    unit('Mx','maxwell (CGS)','Magnetic flux',1e-8,'magnetic flux');
     unit('G','gauss','Magnetic field',1e-4,'magnetic'); unit('gauss','gauss','Magnetic field',1e-4,'magnetic'); unit('cal','calorie (thermochemical)','Energy',4.184,'energy'); unit('kcal','kilocalorie (thermochemical)','Energy',4184,'energy'); unit('Wh','watt-hour','Energy',3600,'energy'); unit('kWh','kilowatt-hour','Energy',3.6e6,'energy');
     unit('bar','bar','Pressure',1e5,'pressure'); unit('atm','standard atmosphere','Pressure',101325,'pressure'); unit('torr','torr','Pressure',101325/760,'pressure'); unit('psi','pound-force per square inch','Pressure',6894.757293168,'pressure');
     unit('in','inch','Length',0.0254,'length'); unit('ft','foot','Length',0.3048,'length'); unit('yd','yard','Length',0.9144,'length'); unit('mi','mile','Length',1609.344,'length'); unit('angstrom','ångström','Length',1e-10,'length');
@@ -116,6 +122,7 @@
             const rest=text.slice(i), num=rest.match(/^(?:\d+(?:\.\d*)?|\.\d+)(?:E[+-]?\d+)?/), ident=rest.match(/^[A-Za-zµ_][A-Za-z0-9µ_]*/);
             if(num) { result.push({type:'number',value:num[0],start:i,end:i+num[0].length}); i+=num[0].length; continue; }
             if(ident) { result.push({type:'name',value:ident[0],start:i,end:i+ident[0].length}); i+=ident[0].length; continue; }
+            if(rest.startsWith('**')) {result.push({type:'^',value:'^',start:i,end:i+2}); i+=2; continue;}
             if('+-*/^(),!%'.includes(text[i])) {result.push({type:text[i],value:text[i],start:i,end:i+1}); i++; continue;}
             throw Error(`Unexpected character “${text[i]}”.`);
         }
@@ -239,7 +246,14 @@
         if(n.kind==='constant') return `{\\color{purple}${constants[n.text].latex}}`;
         if(n.kind==='group') return `\\left(${latex(n.child)}\\right)`;
         if(n.kind==='unary') return n.op+latex(n.child);
-        if(n.kind==='/') return `\\frac{${latex(n.left)}}{${latex(n.right)}}`;
+        if(n.kind==='/') {
+            const numeric=node=>node.kind==='number' || (node.kind==='unary' && node.child.kind==='number');
+            const unitsOnly=node=>node.kind==='unit' || (node.kind==='^' && unitsOnly(node.left)) || (node.kind==='*' && unitsOnly(node.left) && unitsOnly(node.right));
+            if(n.left.kind==='*' && n.left.implicit && numeric(n.left.left) && unitsOnly(n.left.right) && unitsOnly(n.right)) {
+                return `${latex(n.left.left)}\\,\\tfrac{${latex(n.left.right)}}{${latex(n.right)}}`;
+            }
+            return `\\tfrac{${latex(n.left)}}{${latex(n.right)}}`;
+        }
         if(n.kind==='^') return `{${latex(n.left)}}^{${latex(n.right)}}`;
         const isNumber=node=>node.kind==='number' || (node.kind==='unary' && node.child.kind==='number');
         // Multiplication is left associative: in x * 0.1V the unit is
