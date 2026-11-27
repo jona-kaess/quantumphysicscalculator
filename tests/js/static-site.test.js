@@ -27,7 +27,7 @@ test('PWA manifest and offline shell use deployable relative resources',()=>{
     assert.ok(!manifest.start_url.startsWith('/'));
     for(const icon of manifest.icons) assert.ok(fs.existsSync(icon.src));
     const worker=fs.readFileSync('service-worker.js','utf8');
-    for(const asset of ['index.html','landing.html','assets/css/landing.css','assets/js/physics-engine.js','assets/js/calculator.js']) assert.ok(worker.includes(asset),asset);
+    for(const asset of ['index.html','landing.html','assets/css/landing.css','assets/js/landing.js','assets/js/physics-engine.js','assets/js/calculator.js']) assert.ok(worker.includes(asset),asset);
     assert.match(worker,/ignoreSearch:true/);
 });
 

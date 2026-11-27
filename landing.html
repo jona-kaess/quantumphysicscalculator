@@ -1,80 +1,82 @@
 <!doctype html>
-<html lang="de">
+<html lang="en">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="theme-color" content="#101720">
-    <meta name="description" content="Dein Taschenrechner für Physik: Formeln natürlich eingeben, mit Konstanten und Einheiten rechnen und Ergebnisse umrechnen. Kostenlos direkt im Browser.">
-    <title>Physics Calc — Mehr Physik. Weniger Umwege.</title>
+    <meta name="description" content="Your physics calculator: write formulas naturally, calculate with constants and units, and convert results. Free, right in your browser." data-i18n-content="description">
+    <title data-i18n="title">Physics Calc — More physics. Fewer detours.</title>
     <link rel="manifest" href="manifest.webmanifest">
-    <link rel="icon" type="image/svg+xml" href="assets/logo.svg?v=66c7e594f06b">
-    <link rel="apple-touch-icon" href="assets/icon-192.png?v=a2c5759a4a59">
-    <link rel="stylesheet" href="assets/css/landing.css?v=2e3f4b6a547d">
+    <link rel="icon" type="image/svg+xml" href="assets/logo.svg?v=9d0ec5530336">
+    <link rel="apple-touch-icon" href="assets/icon-192.png?v=b305228dadb6">
+    <link rel="stylesheet" href="assets/css/landing.css?v=1b45ca759540">
+    <script defer src="assets/js/landing.js?v=9125852f662e"></script>
     <script defer src="assets/js/pwa.js?v=99545cea69c7"></script>
 </head>
 <body>
-<a class="skip-link" href="#inhalt">Zum Inhalt</a>
+<a class="skip-link" href="#inhalt" data-i18n="skip">Skip to content</a>
 <header class="site-header page-width">
-    <a class="brand" href="landing.html" aria-label="Physics Calc – Startseite"><img src="assets/logo.svg?v=66c7e594f06b" alt="" width="40" height="40"><span>Physics Calc<span class="brand-caption">QUANTUM PHYSICS CALCULATOR</span></span></a>
-    <nav aria-label="Hauptnavigation">
-        <a class="nav-detail" href="#funktionen">Funktionen</a>
-        <a class="button button-small button-outline" href="index.html">Rechner öffnen <span aria-hidden="true">↗</span></a>
+    <a class="brand" href="landing.html" aria-label="Physics Calc – Home" data-i18n-aria-label="home"><img src="assets/logo.svg?v=9d0ec5530336" alt="" width="40" height="40"><span>Physics Calc<span class="brand-caption">QUANTUM PHYSICS CALCULATOR</span></span></a>
+    <nav aria-label="Main navigation" data-i18n-aria-label="navigation">
+        <label class="language-switch" id="language-control" hidden><select id="landing-language" aria-label="Page language"><option value="en" lang="en">EN</option><option value="de" lang="de">DE</option></select></label>
+        <a class="nav-detail" href="#funktionen" data-i18n="featuresNav">Features</a>
+        <a class="button button-small button-outline" href="index.html" data-i18n="open">Open calculator <span aria-hidden="true">↗</span></a>
     </nav>
 </header>
 <main id="inhalt">
     <section class="hero page-width" aria-labelledby="hero-title">
         <div class="hero-copy">
-            <p class="eyebrow"><span class="status-dot" aria-hidden="true"></span> Für deine nächste gute Frage</p>
-            <h1 id="hero-title">Mehr Physik.<br>Weniger <span>Umwege.</span></h1>
-            <p class="hero-description">Deine Formel, deine Einheiten, direkt das Ergebnis. Ein Taschenrechner, der mitdenkt – vom ersten Bruch bis zur letzten Umrechnung.</p>
-            <div class="hero-actions"><a class="button button-primary" href="index.html">Jetzt losrechnen <span aria-hidden="true">↗</span></a><a class="text-link" href="#so-gehts">So funktioniert’s <span aria-hidden="true">↓</span></a></div>
-            <p class="reassurance">Kostenlos. Ohne Konto. Direkt im Browser.</p>
+            <p class="eyebrow" data-i18n="heroEyebrow"><span class="status-dot" aria-hidden="true"></span> For your next good question</p>
+            <h1 id="hero-title" data-i18n="heroTitle">More physics.<br>Fewer <span>detours.</span></h1>
+            <p class="hero-description" data-i18n="heroDescription">Your formula, your units, straight to the answer. A calculator that keeps up with your thinking, from the first fraction to the final conversion.</p>
+            <div class="hero-actions"><a class="button button-primary" href="index.html" data-i18n="start">Start calculating <span aria-hidden="true">↗</span></a><a class="text-link" href="#so-gehts" data-i18n="howLink">How it works <span aria-hidden="true">↓</span></a></div>
+            <p class="reassurance" data-i18n="reassurance">Free. No account. Right in your browser.</p>
         </div>
         <figure class="calculator-preview">
-            <div class="preview-top"><span class="preview-label"><span class="status-dot" aria-hidden="true"></span> EIN GEDANKE WIRD EIN ERGEBNIS</span><span class="preview-mark" aria-hidden="true">ℏ</span></div>
+            <div class="preview-top"><span class="preview-label" data-i18n="previewLabel"><span class="status-dot" aria-hidden="true"></span> FROM A THOUGHT TO AN ANSWER</span><span class="preview-mark" aria-hidden="true">ℏ</span></div>
             <div class="preview-calculation">
-                <p class="preview-caption">Wie viel Energie hat grünes Licht?</p>
-                <div class="equation"><math aria-label="E gleich h mal c geteilt durch 532 Nanometer"><mi>E</mi><mo>=</mo><mfrac><mrow><mi class="math-constant">h</mi><mo>·</mo><mi class="math-constant">c</mi></mrow><mrow><mn>532</mn><mspace width="0.22em"></mspace><mi class="math-unit" mathvariant="normal">nm</mi></mrow></mfrac></math></div>
-                <div class="preview-answer"><span>Photonenergie</span><strong>2,33053 <span>eV</span></strong></div>
+                <p class="preview-caption" data-i18n="previewQuestion">How much energy does green light have?</p>
+                <div class="equation"><math aria-label="E equals h times c divided by 532 nanometres" data-i18n-aria-label="formula"><mi>E</mi><mo>=</mo><mfrac><mrow><mi class="math-constant">h</mi><mo>·</mo><mi class="math-constant">c</mi></mrow><mrow><mn>532</mn><mspace width="0.22em"></mspace><mi class="math-unit" mathvariant="normal">nm</mi></mrow></mfrac></math></div>
+                <div class="preview-answer"><span data-i18n="photon">Photon energy</span><strong data-i18n="exampleResult">2.33053 <span>eV</span></strong></div>
             </div>
-            <div class="preview-details"><span>Konstanten inklusive</span><div><span class="constant-chip">h <span>Planck</span></span><span class="constant-chip">c <span>Lichtgeschwindigkeit</span></span></div></div>
-            <div class="preview-keys" aria-hidden="true"><span>⅟ₓ</span><span>x²</span><span>√</span><span>( )</span><span class="key-unit">Einheiten</span><span>7</span><span>8</span><span>9</span><span>÷</span><span class="key-constant">ℏ</span></div>
-            <figcaption>Beispielrechnung · Wellenlänge → Energie</figcaption>
+            <div class="preview-details"><span data-i18n="constantsIncluded">Constants included</span><div><span class="constant-chip">h <span>Planck</span></span><span class="constant-chip">c <span data-i18n="lightSpeed">Speed of light</span></span></div></div>
+            <div class="preview-keys" aria-hidden="true"><span>⅟ₓ</span><span>x²</span><span>√</span><span>( )</span><span class="key-unit" data-i18n="units">Units</span><span>7</span><span>8</span><span>9</span><span>÷</span><span class="key-constant">ℏ</span></div>
+            <figcaption data-i18n="exampleCaption">Example calculation · Wavelength → energy</figcaption>
         </figure>
     </section>
 
-    <div class="capabilities page-width" aria-label="Auf allen deinen Geräten"><p>Platz für Physik.<br><strong>Auf jedem Bildschirm.</strong></p><span>Handy</span><span>Tablet</span><span>Laptop</span><span class="capability-offline"><span class="status-dot" aria-hidden="true"></span> Auch offline rechnen</span></div>
+    <div class="capabilities page-width" aria-label="On all your devices" data-i18n-aria-label="devices"><p data-i18n="screens">Room for physics.<br><strong>On every screen.</strong></p><span data-i18n="phone">Phone</span><span>Tablet</span><span>Laptop</span><span class="capability-offline" data-i18n="offline"><span class="status-dot" aria-hidden="true"></span> Calculate offline, too</span></div>
 
     <section class="features page-width" id="funktionen" aria-labelledby="features-title">
-        <div class="section-heading"><p class="eyebrow">WENIGER NACHSCHLAGEN, MEHR VERSTEHEN</p><h2 id="features-title">Alles, was in deiner<br>Formel steckt.</h2><p>Schreib so, wie du denkst. Physics Calc kümmert sich um die Details dazwischen.</p></div>
+        <div class="section-heading"><p class="eyebrow" data-i18n="featuresEyebrow">LESS LOOKING UP, MORE FIGURING OUT</p><h2 id="features-title" data-i18n="featuresTitle">Everything that goes<br>into your formula.</h2><p data-i18n="featuresDescription">Write the way you think. Physics Calc takes care of the details in between.</p></div>
         <div class="feature-grid">
-            <article class="feature-card"><div class="feature-symbol symbol-math" aria-hidden="true">x<span>²</span><span class="symbol-divider"></span>y</div><span class="feature-number">01 / EINGEBEN</span><h3>Mathe, die nach Mathe aussieht.</h3><p>Brüche, Wurzeln und Potenzen direkt bearbeiten. Konstanten erscheinen als vertraute Symbole – aus <code>hbar</code> wird ℏ.</p></article>
-            <article class="feature-card"><div class="feature-symbol symbol-units" aria-hidden="true">nm <span>→</span> eV</div><span class="feature-number">02 / RECHNEN</span><h3>Einheiten gehören dazu.</h3><p>Rechne direkt mit physikalischen Größen und wandle dein Ergebnis um. Unpassende Dimensionen? Der Rechner weist dich darauf hin.</p></article>
-            <article class="feature-card"><div class="feature-symbol symbol-constants" aria-hidden="true">ℏ <span>k<sub>B</sub></span> c</div><span class="feature-number">03 / WEITERDENKEN</span><h3>Die Konstante ist schon da.</h3><p>Physikalische Konstanten samt Quellenangabe sind eingebaut. Einfach den Namen anfangen und den passenden Vorschlag auswählen.</p></article>
+            <article class="feature-card"><div class="feature-symbol symbol-math" aria-hidden="true">x<span>²</span><span class="symbol-divider"></span>y</div><span class="feature-number" data-i18n="feature1Label">01 / WRITE</span><h3 data-i18n="feature1Title">Math that looks like math.</h3><p data-i18n="feature1Text">Edit fractions, roots and powers directly. Constants appear as familiar symbols: <code>hbar</code> becomes ℏ.</p></article>
+            <article class="feature-card"><div class="feature-symbol symbol-units" aria-hidden="true">nm <span>→</span> eV</div><span class="feature-number" data-i18n="feature2Label">02 / CALCULATE</span><h3 data-i18n="feature2Title">Units are part of the equation.</h3><p data-i18n="feature2Text">Calculate with physical quantities and convert your result. Incompatible dimensions? The calculator lets you know.</p></article>
+            <article class="feature-card"><div class="feature-symbol symbol-constants" aria-hidden="true">ℏ <span>k<sub>B</sub></span> c</div><span class="feature-number" data-i18n="feature3Label">03 / EXPLORE</span><h3 data-i18n="feature3Title">The constant is already here.</h3><p data-i18n="feature3Text">Physical constants are built in, with their sources. Start typing a name and choose the suggestion you need.</p></article>
         </div>
     </section>
 
     <section class="workflow page-width" id="so-gehts" aria-labelledby="workflow-title">
-        <div class="workflow-copy"><p class="eyebrow">VOM GEDANKEN ZUR FORMEL</p><h2 id="workflow-title">Fang einfach<br>an zu tippen.</h2><p>Du musst keine langen Menüs durchsuchen. Vorschläge für Konstanten, Einheiten und Funktionen kommen beim Schreiben zu dir.</p><a class="text-link" href="guide.html">Zur Anleitung mit Beispielen <span aria-hidden="true">↗</span></a></div>
+        <div class="workflow-copy"><p class="eyebrow" data-i18n="workflowEyebrow">FROM A THOUGHT TO A FORMULA</p><h2 id="workflow-title" data-i18n="workflowTitle">Just start<br>typing.</h2><p data-i18n="workflowDescription">No need to search through long menus. Suggestions for constants, units and functions appear as you type.</p><a class="text-link" href="guide.html" data-i18n="guideExamples">Read the guide and examples <span aria-hidden="true">↗</span></a></div>
         <ol class="workflow-steps">
-            <li><span class="step-number">1</span><div><h3>Namen anfangen</h3><p>Tippe zum Beispiel <code>hbar</code>. Wähle die reduzierte Planck-Konstante aus den Vorschlägen.</p><div class="typing-example" aria-label="hbar wird zu ℏ"><code>hbar</code><span aria-hidden="true">→</span><span class="typed-symbol">ℏ</span></div></div></li>
-            <li><span class="step-number">2</span><div><h3>Deine Formel ergänzen</h3><p>Füge Zahlen, Einheiten und Funktionen hinzu. Das Ergebnis erscheint während der Eingabe.</p></div></li>
-            <li><span class="step-number">3</span><div><h3>Mit dem Ergebnis weiterarbeiten</h3><p>Einheit wechseln, Rechnung lokal speichern oder die Formel als LaTeX kopieren.</p></div></li>
+            <li><span class="step-number">1</span><div><h3 data-i18n="step1Title">Start with a name</h3><p data-i18n="step1Text">Try typing <code>hbar</code>. Choose the reduced Planck constant from the suggestions.</p><div class="typing-example" aria-label="hbar becomes ℏ" data-i18n-aria-label="typing"><code>hbar</code><span aria-hidden="true">→</span><span class="typed-symbol">ℏ</span></div></div></li>
+            <li><span class="step-number">2</span><div><h3 data-i18n="step2Title">Build your formula</h3><p data-i18n="step2Text">Add numbers, units and functions. Your result updates while you type.</p></div></li>
+            <li><span class="step-number">3</span><div><h3 data-i18n="step3Title">Take your result further</h3><p data-i18n="step3Text">Change units, save the calculation locally or copy your formula as LaTeX.</p></div></li>
         </ol>
     </section>
 
     <section class="everyday page-width" aria-labelledby="everyday-title">
-        <div class="section-heading"><p class="eyebrow">DEIN RECHNER. DEIN RHYTHMUS.</p><h2 id="everyday-title">Bereit, wenn du es bist.</h2></div>
+        <div class="section-heading"><p class="eyebrow" data-i18n="everydayEyebrow">YOUR CALCULATOR. YOUR RHYTHM.</p><h2 id="everyday-title" data-i18n="everydayTitle">Ready when you are.</h2></div>
         <div class="everyday-grid">
-            <article><span class="small-icon" aria-hidden="true">↙</span><h3>Wie eine App nutzen</h3><p>Über einen kompatiblen Browser als PWA zum Startbildschirm hinzufügen. Nach dem ersten Onlinebesuch kannst du auch offline rechnen.</p></article>
-            <article><span class="small-icon" aria-hidden="true">⚙</span><h3>So, wie du rechnest</h3><p>Dezimalkomma oder Punkt, Zahlendarstellung, Genauigkeit und Tastaturlayout: Stell den Rechner passend für dich ein.</p></article>
-            <article><span class="small-icon" aria-hidden="true">⌂</span><h3>Deine Rechnungen bleiben bei dir</h3><p>Berechnungen laufen auf deinem Gerät. Gespeicherte Formeln und Einstellungen bleiben lokal in deinem Browser.</p></article>
+            <article><span class="small-icon" aria-hidden="true">↙</span><h3 data-i18n="installTitle">Make it feel like an app</h3><p data-i18n="installText">Add it to your home screen as a PWA using a compatible browser. After your first online visit, you can calculate offline, too.</p></article>
+            <article><span class="small-icon" aria-hidden="true">⚙</span><h3 data-i18n="settingsTitle">Set it up your way</h3><p data-i18n="settingsText">Decimal point or comma, number format, precision and keyboard layout: choose what works for you.</p></article>
+            <article><span class="small-icon" aria-hidden="true">⌂</span><h3 data-i18n="privacyTitle">Your calculations stay with you</h3><p data-i18n="privacyText">Calculations run on your device. Saved formulas and preferences stay locally in your browser.</p></article>
         </div>
-        <p class="offline-note">Die mathematische Ergebnisdarstellung kann eine Internetverbindung oder bereits zwischengespeicherte Schrift- und Darstellungsdateien benötigen.</p>
+        <p class="offline-note" data-i18n="offlineNote">Formatted results may need an internet connection or previously cached fonts and rendering files.</p>
     </section>
 
-    <section class="final-cta page-width" aria-labelledby="cta-title"><div><p class="eyebrow">DIE NÄCHSTE RECHNUNG WARTET SCHON</p><h2 id="cta-title">Mach Platz für<br>deine nächste Idee.</h2></div><div><a class="button button-primary" href="index.html">Rechner öffnen <span aria-hidden="true">↗</span></a><p>Kein Download nötig.</p></div><span class="cta-decoration" aria-hidden="true">ℏ</span></section>
+    <section class="final-cta page-width" aria-labelledby="cta-title"><div><p class="eyebrow" data-i18n="ctaEyebrow">YOUR NEXT CALCULATION IS WAITING</p><h2 id="cta-title" data-i18n="ctaTitle">Make room for<br>your next idea.</h2></div><div><a class="button button-primary" href="index.html" data-i18n="open">Open calculator <span aria-hidden="true">↗</span></a><p data-i18n="noDownload">No download needed.</p></div><span class="cta-decoration" aria-hidden="true">ℏ</span></section>
 </main>
-<footer class="site-footer page-width"><a class="brand footer-brand" href="landing.html"><img src="assets/logo.svg?v=66c7e594f06b" alt="" width="30" height="30"><span>Physics Calc</span></a><p>Für neugierige Köpfe. Und ihre Einheiten.</p><nav aria-label="Weitere Links"><a href="guide.html">Anleitung</a><a href="index.html">Zum Rechner ↗</a></nav></footer>
+<footer class="site-footer page-width"><a class="brand footer-brand" href="landing.html"><img src="assets/logo.svg?v=9d0ec5530336" alt="" width="30" height="30"><span>Physics Calc</span></a><p data-i18n="footer">For curious minds. And their units.</p><nav aria-label="More links" data-i18n-aria-label="footerNav"><a href="guide.html" data-i18n="guide">Guide</a><a href="index.html" data-i18n="footerOpen">Open calculator ↗</a></nav></footer>
 </body>
 </html>

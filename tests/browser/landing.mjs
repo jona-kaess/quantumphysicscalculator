@@ -58,24 +58,46 @@ async function screenshot(name,fullPage=false) {
     const {data}=await call('Page.captureScreenshot',params);
     await writeFile(`/tmp/physics-landing-${name}.png`,Buffer.from(data,'base64'));
 }
+async function checkLayout(name,height) {
+    const geometry=await evaluate(`({width:innerWidth,scroll:document.documentElement.scrollWidth,overflow:[...document.querySelectorAll('h1,h2,h3,p,.button,.calculator-preview,.site-header')].filter(e=>e.scrollWidth>e.clientWidth+2).map(e=>e.className||e.tagName),brokenImages:[...document.images].filter(i=>!i.complete||!i.naturalWidth).length,cta:document.querySelector('.hero-actions .button').getBoundingClientRect().toJSON()})`);
+    assert.ok(geometry.scroll<=geometry.width+1,`${name}: horizontal page overflow ${JSON.stringify(geometry)}`);
+    assert.deepEqual(geometry.overflow,[],`${name}: clipped content`);
+    assert.equal(geometry.brokenImages,0);
+    assert.ok(geometry.cta.bottom<=height,`${name}: hero CTA should be visible without scrolling`);
+}
+async function language(value) {
+    await evaluate(`(()=>{const control=document.getElementById('landing-language');control.value=${JSON.stringify(value)};control.dispatchEvent(new Event('change',{bubbles:true}));})()`);
+    assert.equal(await evaluate('document.documentElement.lang'),value);
+}
 
 await call('Page.bringToFront');
 await call('Runtime.enable');await call('Page.enable');await call('Network.enable');
 await call('Emulation.setEmulatedMedia',{features:[{name:'prefers-reduced-motion',value:'reduce'}]});
 const android=port==='9222';
 const sizes=android?[['android',360,740,true]]:[['laptop',1440,900,false],['tablet',820,1180,true],['tablet-landscape',1180,820,true],['phone',360,740,true],['phone-small',320,640,true]];
+await navigate('landing.html');
+const originalLanguage=await evaluate("localStorage.getItem('physics-calculator-landing-language-v1')");
+await evaluate("localStorage.removeItem('physics-calculator-landing-language-v1')");
 try {
     for(const [name,width,height,touch] of sizes) {
         await call('Emulation.setDeviceMetricsOverride',{width,height,deviceScaleFactor:1,mobile:touch});
         await call('Emulation.setTouchEmulationEnabled',{enabled:touch});
         await navigate('landing.html');
-        assert.equal(await evaluate('document.documentElement.lang'),'de');
-        const geometry=await evaluate(`({width:innerWidth,scroll:document.documentElement.scrollWidth,overflow:[...document.querySelectorAll('h1,h2,h3,p,.button,.calculator-preview')].filter(e=>e.scrollWidth>e.clientWidth+2).map(e=>e.className||e.tagName),brokenImages:[...document.images].filter(i=>!i.complete||!i.naturalWidth).length,cta:document.querySelector('.hero-actions .button').getBoundingClientRect().toJSON()})`);
-        assert.ok(geometry.scroll<=geometry.width+1,`${name}: horizontal page overflow ${JSON.stringify(geometry)}`);
-        assert.deepEqual(geometry.overflow,[],`${name}: clipped content`);
-        assert.equal(geometry.brokenImages,0);
-        assert.ok(geometry.cta.bottom<=height,`${name}: hero CTA should be visible without scrolling`);
-        await screenshot(name,true);
+        assert.equal(await evaluate('document.documentElement.lang'),'en','Default language is English');
+        assert.equal(await evaluate('document.getElementById("language-control").hidden'),false);
+        assert.match(await evaluate('document.title'),/More physics/);
+        assert.match(await evaluate('document.querySelector(".preview-answer strong").textContent'),/2\.33053/);
+        await checkLayout(name+' English',height);await screenshot(name+'-en',true);
+        await language('de');
+        assert.match(await evaluate('document.title'),/Mehr Physik/);
+        assert.match(await evaluate('document.querySelector("meta[name=description]").content'),/Dein Taschenrechner/);
+        assert.equal(await evaluate('document.querySelector(".site-header nav").getAttribute("aria-label")'),'Hauptnavigation');
+        assert.match(await evaluate('document.querySelector(".preview-answer strong").textContent'),/2,33053/);
+        await checkLayout(name+' German',height);await screenshot(name+'-de',true);
+        await call('Page.reload');await ready('#hero-title');
+        assert.equal(await evaluate('document.documentElement.lang'),'de','Explicit language survives reload');
+        await language('en');
+        assert.match(await evaluate('document.querySelector("meta[name=description]").content'),/Your physics calculator/);
         for(const selector of ['.site-header .button','.hero-actions .button','.final-cta .button','.site-footer nav a:last-child']) {
             await click(selector,touch);await ready('#math-expression:not([hidden])');
             assert.equal(await evaluate('location.pathname.endsWith("/index.html")'),true,name+' CTA opens calculator');
@@ -85,22 +107,29 @@ try {
         assert.equal(await evaluate('location.hash'),'#so-gehts');
         await click('.workflow-copy .text-link',touch);await ready('h1');
         assert.equal(await evaluate('location.pathname.endsWith("/guide.html")'),true);
-        console.log(`PASS ${name}: layout, images, four calculator links, section navigation and guide`);
+        console.log(`PASS ${name}: English/German layout, language persistence, images, calculator links and guide`);
     }
     await navigate('landing.html');
+    await evaluate("localStorage.setItem('physics-calculator-landing-language-v1','invalid')");
+    await call('Page.reload');await ready('#hero-title');
+    assert.equal(await evaluate('document.documentElement.lang'),'en','Unknown preference falls back to English');
+    await language('de');
     await evaluate(`(async()=>{await navigator.serviceWorker.ready;if(!navigator.serviceWorker.controller)await new Promise(r=>navigator.serviceWorker.addEventListener('controllerchange',r,{once:true}));})()`);
     await call('Network.emulateNetworkConditions',{offline:true,latency:0,downloadThroughput:0,uploadThroughput:0});
     await call('Page.reload');await ready('#hero-title');
+    assert.equal(await evaluate('document.documentElement.lang'),'de','Offline language preference is retained');
     assert.equal(await evaluate("getComputedStyle(document.querySelector('.hero')).display"),'grid');
+    await language('en');
     await click('.hero-actions .button',true);await ready('#math-expression:not([hidden])');
     assert.equal(await evaluate("PhysicsEngine.evaluate('2+2').value"),4);
-    console.log('PASS cached landing page and calculator navigation work offline');
+    console.log('PASS cached landing page, language switching and calculator navigation work offline');
     assert.deepEqual(errors,[],'No JavaScript exceptions');
 } finally {
     await call('Network.emulateNetworkConditions',{offline:false,latency:0,downloadThroughput:-1,uploadThroughput:-1});
     await call('Emulation.clearDeviceMetricsOverride');
     await call('Emulation.setTouchEmulationEnabled',{enabled:false});
     await call('Emulation.setEmulatedMedia',{features:[]});
+    await evaluate(`(()=>{const value=${JSON.stringify(originalLanguage)};if(value===null)localStorage.removeItem('physics-calculator-landing-language-v1');else localStorage.setItem('physics-calculator-landing-language-v1',value);})()`);
     await navigate('landing.html');
     socket.close();
 }

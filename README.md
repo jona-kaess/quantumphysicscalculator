@@ -4,9 +4,11 @@ A static, client-side physics calculator. It runs in the browser and can be host
 on GitHub Pages; Flask, Python and a backend API are not needed at runtime.
 See [the calculator guide](guide.html) for usage examples.
 
-The calculator is available at [index.html](index.html). The German promotional
-landing page is at [landing.html](landing.html), with direct links to the calculator
-and guide. The PWA and Android app continue to open the calculator directly.
+The calculator is available at [index.html](index.html). The promotional landing
+page is at [landing.html](landing.html), with direct links to the calculator and
+guide. It defaults to English; the EN/DE selector switches the complete page to
+German and remembers the explicit choice locally, including offline.
+The PWA and Android app continue to open the calculator directly.
 The former unit converter and
 qubit Hamiltonians are preserved on the `legacy-converter-hamiltonians` branch.
 
@@ -139,6 +141,10 @@ to the system temporary directory.
 
 The PWA and adaptive Android launcher icons share `assets/logo.svg` as their
 visual source; PNG exports and Android vector paths are checked into the repo.
+Run `python3 scripts/generate_icons.py` after editing the logo to regenerate the
+PWA, maskable, legacy Android, adaptive and monochrome assets. This maintenance
+script needs ImageMagick's `convert` command and no additional Python packages.
+Then run `python3 scripts/version_assets.py` to refresh asset and cache versions.
 
 ## Scientific functions and angles
 
