@@ -52,10 +52,12 @@ Saved calculations retain their expression, angle setting and selected result
 unit locally in this browser. The Copy LaTeX button copies the formatted input
 expression. On small screens, type names to use autocomplete.
 
-The mobile interface keeps the active calculation in a single viewport. The editor
-wraps long expressions and can be expanded; unit conversion, symbol browsing,
+The mobile interface keeps the active calculation in a single viewport. Its math
+editor displays editable fractions, powers, subscripts and constant symbols, and
+can be expanded; unit conversion, symbol browsing,
 saved calculations and examples open in dialogs. Tap **Done** to dismiss the
-system keyboard and access the bottom navigation.
+calculator keyboard and access the bottom navigation. The alphabetic tab retains
+the type-and-select workflow for constants, units and functions.
 
 The calculator can be installed as a PWA through a compatible browser on HTTPS
 (or localhost). After the first online visit its application files are cached
@@ -91,6 +93,7 @@ Run with Node.js:
 
 ```sh
 node tests/js/physics-engine.test.js
+node tests/js/math-editor.test.js
 node tests/js/static-site.test.js
 ```
 
@@ -105,7 +108,8 @@ node tests/android/calculator-ui.mjs
 ```
 
 Set `ADB` to the adb executable path when it is not on PATH. The test exercises
-touch input with the system keyboard, suggestions, long expressions, dialogs,
+touch input with the math keyboard, fractions, constant symbols, suggestions,
+long expressions, dialogs,
 unit conversion and saved calculations, and restores the existing saved entries.
 Screenshots are written to the system temporary directory.
 
@@ -127,3 +131,17 @@ charge. Complex arithmetic, roots, logarithms, and trigonometric/hyperbolic
 functions are supported; inverse trigonometric functions currently accept real
 arguments only. `sqrt` preserves dimensional powers, while trigonometric and
 logarithmic functions require dimensionless arguments.
+
+## Math editor dependency
+
+MathLive 0.111.4 is vendored under `assets/vendor/mathlive/` with its MIT license
+and fonts. No package install or build step is needed. Its editor, numeric and
+alphabetic keyboards, and fonts are cached locally for offline use.
+`assets/js/math-editor.js` translates mathematical input to the existing physics
+engine and preserves distinct unit and constant identities. Saved calculations
+keep the existing canonical text format. MathJax still renders results and
+detailed expressions with the existing CDN/cache behavior.
+
+When updating MathLive, review its license and the recorded package integrity,
+update the offline asset list in `service-worker.js`, and run the asset version
+script and Android UI checks.

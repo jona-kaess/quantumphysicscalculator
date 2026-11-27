@@ -7,7 +7,8 @@
     <link rel="manifest" href="manifest.webmanifest">
     <link rel="apple-touch-icon" href="assets/icon-192.png?v=1a121de6c5da">
     <title>Quantum Physics Calculator</title>
-    <link rel="stylesheet" href="assets/css/styles.css?v=f971674c5362">
+    <link rel="stylesheet" href="assets/css/styles.css?v=0edc4125af1b">
+    <link rel="stylesheet" href="assets/vendor/mathlive/mathlive-fonts.css?v=f86deebd3c9f">
     <script>
         window.MathJax = {
             loader: { load: ['[tex]/color'] },
@@ -31,15 +32,16 @@
     <section class="calculation-screen" aria-label="Current calculation">
         <div class="composer">
             <div class="expression-heading">
-                <label for="expression">EXPRESSION</label>
+                <label for="math-expression">EXPRESSION</label>
                 <div><button type="button" id="expand-expression" class="quiet-button" aria-expanded="false">Expand</button><button type="button" id="clear-expression" class="quiet-button" hidden>Clear</button><button type="button" id="finish-editing" class="quiet-button" hidden>Done</button></div>
             </div>
             <div class="expression-input-layer">
+                <math-field id="math-expression" aria-label="Expression" aria-describedby="input-help" math-virtual-keyboard-policy="auto" placeholder="hbar × 10 GHz" hidden></math-field>
                 <div id="expression-highlight" class="expression-highlight" aria-hidden="true"></div>
                 <textarea id="expression" rows="3" inputmode="text" enterkeyhint="done" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" placeholder="Start typing…
 hbar * 10 GHz" aria-describedby="input-help" aria-autocomplete="list" aria-controls="autocomplete-list" aria-expanded="false" role="combobox"></textarea>
             </div>
-            <p id="input-help" class="sr-only">Type numbers, constants, units or functions. Choose a suggestion, or use arrow keys and Enter or Tab. Use uppercase E for scientific notation.</p>
+            <p id="input-help" class="sr-only">Type numbers, constants, units or functions. Constants appear as mathematical symbols. Use the fraction key for a numerator and denominator. Arrow keys move through fractions and powers.</p>
         </div>
         <div class="live-answer">
             <div id="empty-result" class="empty-result">Your result appears as you type.</div>
@@ -53,7 +55,7 @@ hbar * 10 GHz" aria-describedby="input-help" aria-autocomplete="list" aria-contr
             <button type="button" id="next-suggestions" class="quiet-button" aria-label="Next suggestions" hidden>›</button>
         </div>
         <div class="mobile-keys" role="group" aria-label="Expression editing keys">
-            <button type="button" data-insert="+" aria-label="Plus">+</button><button type="button" data-insert="-" aria-label="Minus">−</button><button type="button" data-insert="*" aria-label="Multiply">×</button><button type="button" data-insert="/" aria-label="Divide">÷</button><button type="button" data-insert="^" aria-label="Power">^</button><button type="button" data-insert="(" aria-label="Open parenthesis">(</button><button type="button" data-insert=")" aria-label="Close parenthesis">)</button><button type="button" data-insert="," aria-label="Comma">,</button><button type="button" data-move="-1" aria-label="Move cursor left">←</button><button type="button" data-move="1" aria-label="Move cursor right">→</button>
+            <button type="button" data-insert="+" aria-label="Plus">+</button><button type="button" data-insert="-" aria-label="Minus">−</button><button type="button" data-insert="*" aria-label="Multiply">×</button><button type="button" data-insert="/" aria-label="Insert fraction"><span class="fraction-icon" aria-hidden="true"><span>a</span><span>b</span></span></button><button type="button" data-insert="^" aria-label="Power">xⁿ</button><button type="button" data-insert="(" aria-label="Open parenthesis">(</button><button type="button" data-insert=")" aria-label="Close parenthesis">)</button><button type="button" data-command="moveToNextPlaceholder" aria-label="Next fraction field">⇥</button><button type="button" data-move="-1" aria-label="Move cursor left">←</button><button type="button" data-move="1" aria-label="Move cursor right">→</button>
         </div>
     </section>
     <nav class="calculator-toolbar" aria-label="Insert and explore">
@@ -91,8 +93,10 @@ hbar * 10 GHz" aria-describedby="input-help" aria-autocomplete="list" aria-contr
     <div class="dialog-content examples"><div id="examples"></div><p class="hint">Type <code>eq</code> to convert units or energy equivalents. Ordinary frequency remains a frequency.</p></div>
 </dialog>
 <script src="assets/js/scipy-constants.js?v=fd4097f595e2" defer></script>
-<script src="assets/js/physics-engine.js?v=5464df4f34c9" defer></script>
-<script src="assets/js/calculator.js?v=b35a6a69d3af" defer></script>
+<script src="assets/vendor/mathlive/mathlive.min.js?v=9967efce1bf9" defer></script>
+<script src="assets/js/physics-engine.js?v=ab63091b828f" defer></script>
+<script src="assets/js/math-editor.js?v=0104e05bf24a" defer></script>
+<script src="assets/js/calculator.js?v=68dc361a8546" defer></script>
 <script src="assets/js/pwa.js?v=99545cea69c7" defer></script>
 
 </body>

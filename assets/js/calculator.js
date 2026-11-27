@@ -1,6 +1,7 @@
 (() => {
     const engine=PhysicsEngine, $=id=>document.getElementById(id), input=$('expression');
-    let menuMode='', start=0, end=0, resultChoices=[], selectedUnit='', manualUnit=false, suggestions=[], suggestionIndex=0, completionRange=null, suggestionPage=0;
+    let mathEditor=null;
+    let menuMode='', start=0, end=0, resultChoices=[], selectedUnit='', manualUnit=false, suggestions=[], suggestionIndex=0, completionRange=null, suggestionPage=0, suggestionPointerActive=false;
     let currentLatex='', currentResult=null, currentUsed=[], currentConversion=null, currentInputPrefixes=[];
     const savedKey='physics-calculator-saved-v1';
     const readStorage=(key,fallback)=>{try{return JSON.parse(localStorage.getItem(key))??fallback;}catch{return fallback;}};
@@ -58,8 +59,9 @@
         const viewport=window.visualViewport, height=viewport?.height || window.innerHeight;
         if(Math.abs(window.innerWidth-viewportWidth)>80) { viewportBaseline=height; viewportWidth=window.innerWidth; }
         viewportBaseline=Math.max(viewportBaseline,height);
-        const keyboardOpen=viewportBaseline-height>120;
-        document.documentElement.style.setProperty('--app-height',`${height}px`);
+        const mathKeyboardHeight=window.PhysicsMath?.keyboardHeight() || 0;
+        const keyboardOpen=viewportBaseline-height>120 || mathKeyboardHeight>0;
+        document.documentElement.style.setProperty('--app-height',`${Math.max(70,height-mathKeyboardHeight)}px`);
         document.documentElement.style.setProperty('--app-top',`${viewport?.offsetTop || 0}px`);
         document.body.classList.toggle('keyboard-open',keyboardOpen);
         $('finish-editing').hidden=!keyboardOpen;
@@ -72,7 +74,9 @@
     function refreshAnswer() {
         const valid=!!currentResult;
         for(const id of ['result-details','save-calculation','copy-latex']) $(id).disabled=!valid;
-        $('empty-result').hidden=!!input.value.trim();
+        const incomplete=mathEditor?.field.dataset.incomplete==='true';
+        $('empty-result').textContent=incomplete?'Complete the expression to see its result.':'Your result appears as you type.';
+        $('empty-result').hidden=!!input.value.trim() && !incomplete || !!mathEditor?.field.dataset.parseError;
         const degrees=$('angle-mode').value==='1';
         $('angle-label').textContent=degrees?'Deg':'Rad';
         $('angle-toggle').setAttribute('aria-pressed',String(degrees));
@@ -151,9 +155,12 @@
         });
     }
     function update() {
+        mathEditor?.sync();
         highlightExpression();
         const text=input.value.trim(), panel=$('result-panel');
         $('clear-expression').hidden=!input.value; $('mobile-result').hidden=true;
+        if(mathEditor?.field.dataset.incomplete==='true') {currentLatex='';currentResult=null;panel.hidden=true;$('calculator-error').textContent='';refreshAnswer();return;}
+        if(mathEditor?.field.dataset.parseError) {currentLatex='';currentResult=null;panel.hidden=true;$('calculator-error').textContent=mathEditor.field.dataset.parseError;refreshAnswer();return;}
         if(!text) { currentLatex=''; currentResult=null; $('calculator-error').textContent=''; $('expression-preview').hidden=true; $('input-prefixes').hidden=true; invalidate($('expression-preview')); panel.hidden=true; refreshAnswer(); return; }
         try {
             const separator=/\s+eq(?:\s+|$)/.exec(text), expression=separator?text.slice(0,separator.index).trim():text, target=separator?text.slice(separator.index+separator[0].length).trim():null;
@@ -186,11 +193,13 @@
     function acceptSuggestion(index) {
         if(!suggestions[index] || !completionRange) return;
         const item=suggestions[index], value=item.type==='function'?`${item.symbol}()`:item.type==='operator'?`${item.symbol} `:item.symbol;
+        if(mathEditor) {mathEditor.insertItem(item,completionRange); hideSuggestions(); manualUnit=false; $('result-unit-search').value=''; update(); return;}
         input.setRangeText(value,completionRange.start,completionRange.end,'end'); if(item.type==='function') input.setSelectionRange(input.selectionStart-1,input.selectionStart-1); hideSuggestions(); input.focus(); manualUnit=false; $('result-unit-search').value=''; update(); if(item.type==='function') $('calculator-error').textContent=''; if(item.type==='operator') showSuggestions();
     }
     function showSuggestions() {
-        if(document.activeElement!==input || $('insert-menu').open) return hideSuggestions();
-        completionRange=engine.completions(input.value,input.selectionStart);
+        if(suggestionPointerActive)return;
+        if(!(mathEditor?mathEditor.hasFocus():document.activeElement===input) || $('insert-menu').open) return hideSuggestions();
+        completionRange=mathEditor?mathEditor.completions():engine.completions(input.value,input.selectionStart);
         suggestions=completionRange.items; suggestionIndex=0; suggestionPage=0;
         const list=$('autocomplete-list'); list.replaceChildren();
         if(!suggestions.length) return hideSuggestions();
@@ -199,7 +208,10 @@
             const option=document.createElement('button'), symbol=document.createElement('strong'), description=document.createElement('span');
             option.type='button'; option.id=`completion-${index}`; option.className='autocomplete-option'; option.setAttribute('role','option');
             symbol.className=item.type==='unit'?'unit-color':item.type==='function'||item.type==='operator'?'function-color':'constant-color'; symbol.textContent=item.symbol; description.textContent=`${item.name} · ${item.type}`;
-            option.append(symbol,description); option.addEventListener('pointerdown',e=>e.preventDefault()); option.addEventListener('click',()=>acceptSuggestion(index)); list.append(option);
+            option.append(symbol,description);
+            option.addEventListener('pointerdown',event=>{if(event.button!==0)return;event.preventDefault();suggestionPointerActive=true;});
+            option.addEventListener('click',()=>{suggestionPointerActive=false;acceptSuggestion(index);});
+            list.append(option);
         });
         list.hidden=false; $('suggestion-hint').hidden=true; input.setAttribute('aria-expanded','true'); markSuggestion();
     }
@@ -215,8 +227,10 @@
         input.setAttribute('aria-activedescendant',`completion-${suggestionIndex}`);
     }
     $('next-suggestions').addEventListener('pointerdown',event=>event.preventDefault());
+    document.addEventListener('pointerup',()=>setTimeout(()=>{suggestionPointerActive=false;},0));
+    document.addEventListener('pointercancel',()=>{suggestionPointerActive=false;});
     $('next-suggestions').addEventListener('click',()=>{suggestionIndex=((suggestionPage+1)*2)%suggestions.length; markSuggestion();});
-    function insert(value) {const isFunction=menuMode==='functions' && Object.hasOwn(engine.functions,value); const text=isFunction?`${value}()`:value; input.setRangeText(text,start,end,'end'); if(isFunction) input.setSelectionRange(input.selectionStart-1,input.selectionStart-1); closeMenu(); hideSuggestions(); input.focus(); manualUnit=false; $('result-unit-search').value=''; update(); if(isFunction) $('calculator-error').textContent='';}
+    function insert(value) {const isFunction=menuMode==='functions' && Object.hasOwn(engine.functions,value); if(mathEditor) {closeMenu(); mathEditor.insertItem({symbol:value,type:isFunction?'function':menuMode==='units'?'unit':'constant'});hideSuggestions();manualUnit=false;update();return;} const text=isFunction?`${value}()`:value; input.setRangeText(text,start,end,'end'); if(isFunction) input.setSelectionRange(input.selectionStart-1,input.selectionStart-1); closeMenu(); hideSuggestions(); input.focus(); manualUnit=false; $('result-unit-search').value=''; update(); if(isFunction) $('calculator-error').textContent='';}
     function closeMenu() { if($('insert-menu').open) $('insert-menu').close(); for(const id of ['constants-button','units-button','functions-button']) $(id).setAttribute('aria-expanded','false'); }
     function populateMenu() {
         const query=$('menu-search').value.trim(), list=$('menu-items'); list.replaceChildren();
@@ -232,6 +246,7 @@
         if(!list.childElementCount) list.textContent='No matching items.';
     }
     function openMenu(mode) {
+        mathEditor?.capture();
         start=input.selectionStart; end=input.selectionEnd; menuMode=mode; hideSuggestions(); $('insert-title').textContent={constants:'Constants',units:'Units',functions:'Functions'}[mode]; openDialog('insert-menu');
         $('constants-button').setAttribute('aria-expanded',String(mode==='constants')); $('units-button').setAttribute('aria-expanded',String(mode==='units'));
         $('functions-button').setAttribute('aria-expanded',String(mode==='functions'));
@@ -241,6 +256,7 @@
     }
     input.addEventListener('input',()=>{ $('result-unit-search').value=''; update(); showSuggestions();});
     function useMobileKey(button) {
+        if(mathEditor) {mathEditor.key(button);showSuggestions();return;}
         input.focus({preventScroll:true});
         if(button.dataset.insert) {
             input.setRangeText(button.dataset.insert,input.selectionStart,input.selectionEnd,'end');
@@ -252,8 +268,9 @@
         }
     }
     document.querySelectorAll('.mobile-keys button').forEach(button=>{
-        button.addEventListener('pointerdown',event=>{if(event.button!==0) return; event.preventDefault(); useMobileKey(button);});
-        button.addEventListener('click',event=>{if(event.detail===0) useMobileKey(button);});
+        let pointerActivated=false;
+        button.addEventListener('pointerdown',event=>{if(event.button!==0) return; event.preventDefault(); pointerActivated=true; useMobileKey(button);setTimeout(()=>{pointerActivated=false;},500);});
+        button.addEventListener('click',event=>{if(event.detail===0 && !pointerActivated) useMobileKey(button);pointerActivated=false;});
     });
     $('clear-expression').addEventListener('mousedown',e=>e.preventDefault());
     $('clear-expression').addEventListener('click',()=>{input.value=''; manualUnit=false; $('result-unit-search').value=''; closeMenu(); hideSuggestions(); update(); input.focus();});
@@ -262,7 +279,7 @@
     input.addEventListener('click',showSuggestions);
     // Keep suggestions in place until a click completes: removing them on blur
     // can move a saved calculation out from under the pointer before click.
-    document.addEventListener('click',e=>{if(e.target!==input && !$('autocomplete-list').contains(e.target) && !e.target.closest('.mobile-keys, #next-suggestions')) hideSuggestions();});
+    document.addEventListener('click',e=>{if(e.target!==input && e.target!==mathEditor?.field && !$('autocomplete-list').contains(e.target) && !e.target.closest('.mobile-keys, #next-suggestions')) hideSuggestions();});
     input.addEventListener('keydown',e=>{
         if(e.isComposing) return;
         if(e.key==='Enter' && !e.shiftKey && $('autocomplete-list').hidden) {e.preventDefault(); input.blur(); return;}
@@ -336,6 +353,7 @@
         $('angle-mode').dispatchEvent(new Event('input'));
     });
     for(const id of ['angle-toggle','save-calculation','copy-latex']) $(id).addEventListener('pointerdown',event=>event.preventDefault());
+    document.querySelectorAll('.app-shell button').forEach(button=>button.addEventListener('pointerdown',event=>{if(event.button===0)event.preventDefault();}));
     $('expand-expression').addEventListener('click',()=>{
         const expanded=shell.classList.toggle('source-expanded');
         $('expand-expression').setAttribute('aria-expanded',String(expanded));
@@ -356,6 +374,21 @@
     }));
     let statusTimer;
     new MutationObserver(()=>{clearTimeout(statusTimer); if($('action-status').textContent) statusTimer=setTimeout(()=>{$('action-status').textContent='';},3500);}).observe($('action-status'),{childList:true});
+    if(window.PhysicsMath && window.MathfieldElement) {
+        MathfieldElement.soundsDirectory=null;
+        MathfieldElement.computeEngine=null;
+        mathEditor=PhysicsMath.attach(input,$('math-expression'),syncViewport);
+        $('math-expression').addEventListener('click',showSuggestions);
+        $('math-expression').addEventListener('selection-change',showSuggestions);
+        $('math-expression').addEventListener('keydown',event=>{
+            if(event.isComposing)return;
+            if(!$('autocomplete-list').hidden && ['ArrowDown','ArrowUp','Enter','Tab','Escape'].includes(event.key)) {
+                event.preventDefault();event.stopPropagation();
+                if(event.key==='ArrowDown'||event.key==='ArrowUp') {suggestionIndex=(suggestionIndex+(event.key==='ArrowDown'?1:-1)+suggestions.length)%suggestions.length;markSuggestion();}
+                else if(event.key==='Escape')hideSuggestions();else acceptSuggestion(suggestionIndex);
+            }
+        },true);
+    }
     syncViewport();
     $('expression-highlight').parentElement.classList.add('syntax-active');
     renderSaved();

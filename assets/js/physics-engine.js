@@ -112,7 +112,7 @@
         if(!U[short] && !constants[short]) legacyAliases[short]=symbol;
     }
     for(const [symbol,constant] of Object.entries(constants)) if(!constant.source) constant.source=symbol==='pi'?'Mathematical constant':'SciPy 1.14.1 / CODATA 2018';
-    const FUNCTIONS={sqrt:'Square root',sin:'Sine',cos:'Cosine',tan:'Tangent',asin:'Inverse sine',acos:'Inverse cosine',atan:'Inverse tangent',sinh:'Hyperbolic sine',cosh:'Hyperbolic cosine',tanh:'Hyperbolic tangent',ln:'Natural logarithm',log:'Base-10 logarithm',exp:'Exponential',abs:'Absolute value',re:'Real part',im:'Imaginary part',Re:'Real part',Im:'Imaginary part',conj:'Complex conjugate',arg:'Complex argument',Arg:'Complex argument',floor:'Round down',ceil:'Round up',factorial:'Factorial',mod:'Remainder (two arguments)',pow:'Power (two arguments)',recip:'Reciprocal',percent:'Percentage',tenpow:'10 to the power'};
+    const FUNCTIONS={frac:'Fraction (numerator, denominator)',sqrt:'Square root',sin:'Sine',cos:'Cosine',tan:'Tangent',asin:'Inverse sine',acos:'Inverse cosine',atan:'Inverse tangent',sinh:'Hyperbolic sine',cosh:'Hyperbolic cosine',tanh:'Hyperbolic tangent',ln:'Natural logarithm',log:'Base-10 logarithm',exp:'Exponential',abs:'Absolute value',re:'Real part',im:'Imaginary part',Re:'Real part',Im:'Imaginary part',conj:'Complex conjugate',arg:'Complex argument',Arg:'Complex argument',floor:'Round down',ceil:'Round up',factorial:'Factorial',mod:'Remainder (two arguments)',pow:'Power (two arguments)',recip:'Reciprocal',percent:'Percentage',tenpow:'10 to the power'};
     const same=(a,b)=>a.every((v,i)=>Math.abs(v-b[i])<1e-10);
     const scalar=d=>same(d,D.scalar);
     function tokenize(text) {
@@ -177,7 +177,7 @@
         if(n.kind==='euler') return number(Math.E);
         if(n.kind==='postfix') return evaluateChild({kind:'function',name:n.op==='!'?'factorial':'percent',args:[n.child]});
         if(n.kind==='function') {
-            const expected=['mod','pow'].includes(n.name)?2:1;
+            const expected=['mod','pow','frac'].includes(n.name)?2:1;
             if(n.args.length!==expected) throw Error(`${n.name} expects ${expected} argument${expected===1?'':'s'}.`);
             const a=evaluateChild(n.args[0]), ai=imaginary(a), dimless=scalar(a.dim), out=(v,i=0,dim=D.scalar)=>number(v,i,dim);
             if(a.absolute||a.absoluteUnit||a.wavelengthUnit) throw Error('Functions cannot be applied to absolute temperature or wavelength units.');
@@ -190,6 +190,7 @@
             if(n.name==='percent') return out(a.value/100,ai/100,a.dim);
             if(n.name==='recip') {const [r,i]=divide(number(1),a);return out(r,i,a.dim.map(d=>-d));}
             if(n.name==='pow') return evaluateChild({kind:'^',left:n.args[0],right:n.args[1]});
+            if(n.name==='frac') return evaluateChild({kind:'/',left:n.args[0],right:n.args[1]});
             if(n.name==='mod') {const b=evaluateChild(n.args[1]); if(!same(a.dim,b.dim)||ai||imaginary(b)) throw Error('mod requires real arguments with matching dimensions.'); if(!b.value) throw Error('Division by zero.'); return out(a.value%b.value,0,a.dim);}
             if(!dimless) throw Error(`${n.name} requires a dimensionless argument.`);
             if(n.name==='factorial') {if(ai||!Number.isInteger(a.value)||a.value<0||a.value>170) throw Error('Factorial requires an integer from 0 to 170.'); let v=1; for(let i=2;i<=a.value;i++)v*=i; return out(v);}
@@ -234,7 +235,7 @@
     function latex(n) {
         if(n.kind==='imaginary') return 'i';
         if(n.kind==='euler') return '\\mathrm{e}';
-        if(n.kind==='function') { const args=n.args.map(latex); if(n.name==='sqrt') return `{\\color{brown}\\sqrt{{\\color{black}${args[0]}}}}`; if(n.name==='abs') return `{\\color{brown}\\left|{\\color{black}${args[0]}}\\right|}`; return `{\\color{brown}\\operatorname{${n.name}}\\left({\\color{black}${args.join(', ')}}\\right)}`; }
+        if(n.kind==='function') { const args=n.args.map(latex); if(n.name==='frac') return `\\frac{${args[0]}}{${args[1]}}`; if(n.name==='sqrt') return `{\\color{brown}\\sqrt{{\\color{black}${args[0]}}}}`; if(n.name==='abs') return `{\\color{brown}\\left|{\\color{black}${args[0]}}\\right|}`; return `{\\color{brown}\\operatorname{${n.name}}\\left({\\color{black}${args.join(', ')}}\\right)}`; }
         if(n.kind==='postfix') return `{${latex(n.child)}}${n.op==='%'?'\\%':'!'}`;
         if(n.kind==='number') {const parts=n.text.split('E'); return parts.length===2?`${parts[0]}\\times 10^{${Number(parts[1])}}`:n.text;}
         if(n.kind==='unit') {

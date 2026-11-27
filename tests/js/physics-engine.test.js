@@ -262,3 +262,16 @@ test('double-star powers and CGS units', () => {
     }
     close(engine.requestedConversion(engine.evaluate('1 erg'),'J','1 erg').value,1e-7);
 });
+
+test('fractions preserve grouping, dimensions, complex values and validation',()=>{
+    close(engine.evaluate('frac(1+2,3+3)').value,0.5);
+    close(engine.evaluate('frac(1,frac(2,3))').value,1.5);
+    const force=engine.evaluate('frac(2 kg * 9.81 m,s^2)');
+    close(force.value,19.62);assert.deepEqual(force.dim,engine.dimensions.force);
+    const complex=engine.evaluate('frac(1+i,1-i)');close(complex.value,0);close(complex.imag,1);
+    assert.match(engine.evaluate('frac(hbar,2)').latex,/\\frac\{/);
+    assert.throws(()=>engine.evaluate('frac(1,0)'),/zero/);
+    assert.throws(()=>engine.evaluate('frac(1)'),/2 arguments/);
+    assert.throws(()=>engine.evaluate('frac(1,2,3)'),/2 arguments/);
+    assert.throws(()=>engine.evaluate('frac(20 degC,2)'),/temperature/);
+});

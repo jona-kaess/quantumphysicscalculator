@@ -30,3 +30,12 @@ test('PWA manifest and offline shell use deployable relative resources',()=>{
     for(const asset of ['index.html','assets/js/physics-engine.js','assets/js/calculator.js']) assert.ok(worker.includes(asset),asset);
     assert.match(worker,/ignoreSearch:true/);
 });
+
+test('editable math and its fonts are bundled in the offline shell',()=>{
+    const worker=fs.readFileSync('service-worker.js','utf8');
+    for(const asset of ['assets/js/math-editor.js','assets/vendor/mathlive/mathlive.min.js','assets/vendor/mathlive/mathlive-fonts.css',...fs.readdirSync('assets/vendor/mathlive/fonts').map(name=>'assets/vendor/mathlive/fonts/'+name)]) {
+        assert.ok(fs.existsSync(asset),asset);
+        assert.ok(worker.includes(asset),`${asset} must be available offline`);
+    }
+    assert.ok(fs.existsSync('assets/vendor/mathlive/LICENSE.txt'));
+});

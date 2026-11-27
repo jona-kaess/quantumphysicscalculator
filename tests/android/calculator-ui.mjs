@@ -25,15 +25,14 @@ async function tap(selector) {
     await pause(180);
 }
 async function type(expression) {
-    await evaluate(`(()=>{const e=document.getElementById('expression');e.value='';e.dispatchEvent(new Event('input',{bubbles:true}));})()`);
-    await tap('#expression');
-    await call('Input.insertText',{text:expression});
+    await evaluate(`(()=>{const e=document.getElementById('expression');e.value=${JSON.stringify(expression)};e.dispatchEvent(new Event('input',{bubbles:true}));})()`);
+    await tap(await evaluate("document.getElementById('math-expression')?.hidden===false?'#math-expression':'#expression'"));
     await pause(250);
 }
 const value=()=>evaluate("document.getElementById('expression').value");
 const result=()=>evaluate("document.getElementById('mobile-result-value').textContent.replace(/\\s/g,'')");
 async function visible(selector) {
-    return evaluate(`(()=>{const e=document.querySelector(${JSON.stringify(selector)}),r=e.getBoundingClientRect(),v=visualViewport;return !e.hidden && r.width>0 && r.height>0 && r.top>=v.offsetTop-1 && r.bottom<=v.offsetTop+v.height+1 && r.right<=v.width+1;})()`);
+    return evaluate(`(()=>{const e=document.querySelector(${JSON.stringify(selector)}),r=e.getBoundingClientRect(),v=visualViewport;const hit=document.elementFromPoint(r.x+r.width/2,r.y+r.height/2);return (hit===e || e.contains(hit)) && !e.hidden && r.width>0 && r.height>0 && r.top>=v.offsetTop-1 && r.bottom<=v.offsetTop+v.height-(window.PhysicsMath?.keyboardHeight() || 0)+1 && r.right<=v.width+1;})()`);
 }
 async function screenshot(name) {await writeFile(join('/tmp',name),execFileSync(adb,['exec-out','screencap','-p']));}
 await call('Runtime.enable');
@@ -49,13 +48,14 @@ try {
     if(!process.env.VIEWPORT_ONLY) {
     await pause(500);
     await screenshot('calculator-redesign-idle.png');
-    await type('hbar');
-    assert.ok(await evaluate("document.body.classList.contains('keyboard-open')"),'System keyboard must be open.');
+    await type('hba');
+    await screenshot('calculator-math-start.png');
+    assert.ok(await evaluate("document.body.classList.contains('keyboard-open')"),'Math keyboard must be open.');
     assert.ok(await visible('#completion-0'),'Constant suggestion must be above keyboard.');
     assert.ok(await visible('.mobile-keys'),'Editing keys must be above keyboard.');
-    assert.ok(await visible('#mobile-result'),'Result must be above keyboard.');
     await tap('#completion-0');
     assert.equal(await value(),'hbar');
+    assert.ok(await visible('#mobile-result'),'Result must be above keyboard.');
     assert.match(await result(),/1\.05457182/);
     await screenshot('calculator-redesign-keyboard.png');
     console.log('PASS constant suggestions, selection and keyboard layout');
@@ -65,11 +65,31 @@ try {
     await call('Input.insertText',{text:'0'});await pause(250);
     assert.equal(await value(),'sin(0)');assert.equal(await result(),'0');
     console.log('PASS function completion and cursor between parentheses');
+    await type('');await tap('[data-insert="/"]');
+    await call('Input.insertText',{text:'1'});await pause(100);
+    await tap('[data-command="moveToNextPlaceholder"]');
+    await call('Input.insertText',{text:'2'});await pause(200);
+    await screenshot('calculator-fraction-editing.png');
+    assert.match(await result(),/0\.5/);
+    assert.match(await evaluate("document.getElementById('math-expression').value"),/\\frac/);
+    await screenshot('calculator-fraction-editing.png');
+    console.log('PASS fraction key, numerator, denominator and field navigation');
+    await type('');
+    for(const char of 'hbar') {await call('Input.insertText',{text:char});await pause(60);}
+    assert.equal(await value(),'hbar');
+    assert.ok(await evaluate("document.getElementById('math-expression').shadowRoot.textContent.includes('ℏ')"),'hbar rendered as a symbol in the editor');
+    console.log('PASS typed constant becomes its mathematical symbol');
+    for(const constant of ['k_B','mu_B']) {
+        await type('');for(const char of constant) {await call('Input.insertText',{text:char});await pause(60);}
+        assert.equal(await value(),constant,'typed subscript constant '+constant);
+    }
+    console.log('PASS typed subscript constants');
+
     for(const [expression,pattern] of [
         ['sqrt(16)+2^3',/12/],['sin(30 deg)',/0\.5/],['300 K eq eV',/25\.8519998meV/],
         ['(2+3i)*2',/4.*6i/],['20 degC - 10 degC',/10K/],['1 erg eq J',/10/],
         ['2 kg * 9.81 m / s^2',/19\.62N/],['mod(11,3)',/2/],['2**3**2',/512/],
-        ['1 eV eq GHz',/equiv/],['1 GHz',/1GHz/]
+        ['1 eV eq GHz',/equiv/],['1 GHz',/1GHz/],['frac(1,frac(2,3))',/1\.5/]
     ]) {await type(expression);assert.match(await result(),pattern,expression);assert.ok(await visible('#mobile-result'),expression+' visible');console.log('PASS '+expression);}
     await type('1 m + 1 s');
     assert.match(await evaluate("document.getElementById('calculator-error').textContent"),/different dimensions/);
@@ -134,7 +154,7 @@ try {
         assert.ok(await visible('.mobile-keys'),'Keys on a narrow screen');
         assert.ok(await visible('#mobile-result'),'Result on a narrow screen');
         await screenshot('calculator-redesign-narrow.png');
-        console.log('PASS narrow Android display with system keyboard');
+        console.log('PASS narrow Android display with math keyboard');
     } finally {execFileSync(adb,['shell','wm','size',override || 'reset']);await pause(700);}
     await pause(350);if(await visible('#finish-editing')) await tap('#finish-editing');await pause(350);
     const rotation=execFileSync(adb,['shell','settings','get','system','user_rotation'],{encoding:'utf8'}).trim();
@@ -148,9 +168,10 @@ try {
         assert.ok(await visible('#mobile-result'),'Result in landscape');
         await screenshot('calculator-redesign-landscape.png');
         await type('hba');assert.ok(await visible('#completion-0'),'Landscape suggestion visible');
+        await screenshot('calculator-math-landscape-suggestions.png');
         await tap('#completion-0');assert.equal(await value(),'hbar');
         assert.ok(await visible('#mobile-result'));
-        console.log('PASS landscape Android display, suggestions and system keyboard');
+        console.log('PASS landscape Android display, suggestions and math keyboard');
     } finally {
         execFileSync(adb,['shell','settings','put','system','user_rotation',rotation==='null'?'0':rotation]);
         execFileSync(adb,['shell','settings','put','system','accelerometer_rotation',automatic==='null'?'1':automatic]);await pause(700);

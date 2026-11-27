@@ -4,7 +4,7 @@ import re
 from pathlib import Path
 
 PAGES = ('index.html', 'guide.html')
-ASSET_URL = re.compile(r'(?P<attr>src|href)="(?P<path>assets/(?:css|js)/[^"?]+)(?:\?v=[a-f0-9]+)?"')
+ASSET_URL = re.compile(r'(?P<attr>src|href)="(?P<path>assets/(?:css|js|vendor)/[^"?]+)(?:\?v=[a-f0-9]+)?"')
 
 
 def main():
@@ -18,6 +18,7 @@ def main():
         page.write_text(ASSET_URL.sub(replace, text), encoding='utf-8')
     # Refresh the offline shell whenever a page or core asset changes.
     core = [Path(name) for name in PAGES] + sorted(Path('assets/css').glob('*')) + sorted(Path('assets/js').glob('*'))
+    core += sorted(p for p in Path('assets/vendor').rglob('*') if p.is_file())
     digest = hashlib.sha256(b''.join(p.read_bytes() for p in core)).hexdigest()[:12]
     worker = Path('service-worker.js')
     if worker.exists():
