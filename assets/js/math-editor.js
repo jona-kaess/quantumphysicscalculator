@@ -20,6 +20,8 @@
         const name=names.get(kind+symbol);
         return name?'\\'+name+' ':symbol;
     }
+    const functionNameLatex=name=>`\\textcolor{#efc18d}{\\operatorname{${name}}}`;
+    const knownNames=[...Object.keys(engine.constants),...Object.keys(engine.units),...Object.keys(engine.functions),'eq','euler'];
     function nodeLatex(node) {
         if(node.kind==='constant') return symbolLatex(node.text,'C');
         if(node.kind==='unit') return symbolLatex(node.text,'U');
@@ -33,7 +35,7 @@
             const args=node.args.map(nodeLatex);
             if(node.name==='frac') return `\\frac{${args[0]}}{${args[1]}}`;
             if(node.name==='sqrt') return `\\sqrt{${args[0]}}`;
-            return `\\operatorname{${node.name}}\\left(${args.join(',')}\\right)`;
+            return `${functionNameLatex(node.name)}\\left(${args.join(',')}\\right)`;
         }
         if(node.kind==='/') return `\\frac{${nodeLatex(node.left)}}{${nodeLatex(node.right)}}`;
         if(node.kind==='^') return `{${nodeLatex(node.left)}}^{${nodeLatex(node.right)}}`;
@@ -152,50 +154,61 @@
             if(/\\qpc[CU]/.test(latex))return '';
             try {const text=fromLatex(latex);return /^[A-Za-z0-9µ_]$/.test(text)?text:'';} catch {return '';}
         }
-        function colorWords() {
-            let position=field.position;
-            // IMEs may commit a complete function including its parentheses.
-            // Find the most recent name even when the caret follows its argument.
-            while(position>0 && !/[A-Za-zµ_]/.test(atomLetter(position-1,position)))position--;
-            let start=position,end=position,word='';
-            while(start>0) {const letter=atomLetter(start-1,start);if(!letter)break;word=letter+word;start--;}
-            while(end<field.lastOffset) {const letter=atomLetter(end,end+1);if(!letter)break;word+=letter;end++;}
-            const coefficient=word.match(/^\d+(?=[A-Za-zµ])/);
-            if(coefficient) {start+=coefficient[0].length;word=word.slice(coefficient[0].length);}
-            if(!/^[A-Za-zµ]/.test(word))return;
-            const color=engine.units[word]?'#84dbce':engine.constants[word]?'#d8b5ef':engine.functions[word]||word==='eq'?'#efc18d':'#edf2f8';
-            if(field.getValue(start,end,'latex').includes('\\textcolor{'+color+'}'))return;
-            const selection=field.selection;
-            field.selection={ranges:[[start,end]],direction:'forward'};
-            field.applyStyle({color},{operation:'set',silenceNotifications:true});
-            field.selection=selection;
+        // Empty atoms at the current depth delimit arguments and fraction branches.
+        function branchStart(end,limit=0) {
+            const depth=field.getElementInfo(end)?.depth || 0;
+            for(let start=end-1;start>=limit;start--) {
+                const info=field.getElementInfo(start);
+                if(info && info.depth<=depth && !info.latex)return start;
+            }
+            return limit;
+        }
+        function nameAtCaret() {
+            const position=field.position,ends=[position];
+            // Include a closing subscript/macro branch when its boundary is empty.
+            const closing=position<field.lastOffset?field.getElementInfo(position+1)?.latex || '':'';
+            if(!field.getValue(position,position+1,'latex') && /_|\\qpc/.test(closing) && !/\\(?:frac|sqrt|left)/.test(closing))ends.push(position+1);
+            let candidate=null;
+            for(const end of ends) {
+                const first=branchStart(end,Math.max(0,end-80));
+                for(let start=end-1;start>=first;start--) {
+                    const latex=field.getValue(start,end,'latex');
+                    if(/\\[;, :]/.test(latex))break;
+                    let word;try {word=fromLatex(latex).replace(/\s/g,'');} catch {continue;}
+                    if(/[+*/(),^=;\-]/.test(word))break;
+                    if(!/^[A-Za-zµ][A-Za-z0-9µ_]*$/.test(word))continue;
+                    if(/[A-Za-zµ_]/.test(start>0?atomLetter(start-1,start):''))continue;
+                    candidate={start,end,word,latex};
+                }
+            }
+            return candidate;
+        }
+        function normalizeName() {
+            const range=nameAtCaret();
+            if(!range)return;
+            const {word,latex}=range;
+            let tex;
+            if(Object.hasOwn(engine.constants,word))tex=symbolLatex(word,'C');
+            else if(Object.hasOwn(engine.units,word))tex=symbolLatex(word,'U');
+            else if(word==='eq')tex='\\textcolor{#edf2f8}{eq}';
+            else if(word==='euler')tex='\\operatorname{euler}';
+            else if(Object.hasOwn(engine.functions,word)) {
+                if(latex.includes('\\operatorname{'+word+'}'))return;
+                tex=functionNameLatex(word);
+            } else if(/\\qpc[CU]/.test(latex) && knownNames.some(name=>name.startsWith(word))) {
+                // A complete symbol can be the beginning of a longer name:
+                // G → GHz, m → mu_B, c → cos. Keep that continuation editable.
+                tex='\\textcolor{#edf2f8}{'+word+'}';
+            } else return;
+            if(latex.trim()===tex.trim())return;
+            field.selection={ranges:[[range.start,range.end]],direction:'forward'};
+            field.insert(tex,{format:'latex',selectionMode:'after',silenceNotifications:true});
+            field.applyStyle({color:'#edf2f8'},{operation:'set',silenceNotifications:true});
         }
         function readField(event) {
             if(syncing)return;
-            if(!event?.inputType?.startsWith('history')) {
-                // Ranges ending inside a subscript omit its underscore in MathLive.
-                // Include the closing branch, then find the complete named atom span.
-                const position=field.position;
-                const ends=[position];
-                if(position<field.lastOffset && !field.getValue(position,position+1,'latex'))ends.push(position+1);
-                let replacement=null;
-                for(const end of ends) {
-                    for(let start=end-1;start>=Math.max(0,end-80);start--) {
-                        const latex=field.getValue(start,end,'latex');
-                        if(/\\qpc[CU]/.test(latex))break;
-                        let word;try {word=fromLatex(latex);} catch {continue;}
-                        if(word.length>1 && Object.hasOwn(engine.constants,word) && !/[A-Za-zµ_]/.test(start>0?atomLetter(start-1,start):''))replacement={start,end,word};
-                    }
-                }
-                if(replacement) {
-                    syncing=true;
-                    field.selection={ranges:[[replacement.start,replacement.end]],direction:'forward'};
-                    field.insert(symbolLatex(replacement.word,'C'),{format:'latex',selectionMode:'after',silenceNotifications:true});
-                    syncing=false;
-                }
-            }
             syncing=true;
-            try {if(!event?.inputType?.startsWith('history'))colorWords();} finally {syncing=false;}
+            try {if(!event?.inputType?.startsWith('history'))normalizeName();} finally {syncing=false;}
             field.dataset.incomplete=String(/\\placeholder(?:\{|\[)/.test(field.value));
             try {source=fromLatex(field.getValue('latex'));field.dataset.parseError='';}
             catch(error) {source='';field.dataset.parseError=error.message;}
@@ -255,11 +268,8 @@
         function completions() {
             if(!field.hasFocus())return {items:[]};
             const before=field.getValue(0,field.position,'latex');
-            let start=field.position,end=field.position,word='';
-            while(start>0) {const letter=atomLetter(start-1,start);if(!letter)break;word=letter+word;start--;}
-            while(end<field.lastOffset) {if(!atomLetter(end,end+1))break;end++;}
-            const coefficient=word.match(/^\d+(?=[A-Za-zµ])/);
-            if(coefficient) {start+=coefficient[0].length;word=word.slice(coefficient[0].length);}
+            const range=nameAtCaret();
+            const {start=field.position,end=field.position,word=''}=range || {};
             let prefix='';try {prefix=fromLatex(before);} catch {return {items:[]};}
             if(!/^[A-Za-zµ][A-Za-z0-9µ_]*$/.test(word)) {
                 if(/(?:^|\s)eq$/.test(prefix)) return {...engine.completions('eq ',3),mathStart:field.position,mathEnd:field.position};
@@ -278,19 +288,70 @@
             else if(item.type==='operator')tex='\\;\\operatorname{eq}\\;';
             else if(item.symbol==='sqrt')tex=`\\sqrt{${argument}}`;
             else if(item.symbol==='frac')tex=`\\frac{${argument}}{#?}`;
-            else if(item.type==='function')tex=`\\operatorname{${item.symbol}}\\left(${argument}${['mod','pow'].includes(item.symbol)?',#?':''}\\right)`;
+            else if(item.type==='function')tex=`${functionNameLatex(item.symbol)}\\left(${argument}${!item.typed && ['mod','pow'].includes(item.symbol)?',#?':''}\\right)`;
             else tex=item.symbol==='euler'?'\\operatorname{euler}':item.symbol;
             field.insert(tex,{format:'latex',selectionMode:'placeholder',focus:true});captured=null;readField();
         }
         function insertFraction() {
-            const prefix=field.getValue(0,field.position,'latex');
-            const empty=!prefix.trim() || /(?:[+\-*(,]|\\[;,])$/.test(prefix.trim());
-            field.insert(empty?'\\frac{#?}{#?}':'\\frac{#@}{#?}',{format:'latex',selectionMode:'placeholder',focus:true});
+            if(field.selection.ranges.every(([start,end])=>start===end)) {
+                const end=field.position;
+                let start=end;
+                function factor(node) {
+                    if(node.kind==='*')return node.implicit && factor(node.left) && factor(node.right);
+                    return ['number','constant','unit','imaginary','euler','group','function','unary','postfix','^'].includes(node.kind);
+                }
+                // Explicitly select the previous factor, including entire macro
+                // branches and an adjacent coefficient. MathLive's #@ skips macros.
+                const first=branchStart(end),depth=field.getElementInfo(end)?.depth || 0;
+                for(let offset=end-1;offset>=first;offset--) {
+                    const latex=field.getValue(offset,end,'latex');
+                    try {if(field.getElementInfo(offset+1)?.depth<=depth && /^[+*/=,\-]$/.test(fromLatex(field.getValue(offset,offset+1,'latex'))))break;} catch {}
+                    let tree;try {tree=engine.parse(fromLatex(latex)).tree;} catch {continue;}
+                    if(factor(tree) && !/\\[;, :]/.test(field.getValue(offset,offset+1,'latex')))start=offset;
+                }
+                if(start<end)field.selection={ranges:[[start,end]],direction:'forward'};
+            }
+            const selected=field.selection.ranges.some(([start,end])=>start!==end);
+            const numerator=selected?field.selection.ranges.map(([start,end])=>field.getValue(Math.min(start,end),Math.max(start,end),'latex')).join(''):'#?';
+            field.insert('\\frac{'+numerator+'}{#?}',{format:'latex',selectionMode:'placeholder',focus:true});
             readField();
         }
+        function closeFunction() {
+            const original=field.selection;
+            for(let level=0;level<20;level++) {
+                const current=field.getElementInfo(field.position),next=field.getElementInfo(field.position+1);
+                if(!next || !current || next.depth>=current.depth)break;
+                if(/\\(?:sqrt|left\()/.test(next.latex)) {
+                    field.executeCommand('moveAfterParent');readField();return true;
+                }
+                if(!/\\frac/.test(next.latex))break;
+                field.executeCommand('moveAfterParent');
+            }
+            field.selection=original;return false;
+        }
+        field.addEventListener('beforeinput',event=>{
+            if(syncing)return;
+            if(event.data===')' && closeFunction())event.preventDefault();
+            else if(event.data==='\\frac{#@}{#?}') {
+                event.preventDefault();setTimeout(insertFraction,0);
+            } else if(['(','\\left(\\right?','\\left(\\right)'].includes(event.data)) {
+                const range=nameAtCaret();
+                if(!range || range.word==='frac' || !Object.hasOwn(engine.functions,range.word))return;
+                event.preventDefault();
+                setTimeout(()=>insertItem({type:'function',symbol:range.word,typed:true},{mathStart:range.start,mathEnd:range.end}),0);
+            }
+        });
         field.addEventListener('keydown',event=>{
             if(event.isComposing || event.ctrlKey || event.metaKey || event.altKey)return;
             if(event.key.length===1)repairInputSelection();
+            if(event.key===')' && closeFunction()) {event.preventDefault();event.stopImmediatePropagation();return;}
+            if(event.key==='(') {
+                const range=nameAtCaret();
+                if(range && range.word!=='frac' && Object.hasOwn(engine.functions,range.word)) {
+                    event.preventDefault();event.stopImmediatePropagation();
+                    insertItem({type:'function',symbol:range.word,typed:true},{mathStart:range.start,mathEnd:range.end});return;
+                }
+            }
             if(['*','/',';'].includes(event.key)) {
                 event.preventDefault();event.stopImmediatePropagation();
                 if(event.key==='/')insertFraction();

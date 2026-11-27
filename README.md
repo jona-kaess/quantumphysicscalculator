@@ -64,7 +64,12 @@ saved calculations and examples open in dialogs. Tap **Done** to dismiss the
 calculator keyboard and access the bottom navigation. The alphabetic tab retains
 the type-and-select workflow for constants, units and functions. There is one
 unified keyboard with fractions, powers, scientific notation and field navigation.
-Physical `/` captures the preceding term as the numerator and `*` multiplies.
+Both physical `/` and the fraction key capture the preceding term, including
+constant symbols, units and adjacent coefficients, as the numerator and select
+the denominator. `*` multiplies. Complete typed constant and unit names use the
+same mathematical symbols and colors as selected suggestions; function names
+become upright operators, with `sqrt(` opening an editable root. Recognized
+prefixes can still be extended, for example `G` to `GHz` and `sin` to `sinh`.
 
 The gear button opens device-local settings for decimal point/comma, automatic,
 decimal, scientific or engineering result formatting, 3–15 significant digits,
@@ -132,6 +137,10 @@ The feedback regression suite uses hardware keyboard and touch/IME input at lapt
 profile running `--remote-debugging-port=9333`, run
 `node tests/browser/calculator-feedback.mjs`. Set `CDP_PORT=9222` to run the
 same input and settings checks in emulator Chrome. It restores existing settings.
+The suite also checks direct unit/constant rendering, typed and nested functions,
+fraction capture with both slash and the on-screen key, denominator focus and
+long expressions. Set `TEST_FORMATS=tablet,tablet-landscape,phone-small` to run
+only selected viewport cases while debugging.
 
 Open `http://localhost:5000/landing.html` in that test browser and run
 `node tests/browser/landing.mjs` to check the promotional page at laptop, tablet
