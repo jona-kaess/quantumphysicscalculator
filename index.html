@@ -2,12 +2,12 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="theme-color" content="#1366d6">
+    <meta name="viewport" content="width=device-width, initial-scale=1, interactive-widget=resizes-content">
+    <meta name="theme-color" content="#101720">
     <link rel="manifest" href="manifest.webmanifest">
     <link rel="apple-touch-icon" href="assets/icon-192.png?v=1a121de6c5da">
     <title>Quantum Physics Calculator</title>
-    <link rel="stylesheet" href="assets/css/styles.css?v=ba953239f241">
+    <link rel="stylesheet" href="assets/css/styles.css?v=f971674c5362">
     <script>
         window.MathJax = {
             loader: { load: ['[tex]/color'] },
@@ -17,60 +17,83 @@
     </script>
     <script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
 </head>
-<body>
-    <main class="container">
-
-        
-<section class="hero calculator">
-    <div class="calculator-header"><h1>Physics calculator</h1><a class="guide-link" href="guide.html" aria-label="Open calculator guide"><span aria-hidden="true">?</span><span class="guide-link-text">Guide</span></a></div>
-    <p>Calculate with numbers, units and physical constants. Dimensions are checked automatically.</p>
-    <div class="panel">
-
-        <div class="expression-heading"><label for="expression">Expression</label><button type="button" id="clear-expression" class="clear-expression" hidden>Clear</button></div>
-        <div class="expression-editor">
-            <div class="expression-input-layer">
-            <div id="expression-highlight" class="expression-highlight" aria-hidden="true"></div>
-            <textarea id="expression" rows="2" inputmode="text" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" placeholder="Try 300 K eq eV or hbar * 10 GHz" aria-describedby="input-help" aria-autocomplete="list" aria-controls="autocomplete-list" aria-expanded="false" role="combobox"></textarea>
+<body class="calculator-page">
+<main class="calculator app-shell" aria-label="Physics calculator">
+    <header class="calculator-header">
+        <h1><span class="app-mark" aria-hidden="true">φ</span> Physics Calc</h1>
+        <div class="header-actions">
+            <input id="angle-mode" type="range" min="0" max="1" step="1" value="0" hidden>
+            <button type="button" id="angle-toggle" class="quiet-button" aria-label="Angle unit: radians. Switch to degrees" aria-pressed="false"><span id="angle-label">Rad</span></button>
+            <button type="button" id="saved-button" class="quiet-button">Saved</button>
+            <a class="guide-link" href="guide.html" aria-label="Open calculator guide">?</a>
+        </div>
+    </header>
+    <section class="calculation-screen" aria-label="Current calculation">
+        <div class="composer">
+            <div class="expression-heading">
+                <label for="expression">EXPRESSION</label>
+                <div><button type="button" id="expand-expression" class="quiet-button" aria-expanded="false">Expand</button><button type="button" id="clear-expression" class="quiet-button" hidden>Clear</button><button type="button" id="finish-editing" class="quiet-button" hidden>Done</button></div>
             </div>
-            <div class="preview-row"><div id="expression-preview" class="math-preview" aria-live="polite" aria-label="Formatted expression" hidden></div><div id="input-prefixes" class="prefix-note" hidden></div><div id="mobile-result" class="preview-result" hidden><span aria-hidden="true">=</span><span id="mobile-result-value" aria-label="Result"></span></div><p id="calculator-error" class="error" role="status"></p></div>
+            <div class="expression-input-layer">
+                <div id="expression-highlight" class="expression-highlight" aria-hidden="true"></div>
+                <textarea id="expression" rows="3" inputmode="text" enterkeyhint="done" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" placeholder="Start typing…
+hbar * 10 GHz" aria-describedby="input-help" aria-autocomplete="list" aria-controls="autocomplete-list" aria-expanded="false" role="combobox"></textarea>
+            </div>
+            <p id="input-help" class="sr-only">Type numbers, constants, units or functions. Choose a suggestion, or use arrow keys and Enter or Tab. Use uppercase E for scientific notation.</p>
+        </div>
+        <div class="live-answer">
+            <div id="empty-result" class="empty-result">Your result appears as you type.</div>
+            <div id="mobile-result" class="preview-result" hidden><span class="equals" aria-hidden="true">=</span><div id="mobile-result-value" aria-label="Result" aria-live="polite"></div></div>
+            <p id="calculator-error" class="error" role="status"></p>
+            <div class="answer-actions"><button type="button" id="result-details" class="quiet-button" disabled>Units &amp; details ↗</button><span class="answer-tools"><button type="button" id="copy-latex" class="quiet-button" disabled>Copy LaTeX</button><button type="button" id="save-calculation" class="quiet-button" disabled>Save</button></span></div>
+        </div>
+        <div class="suggestion-dock">
+            <p id="suggestion-hint">Try <button type="button" data-example="hbar * 10 GHz">hbar</button>, <button type="button" data-example="sqrt(16)">sqrt()</button> or <button type="button" data-example="300 K eq eV">300 K eq eV</button></p>
+            <div id="autocomplete-list" class="autocomplete-list" role="listbox" aria-label="Expression suggestions" hidden></div>
+            <button type="button" id="next-suggestions" class="quiet-button" aria-label="Next suggestions" hidden>›</button>
         </div>
         <div class="mobile-keys" role="group" aria-label="Expression editing keys">
-            <button type="button" data-insert="+" aria-label="Plus">+</button><button type="button" data-insert="-" aria-label="Minus">−</button><button type="button" data-insert="*" aria-label="Multiply">*</button><button type="button" data-insert="^" aria-label="Power">^</button><button type="button" data-insert="/" aria-label="Divide">/</button><button type="button" data-insert="(" aria-label="Open parenthesis">(</button><button type="button" data-insert=")" aria-label="Close parenthesis">)</button><button type="button" data-move="-1" aria-label="Move cursor left">←</button><button type="button" data-move="1" aria-label="Move cursor right">→</button>
+            <button type="button" data-insert="+" aria-label="Plus">+</button><button type="button" data-insert="-" aria-label="Minus">−</button><button type="button" data-insert="*" aria-label="Multiply">×</button><button type="button" data-insert="/" aria-label="Divide">÷</button><button type="button" data-insert="^" aria-label="Power">^</button><button type="button" data-insert="(" aria-label="Open parenthesis">(</button><button type="button" data-insert=")" aria-label="Close parenthesis">)</button><button type="button" data-insert="," aria-label="Comma">,</button><button type="button" data-move="-1" aria-label="Move cursor left">←</button><button type="button" data-move="1" aria-label="Move cursor right">→</button>
         </div>
-        <div class="autocomplete-anchor"><div id="autocomplete-list" class="autocomplete-list" role="listbox" aria-label="Expression suggestions" hidden></div></div>
-        <div class="expression-actions"><button type="button" class="secondary" id="copy-latex">Copy LaTeX</button><button type="button" class="secondary" id="save-calculation">Save calculation</button><div class="angle-setting"><label for="angle-mode">Angle unit</label><span><span class="angle-full">Radians (0–2π)</span><span class="angle-short" aria-hidden="true">Rad</span></span><input id="angle-mode" type="range" min="0" max="1" step="1" value="0" aria-label="Angle unit: radians or degrees"><span><span class="angle-full">Degrees (0–360°)</span><span class="angle-short" aria-hidden="true">Deg</span></span><strong id="angle-label">Radians</strong></div></div><span id="action-status" role="status"></span>
-        <div class="calculator-toolbar">
-            <button type="button" class="secondary" id="constants-button" aria-expanded="false" aria-controls="insert-menu">Constants <kbd>Ctrl K</kbd></button>
-            <button type="button" class="secondary" id="units-button" aria-expanded="false" aria-controls="insert-menu">Units <kbd>Ctrl E</kbd></button>
-            <button type="button" class="secondary" id="functions-button" aria-expanded="false" aria-controls="insert-menu">Functions <kbd>Ctrl Y</kbd></button>
-        </div>
-        <div id="insert-menu" class="insert-menu" hidden>
-            <label for="menu-search">Search</label>
-            <input id="menu-search" type="search" placeholder="Search by name or symbol">
-            <label id="group-label" for="unit-group">Quantity</label>
-            <select id="unit-group"></select>
-            <div id="menu-items" class="menu-items"></div>
-            <button type="button" class="secondary" id="menu-close">Close</button>
-        </div>
-        <p id="input-help" class="hint">Use +, −, *, /, ^, !, % and functions such as sqrt(), sin() or mod(a,b). Use euler for Euler’s number, e for elementary charge, and i for √−1. Use ↑/↓ and Enter or Tab to insert suggestions.</p>
-    </div>
-    <div class="panel" id="result-panel" hidden>
-        <span class="eyebrow">RESULT <span id="dimension-tag" class="dimension-tag"></span></span>
+    </section>
+    <nav class="calculator-toolbar" aria-label="Insert and explore">
+        <button type="button" id="constants-button" aria-expanded="false" aria-controls="insert-menu"><span class="nav-symbol constant-color" aria-hidden="true">ℏ</span>Constants</button>
+        <button type="button" id="units-button" aria-expanded="false" aria-controls="insert-menu"><span class="nav-symbol unit-color" aria-hidden="true">m/s</span>Units</button>
+        <button type="button" id="functions-button" aria-expanded="false" aria-controls="insert-menu"><span class="nav-symbol function-color" aria-hidden="true">ƒ</span>Functions</button>
+        <button type="button" id="examples-button"><span class="nav-symbol" aria-hidden="true">↗</span>Examples</button>
+    </nav>
+    <span id="action-status" class="action-status" role="status"></span>
+</main>
+<dialog id="insert-menu" class="app-dialog" aria-labelledby="insert-title">
+    <header class="dialog-header"><h2 id="insert-title">Constants</h2><button type="button" id="menu-close" class="quiet-button">Close</button></header>
+    <div class="dialog-search"><label class="sr-only" for="menu-search">Search</label><input id="menu-search" type="search" placeholder="Search by name or symbol"><label id="group-label" class="sr-only" for="unit-group">Quantity</label><select id="unit-group"></select></div>
+    <div id="menu-items" class="menu-items"></div>
+</dialog>
+<dialog id="details-dialog" class="app-dialog" aria-labelledby="details-title">
+    <header class="dialog-header"><h2 id="details-title">Result &amp; units</h2><button type="button" data-close-dialog class="quiet-button">Close</button></header>
+    <div class="dialog-content"><div id="result-panel" hidden>
+        <span id="dimension-tag" class="dimension-tag"></span>
         <p class="calculator-result" id="calculator-result"></p>
         <p id="result-relation" class="result-relation" hidden></p>
         <p id="result-prefix" class="prefix-note" hidden></p>
-        <div id="conversion-section"><label for="result-unit-search">Choose a unit</label><input id="result-unit-search" type="search" placeholder="Search units"><select id="result-unit" aria-label="Result unit"></select><p id="result-unit-empty" class="hint" hidden>No matching units.</p></div>
-        <div id="constant-section" hidden><h2>Constants used</h2><div id="constant-list" class="constant-list"></div><p class="hint">Values from SciPy 1.14.1 / CODATA 2018; exact SI definitions where applicable.</p></div>
-        <p class="hint temperature-note" id="temperature-note" hidden>Absolute temperature conversions assume K is an absolute temperature. Use deltaC or deltaF for differences; absolute °C and °F values cannot be multiplied or divided.</p>
-    </div>
-    <div class="panel" id="saved-panel"><h2>Saved calculations</h2><p class="hint">Saved on this device in this browser.</p><div id="saved-list"></div></div>
-    <div class="panel examples"><h2>Examples</h2><div id="examples"></div><p class="hint">Energy-equivalent units are explicitly named, for example <code>10 GHz_energy</code> uses E = hν. Frequency <code>GHz</code> remains a frequency. Wavelength equivalents are offered for positive energy results.</p></div>
-</section>
+        <div id="conversion-section"><label for="result-unit-search">Convert result</label><input id="result-unit-search" type="search" placeholder="Search units or equivalents"><select id="result-unit" class="sr-only" tabindex="-1" aria-hidden="true" aria-label="Result unit"></select><div id="result-unit-options" class="unit-choices" role="group" aria-label="Result units"></div><p id="result-unit-empty" class="hint" hidden>No matching units.</p></div>
+        <section class="result-section"><h3>Expression</h3><div id="expression-preview" class="math-preview" aria-label="Formatted expression" hidden></div><div id="input-prefixes" class="prefix-note" hidden></div></section>
+        <section id="constant-section" class="result-section" hidden><h3>Constants used</h3><div id="constant-list" class="constant-list"></div><p class="hint">SciPy 1.14.1 / CODATA 2018; exact SI definitions where applicable.</p></section>
+        <p class="hint temperature-note" id="temperature-note" hidden>Use deltaC or deltaF for temperature differences. Absolute °C and °F cannot be multiplied or divided.</p>
+    </div></div>
+</dialog>
+<dialog id="saved-dialog" class="app-dialog" aria-labelledby="saved-title">
+    <header class="dialog-header"><h2 id="saved-title">Saved calculations</h2><button type="button" data-close-dialog class="quiet-button">Close</button></header>
+    <div class="dialog-content" id="saved-panel"><p class="hint">Saved on this device in this browser.</p><div id="saved-list"></div></div>
+</dialog>
+<dialog id="examples-dialog" class="app-dialog" aria-labelledby="examples-title">
+    <header class="dialog-header"><h2 id="examples-title">Try a calculation</h2><button type="button" data-close-dialog class="quiet-button">Close</button></header>
+    <div class="dialog-content examples"><div id="examples"></div><p class="hint">Type <code>eq</code> to convert units or energy equivalents. Ordinary frequency remains a frequency.</p></div>
+</dialog>
 <script src="assets/js/scipy-constants.js?v=fd4097f595e2" defer></script>
 <script src="assets/js/physics-engine.js?v=5464df4f34c9" defer></script>
-<script src="assets/js/calculator.js?v=544afbef5950" defer></script>
+<script src="assets/js/calculator.js?v=b35a6a69d3af" defer></script>
 <script src="assets/js/pwa.js?v=99545cea69c7" defer></script>
 
-    </main>
 </body>
 </html>

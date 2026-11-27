@@ -52,6 +52,11 @@ Saved calculations retain their expression, angle setting and selected result
 unit locally in this browser. The Copy LaTeX button copies the formatted input
 expression. On small screens, type names to use autocomplete.
 
+The mobile interface keeps the active calculation in a single viewport. The editor
+wraps long expressions and can be expanded; unit conversion, symbol browsing,
+saved calculations and examples open in dialogs. Tap **Done** to dismiss the
+system keyboard and access the bottom navigation.
+
 The calculator can be installed as a PWA through a compatible browser on HTTPS
 (or localhost). After the first online visit its application files are cached
 for offline use. MathJax is loaded from a CDN, so formatted mathematics may
@@ -89,9 +94,24 @@ node tests/js/physics-engine.test.js
 node tests/js/static-site.test.js
 ```
 
+The Android UI smoke test runs against Chrome in a connected emulator with Node.js
+22 or newer (no package installation). Start the local server, open
+`http://localhost:5000/` in emulator Chrome, then run:
+
+```sh
+adb reverse tcp:5000 tcp:5000
+adb forward tcp:9222 localabstract:chrome_devtools_remote
+node tests/android/calculator-ui.mjs
+```
+
+Set `ADB` to the adb executable path when it is not on PATH. The test exercises
+touch input with the system keyboard, suggestions, long expressions, dialogs,
+unit conversion and saved calculations, and restores the existing saved entries.
+Screenshots are written to the system temporary directory.
+
 ## Scientific functions and angles
 
-Use the angle switch beside the action buttons to choose radians or degrees for
+Use the Rad/Deg button in the header to choose radians or degrees for
 `sin`, `cos`, `tan`, `asin`, `acos`, `atan`, and `arg`. Explicit `deg` or `rad`
 units are honored independently of the switch; hyperbolic functions are
 unitless and unaffected by it.

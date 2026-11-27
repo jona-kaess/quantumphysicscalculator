@@ -5,14 +5,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="theme-color" content="#171b22">
     <title>Calculator guide</title>
-    <link rel="stylesheet" href="assets/css/styles.css?v=ba953239f241">
+    <link rel="stylesheet" href="assets/css/styles.css?v=f971674c5362">
 </head>
 <body>
 <main class="container guide-page">
     <a href="index.html">← Back to calculator</a>
     <h1>Calculator guide</h1>
-    <p>Enter an expression. The calculator shows its formatted form and result as you type.</p>
-    <figure><img src="assets/images/guide-expression.png" alt="Calculator showing hbar times 25 GHz and its energy result"><figcaption>Enter numbers, constants and units in the Expression field.</figcaption></figure>
+    <p>Enter an expression. Your result updates as you type. Suggestions, the result and editing keys stay above the keyboard. Open <strong>Units &amp; details</strong> for the formatted expression, conversions and constants.</p>
+
+    <h2>Make room for your calculation</h2>
+    <p>The main screen stays in place while the system keyboard is open. Long expressions wrap inside the editor; scroll inside it when needed, or use <strong>Expand</strong> for more editing space. Tap <strong>Collapse</strong> to bring the live result back. <strong>Done</strong> dismisses the keyboard. The next-suggestions arrow shows more matches without moving the page. The bottom bar opens searchable constants, units, functions and examples when the keyboard is closed.</p>
 
     <h2>Calculate</h2>
     <ul>
@@ -24,7 +26,7 @@
     <h2>Units and constants</h2>
     <ul>
         <li>Write a unit next to a number: <code>10GHz</code>, <code>2 kg</code> or <code>3 m/s</code>. Prefixes such as <code>m</code>, <code>k</code>, <code>G</code>, <code>u</code>, <code>mu</code> and <code>µ</code> are supported.</li>
-        <li>Examples: <code>hbar * 25 GHz</code>, <code>k_B * 300 K</code> and <code>2 kg * 9.81 m / s^2</code>. Used constants and their values appear below the result.</li>
+        <li>Examples: <code>hbar * 25 GHz</code>, <code>k_B * 300 K</code> and <code>2 kg * 9.81 m / s^2</code>. Open <strong>Units &amp; details</strong> to inspect used constants and their values.</li>
         <li>CGS units include centimetres (<code>cm</code>), grams (<code>g</code>), seconds (<code>s</code>), <code>dyn</code>, <code>erg</code>, <code>Ba</code>, <code>Gal</code>, <code>P</code>, <code>St</code>, <code>G</code> and <code>Mx</code>. CGS electromagnetic conventions differ; these magnetic units are converted to their SI equivalents.</li>
         <li>Other examples include <code>1 in</code>, <code>1 gal_US</code>, <code>1 gal_UK</code>, <code>1 F</code>, <code>1 G</code> and <code>1 kcal</code>. US and UK volume units have separate names.</li>
         <li>Dimensions must match when adding or subtracting. <code>5V / 10A</code> divides two quantities; <code>5V / 10 A</code> multiplies by A after division. Parentheses make the order explicit.</li>
@@ -34,11 +36,10 @@
 
     <h2>Choose an output unit</h2>
     <ul>
-        <li>Search under <strong>Choose a unit</strong>, or append <code>eq</code>: <code>10 m / 2s eq km/h</code> or <code>hbar * 25 GHz eq meV</code>. Type <code>eq</code> to see it in suggestions, then type the desired unit.</li>
+        <li>Open <strong>Units &amp; details</strong> and tap a unit card. Search for a symbol such as <code>cm</code> to request a particular prefix, or append <code>eq</code>: <code>10 m / 2s eq km/h</code> or <code>hbar * 25 GHz eq meV</code>. Type <code>eq</code> to see it in suggestions, then type the desired unit.</li>
         <li>Energy equivalents work both ways: <code>1 eV eq GHz</code> and <code>1 GHz eq eV</code> use E = hν; <code>1 rad_s eq eV</code> uses E = ħω. The result shows the relation and constants. Ordinary <code>GHz</code> is a frequency; <code>GHz_energy</code>, <code>rad_s_energy</code>, <code>K_energy</code>, <code>T_energy</code> and <code>nm_energy</code> are energy equivalents in input.</li>
         <li>The output selects readable SI prefixes automatically for base units; a prefix explicitly entered after <code>eq</code> is retained.</li>
     </ul>
-    <figure><img src="assets/images/guide-conversion.png" alt="Result panel showing a frequency energy equivalent and the relation E equals h nu"><figcaption>The result identifies the selected unit and the relation used for an energy equivalent.</figcaption></figure>
 
     <h2>Functions and angles</h2>
     <p>Use parentheses, for example <code>sqrt(9 m^2)</code>, <code>sin(90)</code> or <code>pow(2,3)</code>. Select <strong>Rad</strong> or <strong>Deg</strong> for trigonometric functions; explicit angles such as <code>sin(90 deg)</code> work in either mode.</p>
@@ -48,7 +49,7 @@
     <p>Use <code>20 degC</code> or <code>68 degF</code> for absolute temperatures and <code>deltaC</code> or <code>deltaF</code> for differences. For example, <code>20 degC - 10 degC</code> gives a temperature difference. Absolute Celsius and Fahrenheit values cannot be multiplied or divided.</p>
 
     <h2>Save and reuse</h2>
-    <p><strong>Copy LaTeX</strong> copies the expression as LaTeX. <strong>Save calculation</strong> stores it and the selected result unit in this browser on this device. Select a saved expression to restore it, or choose <strong>Use result</strong> to append its result to the current expression. <strong>Clear</strong> clears the expression.</p>
+    <p><strong>Copy LaTeX</strong> copies the expression as LaTeX. <strong>Save</strong> stores it and the selected result unit in this browser on this device. Open <strong>Saved</strong> in the header and select an expression to restore it, or choose <strong>Use result</strong> to append its result to the current expression. <strong>Clear</strong> clears the expression.</p>
     <p><a href="index.html">← Back to calculator</a></p>
 </main>
 </body>
