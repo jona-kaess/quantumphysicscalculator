@@ -15,7 +15,7 @@ android {
 
 def copyWebAssets = tasks.register('copyWebAssets', Copy) {
     from('../..') {
-        include 'index.html', 'guide.html', 'manifest.webmanifest', 'service-worker.js', 'assets/**'
+        include 'index.html', 'guide.html', 'landing.html', 'manifest.webmanifest', 'service-worker.js', 'assets/**'
     }
     into layout.buildDirectory.dir('generated/webAssets/www')
 }

@@ -3,7 +3,7 @@ import hashlib
 import re
 from pathlib import Path
 
-PAGES = ('index.html', 'guide.html')
+PAGES = ('index.html', 'guide.html', 'landing.html')
 ASSET_URL = re.compile(r'(?P<attr>src|href)="(?P<path>assets/[^"?]+)(?:\?v=[a-f0-9]+)?"')
 
 

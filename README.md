@@ -4,7 +4,10 @@ A static, client-side physics calculator. It runs in the browser and can be host
 on GitHub Pages; Flask, Python and a backend API are not needed at runtime.
 See [the calculator guide](guide.html) for usage examples.
 
-The calculator is available at `index.html`. The former unit converter and
+The calculator is available at [index.html](index.html). The German promotional
+landing page is at [landing.html](landing.html), with direct links to the calculator
+and guide. The PWA and Android app continue to open the calculator directly.
+The former unit converter and
 qubit Hamiltonians are preserved on the `legacy-converter-hamiltonians` branch.
 
 Open `index.html` in a browser or serve this directory with any static HTTP server,
@@ -127,6 +130,12 @@ The feedback regression suite uses hardware keyboard and touch/IME input at lapt
 profile running `--remote-debugging-port=9333`, run
 `node tests/browser/calculator-feedback.mjs`. Set `CDP_PORT=9222` to run the
 same input and settings checks in emulator Chrome. It restores existing settings.
+
+Open `http://localhost:5000/landing.html` in that test browser and run
+`node tests/browser/landing.mjs` to check the promotional page at laptop, tablet
+and phone sizes, including navigation to the calculator and guide and offline
+reloads. Set `CDP_PORT=9222` for the Android Chrome check. Screenshots are written
+to the system temporary directory.
 
 The PWA and adaptive Android launcher icons share `assets/logo.svg` as their
 visual source; PNG exports and Android vector paths are checked into the repo.
