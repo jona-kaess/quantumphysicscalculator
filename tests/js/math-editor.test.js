@@ -42,3 +42,14 @@ test('conversion suffixes survive mathematical editing',()=>{
         assert.ok(Number.isFinite(engine.requestedConversion(engine.evaluate(expression),target,expression).value));
     }
 });
+
+test('symbol boundaries, decimal commas and compound conversion targets remain unambiguous',()=>{
+    const constant=math.symbolLatex('hbar','C');
+    assert.equal(math.fromLatex(constant+'5'),'hbar 5');
+    close(engine.evaluate(math.fromLatex(constant+'5')).value,engine.evaluate('hbar * 5').value);
+    assert.equal(math.fromLatex('1{,}25\\cdot 2'),'1.25*2');
+    assert.match(math.toLatex('1.25',{decimalSeparator:','}),/1\{,\}25/);
+    const target=math.fromLatex(math.toLatex('gamma_e eq GHz/T'));
+    const [expression,unit]=target.split(/\s+eq\s+/);
+    close(engine.requestedConversion(engine.evaluate(expression),unit).value,engine.requestedConversion(engine.evaluate('gamma_e'),'GHz/T').value);
+});

@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="theme-color" content="#171b22">
     <title>Calculator guide</title>
-    <link rel="stylesheet" href="assets/css/styles.css?v=0edc4125af1b">
+    <link rel="stylesheet" href="assets/css/styles.css?v=b65f8939f8d6">
 </head>
 <body>
 <main class="container guide-page">
@@ -17,7 +17,10 @@
     <p>The main screen stays in place while the calculator keyboard is open. Switch between its <strong>123</strong> and <strong>abc</strong> tabs to enter numbers or names. Long formulas stay inside the editor; scroll inside it when needed, or use <strong>Expand</strong> for more editing space. Tap <strong>Collapse</strong> to bring the live result back. <strong>Done</strong> dismisses the keyboard. The next-suggestions arrow shows more matches without moving the page. The bottom bar opens searchable constants, units, functions and examples when the keyboard is closed.</p>
 
     <h2>Fractions and symbols</h2>
-    <p>Tap the <strong>a/b</strong> key to insert a fraction. Enter the numerator, then use <strong>⇥</strong> to move to the denominator. Arrow keys and tapping the formula let you move through nested fractions and powers. You can also type <code>frac(1+2,3+3)</code> or paste LaTeX such as <code>\frac{1+2}{3+3}</code>. Type a constant name or choose a suggestion to insert its mathematical symbol; <code>hbar</code>, <code>k_B</code> and <code>mu_B</code> retain their existing physical meanings.</p>
+    <p>Tap the <strong>a/b</strong> key to insert a fraction. On a physical keyboard, <kbd>/</kbd> moves the preceding term into the numerator and places the cursor in the denominator; <kbd>*</kbd> inserts multiplication. Enter the numerator, then use <strong>⇥</strong> to move to the denominator. Arrow keys and tapping the formula let you move through nested fractions and powers. You can also type <code>frac(1+2,3+3)</code> or paste LaTeX such as <code>\frac{1+2}{3+3}</code>. Type a constant name or choose a suggestion to insert its mathematical symbol; <code>hbar</code>, <code>k_B</code> and <code>mu_B</code> retain their existing physical meanings.</p>
+
+    <h2>Settings</h2>
+    <p>Open <strong>⚙</strong> in the header to choose a decimal point or comma, automatic/decimal/scientific/engineering result formatting, 3–15 significant digits, automatic unit prefixes, the angle unit, and QWERTZ, QWERTY, AZERTY or Dvorak keyboards. Changes are saved on this device automatically. Display rounding never changes the precision used in calculations. With decimal comma, use <code>;</code> to separate function arguments, for example <code>pow(2;3)</code>.</p>
 
     <h2>Calculate</h2>
     <ul>
@@ -34,10 +37,11 @@
         <li>Other examples include <code>1 in</code>, <code>1 gal_US</code>, <code>1 gal_UK</code>, <code>1 F</code>, <code>1 G</code> and <code>1 kcal</code>. US and UK volume units have separate names.</li>
         <li>Dimensions must match when adding or subtracting. <code>5V / 10A</code> divides two quantities; <code>5V / 10 A</code> multiplies by A after division. Parentheses make the order explicit.</li>
         <li>On a keyboard, use <kbd>Ctrl K</kbd> for constants, <kbd>Ctrl E</kbd> for units and <kbd>Ctrl Y</kbd> for functions. You can also type a name and select a suggestion; use ↑/↓ and Enter or Tab on a keyboard.</li>
-        <li>On a small screen, use the operator and arrow keys below the expression to insert symbols or move the cursor while keeping the keyboard open.</li>
+        <li>On a small screen, use the unified math keyboard for fractions, powers, scientific notation and cursor navigation. Its alphabetic tab lets you type names.</li>
     </ul>
 
     <h2>Choose an output unit</h2>
+    <p>Compound units work on either side of a conversion, including editable fractions: <code>gamma_e eq GHz/T</code>. The dimensions must match; incompatible quantities still produce a descriptive error.</p>
     <ul>
         <li>Open <strong>Units &amp; details</strong> and tap a unit card. Search for a symbol such as <code>cm</code> to request a particular prefix, or append <code>eq</code>: <code>10 m / 2s eq km/h</code> or <code>hbar * 25 GHz eq meV</code>. Type <code>eq</code> to see it in suggestions, then type the desired unit.</li>
         <li>Energy equivalents work both ways: <code>1 eV eq GHz</code> and <code>1 GHz eq eV</code> use E = hν; <code>1 rad_s eq eV</code> uses E = ħω. The result shows the relation and constants. Ordinary <code>GHz</code> is a frequency; <code>GHz_energy</code>, <code>rad_s_energy</code>, <code>K_energy</code>, <code>T_energy</code> and <code>nm_energy</code> are energy equivalents in input.</li>

@@ -57,7 +57,15 @@ editor displays editable fractions, powers, subscripts and constant symbols, and
 can be expanded; unit conversion, symbol browsing,
 saved calculations and examples open in dialogs. Tap **Done** to dismiss the
 calculator keyboard and access the bottom navigation. The alphabetic tab retains
-the type-and-select workflow for constants, units and functions.
+the type-and-select workflow for constants, units and functions. There is one
+unified keyboard with fractions, powers, scientific notation and field navigation.
+Physical `/` captures the preceding term as the numerator and `*` multiplies.
+
+The gear button opens device-local settings for decimal point/comma, automatic,
+decimal, scientific or engineering result formatting, 3–15 significant digits,
+unit prefix scaling, angle mode and QWERTZ/QWERTY/AZERTY/Dvorak keyboards. With
+decimal comma, use `;` between function arguments. Saved expressions and internal
+calculation precision remain independent of display preferences.
 
 The calculator can be installed as a PWA through a compatible browser on HTTPS
 (or localhost). After the first online visit its application files are cached
@@ -94,6 +102,7 @@ Run with Node.js:
 ```sh
 node tests/js/physics-engine.test.js
 node tests/js/math-editor.test.js
+node tests/js/settings.test.js
 node tests/js/static-site.test.js
 ```
 
@@ -112,6 +121,15 @@ touch input with the math keyboard, fractions, constant symbols, suggestions,
 long expressions, dialogs,
 unit conversion and saved calculations, and restores the existing saved entries.
 Screenshots are written to the system temporary directory.
+
+The feedback regression suite uses hardware keyboard and touch/IME input at laptop, tablet
+(portrait and landscape) and narrow phone sizes. With a separate Chrome test
+profile running `--remote-debugging-port=9333`, run
+`node tests/browser/calculator-feedback.mjs`. Set `CDP_PORT=9222` to run the
+same input and settings checks in emulator Chrome. It restores existing settings.
+
+The PWA and adaptive Android launcher icons share `assets/logo.svg` as their
+visual source; PNG exports and Android vector paths are checked into the repo.
 
 ## Scientific functions and angles
 

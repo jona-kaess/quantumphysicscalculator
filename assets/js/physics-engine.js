@@ -347,10 +347,25 @@
                 return {...choice,key:'eq:'+target,label:target.replace(/_energy$/,'').replace('rad_s','rad/s'),value:result.value/factor,imag:(result.imag||0)/factor,prefixable:!unit.prefix && prefixable.includes(baseEnergy)};
             }
         }
-        const tokens=tokenize(target);
-        if(!tokens.length || !tokens.some(t=>t.type==='name') || tokens.some(t=>t.type==='name' && !U[t.value]) || tokens.some(t=>['+','!','%',','].includes(t.type)) || tokens.some((t,i)=>t.type==='number' && tokens[i-1]?.type!=='^' && !(tokens[i-1]?.type==='-' && tokens[i-2]?.type==='^'))) throw Error('Enter a valid unit after eq.');
+        // Unit expressions may arrive as editable LaTeX fractions or roots.
+        // Validate their AST instead of rejecting the editor's frac() syntax.
+        function unitExpression(node,power=false) {
+            if(node.kind==='unit')return !power;
+            if(node.kind==='number')return power || Number(node.text)===1;
+            if(node.kind==='group')return unitExpression(node.child,power);
+            if(node.kind==='unary')return power && unitExpression(node.child,true);
+            if(node.kind==='^')return unitExpression(node.left) && unitExpression(node.right,true);
+            if(['*','/'].includes(node.kind))return unitExpression(node.left,power) && unitExpression(node.right,power);
+            if(node.kind==='function' && node.name==='frac')return node.args.length===2 && node.args.every(arg=>unitExpression(arg,power));
+            if(node.kind==='function' && node.name==='sqrt')return node.args.length===1 && unitExpression(node.args[0],power);
+            return false;
+        }
         let reference;
-        try {reference=evaluate('1 '+target);} catch {throw Error('Enter a valid unit after eq.');}
+        try {
+            const parsed=parse(target);
+            if(!unitExpression(parsed.tree))throw Error('Invalid target unit.');
+            reference=evaluate(target);
+        } catch {throw Error('Enter a valid unit after eq.');}
         if(!same(result.dim,reference.dim) || reference.absolute || reference.imag || !reference.value) throw Error('The requested unit is not compatible with the result.');
         return {key:'eq:'+target,label:target.replaceAll('rad_s','rad/s'),group:unit?.group||dimensionName(result.dim),constants:unit?.constants||[],value:result.value/reference.value,imag:(result.imag||0)/reference.value,prefixable:!!unit && !unit.prefix && prefixable.includes(target)};
     }

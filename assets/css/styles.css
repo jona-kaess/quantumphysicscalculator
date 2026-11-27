@@ -16,7 +16,8 @@ a { color:var(--accent); }
 .app-shell { position:fixed; top:var(--app-top); left:0; right:0; width:min(100%,860px); height:var(--app-height); margin:auto; display:flex; flex-direction:column; background:var(--bg); padding:env(safe-area-inset-top) 0 env(safe-area-inset-bottom); container-type:size; container-name:calculator; }
 .calculator-header { display:flex; flex:none; align-items:center; justify-content:space-between; gap:.5rem; height:62px; padding:0 24px; border-bottom:1px solid var(--border); }
 .calculator-header h1 { display:flex; align-items:center; gap:.65rem; font-size:1.05rem; font-weight:650; letter-spacing:-.03em; margin:0; white-space:nowrap; }
-.app-mark { color:var(--unit); font-family:Georgia,serif; font-size:1.7rem; font-weight:400; }
+.app-mark { display:block; flex:none; width:30px; height:30px; }
+.settings-button { font-size:1.3rem; width:38px; padding:0; }
 .header-actions { display:flex; align-items:center; gap:.2rem; }
 .quiet-button { background:transparent; border-color:transparent; color:var(--muted); padding:.45rem .6rem; font-size:.8rem; font-weight:600; border-radius:8px; }
 .quiet-button:hover { color:var(--text); background:var(--surface); }
@@ -43,9 +44,6 @@ a { color:var(--accent); }
 #math-expression::part(virtual-keyboard-toggle),#math-expression::part(menu-toggle) { display:none; }
 #math-expression::part(content) { white-space:normal; overflow-wrap:anywhere; }
 #math-expression:focus-within { outline:none; box-shadow:none; }
-.fraction-icon { display:inline-flex; flex-direction:column; min-width:1em; font-family:Georgia,serif; font-size:.75rem; line-height:1.15; vertical-align:middle; }
-.fraction-icon > span:first-child { border-bottom:1px solid currentColor; padding:0 .15em .05em; }
-.fraction-icon > span:last-child { padding-top:.05em; }
 :root { --keyboard-background:#17212e; --keyboard-toolbar-background:#101720; --keyboard-toolbar-text:#b4cefa; --keyboard-toolbar-text-active:#84dbce; --keyboard-toolbar-background-hover:#223246; --keycap-background:#223246; --keycap-text:#edf2f8; --keycap-secondary-background:#30465d; --keycap-secondary-text:#b4cefa; --keycap-primary-background:#507da9; --keycap-primary-text:#fff; }
 .live-answer { flex:none; border-top:1px solid var(--border); padding-top:10px; }
 .preview-result { display:flex; align-items:baseline; justify-content:flex-end; gap:12px; min-height:54px; }
@@ -60,18 +58,15 @@ a { color:var(--accent); }
 .answer-tools { display:flex; }
 .answer-actions .quiet-button { font-size:.72rem; min-height:40px; padding:.3rem .45rem; }
 #result-details:not(:disabled) { color:var(--unit); }
-.suggestion-dock { display:flex; align-items:center; flex:none; min-height:68px; gap:5px; border-top:1px solid var(--border); }
-#suggestion-hint { color:var(--muted); font-size:.8rem; line-height:1.8; margin:0; }
-#suggestion-hint button { min-height:36px; color:var(--accent); border:0; background:transparent; padding:0 .15rem; font-size:inherit; }
+.suggestion-dock { display:flex; align-items:center; flex:none; min-height:0; padding:6px 0; gap:5px; border-top:1px solid var(--border); }
 .autocomplete-list { flex:1; display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:6px; min-width:0; }
-.autocomplete-option { min-width:0; display:flex; flex-direction:column; align-items:flex-start; justify-content:center; gap:3px; height:54px; padding:6px 10px; background:var(--card); border-color:var(--border); text-align:left; }
-.autocomplete-option strong { font-size:.95rem; max-width:100%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
-.autocomplete-option span { max-width:100%; color:var(--muted); font-size:.65rem; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.autocomplete-option { min-width:0; display:flex; flex-direction:row; flex-wrap:wrap; align-items:baseline; justify-content:flex-start; gap:3px 8px; min-height:46px; padding:8px 10px; background:var(--card); border-color:var(--border); text-align:left; overflow-wrap:anywhere; }
+.autocomplete-option strong { font-size:.9rem; max-width:100%; white-space:normal; }
+.autocomplete-option span { flex:1 1 8em; min-width:0; color:var(--muted); font-size:.7rem; white-space:normal; }
+.suggestion-dock:has(.autocomplete-list[hidden]) { display:none; }
+.autocomplete-option:only-child { grid-column:1 / -1; }
 .autocomplete-option[aria-selected="true"] { border-color:#6386ae; background:#23374e; }
 #next-suggestions { flex:none; width:36px; padding:0; font-size:1.7rem; }
-.mobile-keys { flex:none; display:grid; grid-template-columns:repeat(10,minmax(0,1fr)); gap:4px; padding:0 0 10px; }
-.mobile-keys button { padding:0; min-width:0; height:46px; border-radius:8px; font-size:1.2rem; background:#223246; border-color:transparent; }
-.mobile-keys button:active { background:#42638a; }
 .calculator-toolbar { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); flex:none; border-top:1px solid var(--border); padding:6px 16px; gap:4px; }
 .calculator-toolbar button { display:flex; align-items:center; justify-content:center; gap:8px; border:0; background:transparent; color:var(--muted); font-size:.75rem; padding:5px 3px; min-width:0; }
 .nav-symbol { font-size:1.1rem; }
@@ -85,8 +80,12 @@ a { color:var(--accent); }
 .dialog-search { padding:12px 16px 0; display:flex; flex-direction:column; gap:8px; flex:none; }
 .dialog-content { padding:16px; overflow:auto; overscroll-behavior:contain; min-height:0; }
 .menu-items { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:6px; overflow:auto; overscroll-behavior:contain; padding:12px 16px 16px; min-height:0; }
-.menu-option { display:flex; flex-direction:column; text-align:left; align-items:flex-start; gap:4px; min-width:0; background:var(--bg); overflow-wrap:anywhere; }
-.menu-option span { color:var(--muted); font-size:.75rem; }
+.menu-option { display:flex; flex-wrap:wrap; flex-direction:row; text-align:left; align-items:baseline; gap:4px 10px; min-width:0; background:var(--bg); overflow-wrap:anywhere; }
+.menu-option strong { max-width:100%; }
+.menu-option span { flex:1 1 8em; min-width:0; color:var(--muted); font-size:.75rem; }
+.settings-form { display:grid; gap:18px; }
+.settings-form label { display:grid; gap:7px; }
+.settings-form .hint { margin:0; }
 .dimension-tag { display:inline-block; padding:5px 9px; background:#203d3d; color:var(--unit); border-radius:6px; font-size:.7rem; text-transform:capitalize; }
 .calculator-result { font-size:1.7rem; margin:16px 0; overflow-wrap:anywhere; }
 #conversion-section { display:flex; flex-direction:column; gap:8px; }
@@ -131,7 +130,7 @@ code { color:var(--unit); overflow-wrap:anywhere; }
 @media(max-width:600px) {
     .calculator-header { height:48px; padding:0 12px; }
     .calculator-header h1 { font-size:.9rem; gap:.4rem; }
-    .app-mark { font-size:1.4rem; }
+    .app-mark { width:26px; height:26px; }
     .header-actions { gap:0; }
     .calculation-screen { padding:4px 12px 0; }
     #expression,.expression-highlight { font-size:1.05rem; line-height:1.5; padding:5px 0 9px; }
@@ -139,10 +138,8 @@ code { color:var(--unit); overflow-wrap:anywhere; }
     #mobile-result-value { font-size:1.35rem; }
     .preview-result { min-height:40px; }
     .live-answer { padding-top:6px; }
-    .suggestion-dock { min-height:58px; }
-    .autocomplete-option { height:48px; padding:5px 8px; }
-    .mobile-keys { padding-bottom:6px; gap:3px; }
-    .mobile-keys button { height:44px; font-size:1.05rem; border-radius:6px; }
+    .suggestion-dock { min-height:0; }
+    .autocomplete-option { padding:7px 8px; }
     .calculator-toolbar { padding:2px 8px; }
     .calculator-toolbar button { flex-direction:column; gap:0; font-size:.62rem; min-height:46px; }
     .nav-symbol { line-height:1.3; font-size:1rem; }
@@ -157,8 +154,8 @@ code { color:var(--unit); overflow-wrap:anywhere; }
     .keyboard-open .answer-actions { min-height:30px; }
     .keyboard-open .answer-actions .quiet-button { min-height:30px; }
     .keyboard-open .calculator-toolbar { display:none; }
-    .keyboard-open .suggestion-dock { min-height:54px; }
-    .keyboard-open .autocomplete-option { height:44px; }
+    .keyboard-open .suggestion-dock { min-height:0; }
+    .keyboard-open .autocomplete-option { min-height:44px; }
     .keyboard-open .empty-result { padding:8px 0; }
     .menu-items { grid-template-columns:1fr; }
     .container { padding:16px; }
@@ -184,18 +181,16 @@ code { color:var(--unit); overflow-wrap:anywhere; }
     .answer-actions { display:none; }
     .error:not(:empty) { min-height:0; max-height:100%; padding:0; font-size:.72rem; }
     .empty-result { padding:4px 0; font-size:.72rem; }
-    .suggestion-dock { grid-column:1; grid-row:2; min-height:0; border:0; }
+    .suggestion-dock { grid-column:1 / -1; grid-row:2; min-height:0; border:0; }
     .autocomplete-list { gap:4px; }
-    .autocomplete-option { height:36px; min-height:36px; padding:2px 6px; gap:0; }
+    .autocomplete-option { min-height:36px; padding:3px 6px; gap:2px 5px; }
     .autocomplete-option strong { font-size:.8rem; }
     .autocomplete-option span { font-size:.55rem; }
     #next-suggestions { height:36px; min-height:36px; width:26px; }
-    #suggestion-hint { display:none; }
     .suggestion-dock:has(.autocomplete-list[hidden]) { display:none; }
-    .mobile-keys { grid-column:2; grid-row:2; grid-template-columns:repeat(7,minmax(0,1fr)); padding:0; gap:3px; }
-    .mobile-keys button { height:36px; min-height:36px; font-size:1rem; }
-    .mobile-keys [data-move],.mobile-keys [data-insert=","] { display:none; }
-    .calculation-screen:has(.autocomplete-list[hidden]) .mobile-keys { grid-column:1 / -1; grid-template-columns:repeat(10,minmax(0,1fr)); }
-    .calculation-screen:has(.autocomplete-list[hidden]) .mobile-keys [data-move],.calculation-screen:has(.autocomplete-list[hidden]) .mobile-keys [data-insert=","] { display:block; }
+
 }
 @media(forced-colors:active) { .syntax-active #expression { color:CanvasText; } .expression-highlight { display:none; } }
+.MLK__layer:has(.qpc-fraction-key) .MLK__rows { --keycap-width:min(78px,calc((100cqw - 40px)/6)); }
+/* MathLive's keyboard reset can give invisible tooltips pointer-events: all. */
+.ML__keyboard [data-tooltip]::after { pointer-events:none !important; }

@@ -5,9 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, interactive-widget=resizes-content">
     <meta name="theme-color" content="#101720">
     <link rel="manifest" href="manifest.webmanifest">
-    <link rel="apple-touch-icon" href="assets/icon-192.png?v=1a121de6c5da">
+    <link rel="apple-touch-icon" href="assets/icon-192.png?v=a2c5759a4a59">
+    <link rel="icon" type="image/svg+xml" href="assets/logo.svg?v=66c7e594f06b">
     <title>Quantum Physics Calculator</title>
-    <link rel="stylesheet" href="assets/css/styles.css?v=0edc4125af1b">
+    <link rel="stylesheet" href="assets/css/styles.css?v=b65f8939f8d6">
     <link rel="stylesheet" href="assets/vendor/mathlive/mathlive-fonts.css?v=f86deebd3c9f">
     <script>
         window.MathJax = {
@@ -21,11 +22,12 @@
 <body class="calculator-page">
 <main class="calculator app-shell" aria-label="Physics calculator">
     <header class="calculator-header">
-        <h1><span class="app-mark" aria-hidden="true">φ</span> Physics Calc</h1>
+        <h1><img class="app-mark" src="assets/logo.svg?v=66c7e594f06b" alt="" width="30" height="30"> Physics Calc</h1>
         <div class="header-actions">
             <input id="angle-mode" type="range" min="0" max="1" step="1" value="0" hidden>
             <button type="button" id="angle-toggle" class="quiet-button" aria-label="Angle unit: radians. Switch to degrees" aria-pressed="false"><span id="angle-label">Rad</span></button>
             <button type="button" id="saved-button" class="quiet-button">Saved</button>
+            <button type="button" id="settings-button" class="quiet-button settings-button" aria-label="Open settings" aria-controls="settings-dialog">⚙</button>
             <a class="guide-link" href="guide.html" aria-label="Open calculator guide">?</a>
         </div>
     </header>
@@ -50,12 +52,8 @@ hbar * 10 GHz" aria-describedby="input-help" aria-autocomplete="list" aria-contr
             <div class="answer-actions"><button type="button" id="result-details" class="quiet-button" disabled>Units &amp; details ↗</button><span class="answer-tools"><button type="button" id="copy-latex" class="quiet-button" disabled>Copy LaTeX</button><button type="button" id="save-calculation" class="quiet-button" disabled>Save</button></span></div>
         </div>
         <div class="suggestion-dock">
-            <p id="suggestion-hint">Try <button type="button" data-example="hbar * 10 GHz">hbar</button>, <button type="button" data-example="sqrt(16)">sqrt()</button> or <button type="button" data-example="300 K eq eV">300 K eq eV</button></p>
             <div id="autocomplete-list" class="autocomplete-list" role="listbox" aria-label="Expression suggestions" hidden></div>
             <button type="button" id="next-suggestions" class="quiet-button" aria-label="Next suggestions" hidden>›</button>
-        </div>
-        <div class="mobile-keys" role="group" aria-label="Expression editing keys">
-            <button type="button" data-insert="+" aria-label="Plus">+</button><button type="button" data-insert="-" aria-label="Minus">−</button><button type="button" data-insert="*" aria-label="Multiply">×</button><button type="button" data-insert="/" aria-label="Insert fraction"><span class="fraction-icon" aria-hidden="true"><span>a</span><span>b</span></span></button><button type="button" data-insert="^" aria-label="Power">xⁿ</button><button type="button" data-insert="(" aria-label="Open parenthesis">(</button><button type="button" data-insert=")" aria-label="Close parenthesis">)</button><button type="button" data-command="moveToNextPlaceholder" aria-label="Next fraction field">⇥</button><button type="button" data-move="-1" aria-label="Move cursor left">←</button><button type="button" data-move="1" aria-label="Move cursor right">→</button>
         </div>
     </section>
     <nav class="calculator-toolbar" aria-label="Insert and explore">
@@ -92,11 +90,26 @@ hbar * 10 GHz" aria-describedby="input-help" aria-autocomplete="list" aria-contr
     <header class="dialog-header"><h2 id="examples-title">Try a calculation</h2><button type="button" data-close-dialog class="quiet-button">Close</button></header>
     <div class="dialog-content examples"><div id="examples"></div><p class="hint">Type <code>eq</code> to convert units or energy equivalents. Ordinary frequency remains a frequency.</p></div>
 </dialog>
+<dialog id="settings-dialog" class="app-dialog" aria-labelledby="settings-title">
+    <header class="dialog-header"><h2 id="settings-title">Settings</h2><button type="button" data-close-dialog class="quiet-button">Close</button></header>
+    <form id="settings-form" class="dialog-content settings-form">
+        <label for="setting-decimalSeparator">Decimal separator<select id="setting-decimalSeparator" name="decimalSeparator"><option value=".">Point · 1.25</option><option value=",">Comma · 1,25</option></select></label>
+        <label for="setting-resultFormat">Result format<select id="setting-resultFormat" name="resultFormat"><option value="auto">Auto</option><option value="decimal">Decimal</option><option value="scientific">Scientific · 1.23 × 10⁴</option><option value="engineering">Engineering · 12.3 × 10³</option></select></label>
+        <label for="setting-precision">Significant digits<select id="setting-precision" name="precision"><option>3</option><option>4</option><option>5</option><option>6</option><option>7</option><option>8</option><option selected>9</option><option>10</option><option>11</option><option>12</option><option>13</option><option>14</option><option>15</option></select></label>
+        <label for="setting-unitPrefixes">Result unit prefixes<select id="setting-unitPrefixes" name="unitPrefixes"><option value="true">Automatic · mV, kHz, …</option><option value="false">Keep selected unit · V, Hz, …</option></select></label>
+        <label for="setting-keyboardLayout">Alphabetic keyboard<select id="setting-keyboardLayout" name="keyboardLayout"><option value="qwertz">QWERTZ</option><option value="qwerty">QWERTY</option><option value="azerty">AZERTY</option><option value="dvorak">Dvorak</option></select></label>
+        <label for="setting-angleMode">Angle unit<select id="setting-angleMode" name="angleMode"><option value="rad">Radians</option><option value="deg">Degrees</option></select></label>
+        <p class="hint">Saved automatically on this device. Display rounding does not change calculation precision. With decimal comma, use the semicolon key to separate function arguments.</p>
+        <button type="button" id="settings-reset">Reset settings</button>
+        <p id="settings-status" class="hint" role="status"></p>
+    </form>
+</dialog>
 <script src="assets/js/scipy-constants.js?v=fd4097f595e2" defer></script>
 <script src="assets/vendor/mathlive/mathlive.min.js?v=9967efce1bf9" defer></script>
-<script src="assets/js/physics-engine.js?v=ab63091b828f" defer></script>
-<script src="assets/js/math-editor.js?v=0104e05bf24a" defer></script>
-<script src="assets/js/calculator.js?v=68dc361a8546" defer></script>
+<script src="assets/js/physics-engine.js?v=b838838ac88b" defer></script>
+<script src="assets/js/settings.js?v=818ccee8f21a" defer></script>
+<script src="assets/js/math-editor.js?v=bb6bcf04ce0b" defer></script>
+<script src="assets/js/calculator.js?v=9b3bf069e136" defer></script>
 <script src="assets/js/pwa.js?v=99545cea69c7" defer></script>
 
 </body>

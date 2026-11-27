@@ -275,3 +275,12 @@ test('fractions preserve grouping, dimensions, complex values and validation',()
     assert.throws(()=>engine.evaluate('frac(1,2,3)'),/2 arguments/);
     assert.throws(()=>engine.evaluate('frac(20 degC,2)'),/temperature/);
 });
+
+test('editable compound conversion units are accepted only with matching dimensions',()=>{
+    const gamma=engine.evaluate('gamma_e');
+    close(engine.requestedConversion(gamma,'frac(GHz,T)').value,engine.requestedConversion(gamma,'GHz/T').value);
+    close(engine.requestedConversion(engine.evaluate('1 N'),'frac(kg*m,s^2)').value,1);
+    close(engine.requestedConversion(engine.evaluate('1 m'),'sqrt(m^2)').value,1);
+    assert.throws(()=>engine.requestedConversion(gamma,'frac(GHz,m)'),/not compatible/);
+    for(const target of ['frac(hbar,T)','2 m','sin(m)','m + m'])assert.throws(()=>engine.requestedConversion(engine.evaluate('1 m'),target),/valid unit/);
+});

@@ -6,13 +6,13 @@
     const savedKey='physics-calculator-saved-v1';
     const readStorage=(key,fallback)=>{try{return JSON.parse(localStorage.getItem(key))??fallback;}catch{return fallback;}};
     const writeStorage=(key,value)=>{try{localStorage.setItem(key,JSON.stringify(value));return true;}catch{return false;}};
+    const settingsKey='physics-calculator-settings-v1';
+    let preferences=CalculatorSettings.normalize(readStorage(settingsKey,{}));
+    $('angle-mode').value=preferences.angleMode==='deg'?'1':'0';
     const versions=new WeakMap();
-    const fmt=x=>{
-        const rounded=Number(x.toPrecision(9));
-        if(rounded && (Math.abs(rounded)<1e-2 || Math.abs(rounded)>=1e9)) return rounded.toExponential().replace(/e([+-]?\d+)/,'E$1');
-        return rounded.toString().replace(/e([+-]?\d+)/,'E$1');
-    };
-    const mathNumber=x=>String(x).replace(/[eE]([+-]?\d+)/,(_,power)=>`\\times 10^{${Number(power)}}`);
+    const fmt=x=>CalculatorSettings.format(x,preferences);
+    const mathNumber=x=>String(x).replace(',', '{,}').replace(/[eE]([+-]?\d+)/,(_,power)=>`\\times 10^{${Number(power)}}`);
+    const scaledChoice=choice=>preferences.unitPrefixes?engine.scaledChoice(choice):{value:choice.value,imag:choice.imag||0,label:choice.label,power:0,prefix:''};
     function complexNumber(real,imag=0) {
         const magnitude=Math.hypot(real,imag); if(magnitude && Math.abs(real)<magnitude*1e-14) real=0; if(magnitude && Math.abs(imag)<magnitude*1e-14) imag=0;
         if(!imag) return mathNumber(fmt(real));
@@ -20,6 +20,7 @@
         return real?`${mathNumber(fmt(real))} ${imag<0?'-':'+'} ${term}`:`${imag<0?'-':''}${term}`;
     }
     function mathUnit(unit) {
+        if(/\b(?:frac|sqrt)\(/.test(unit)) {try {return engine.formatExpression(unit);} catch { /* Legacy labels retain their textual representation. */ }}
         const symbols={'rad/s':'rad/s','°C':'{}^\\circ C','°F':'{}^\\circ F','Δ°C':'\\Delta{}^\\circ C','Δ°F':'\\Delta{}^\\circ F'};
         const customary=unit.match(/^([A-Za-z_]+)_(US|UK)$/);
         if(customary) return `\\mathrm{${customary[1].replaceAll('_','\\,')}}_{\\mathrm{${customary[2]}}}`;
@@ -65,7 +66,7 @@
         document.documentElement.style.setProperty('--app-top',`${viewport?.offsetTop || 0}px`);
         document.body.classList.toggle('keyboard-open',keyboardOpen);
         $('finish-editing').hidden=!keyboardOpen;
-        if(!keyboardOpen) hideSuggestions();
+        if(!keyboardOpen && !(mathEditor?mathEditor.hasFocus():document.activeElement===input)) hideSuggestions();
         requestAnimationFrame(fitLiveResult);
     }
     window.visualViewport?.addEventListener('resize',syncViewport);
@@ -84,8 +85,9 @@
     }
     function openDialog(id) {
         hideSuggestions();
-        input.blur();
+        // Native dialog focus transfer keeps MathLive's input connection in sync.
         $(id).showModal();
+        window.mathVirtualKeyboard?.hide();
     }
     function closeDialogs() {
         document.querySelectorAll('dialog[open]').forEach(dialog=>dialog.close());
@@ -115,7 +117,7 @@
     function showResultChoice() {
         const choice=resultChoices.find(row=>row.key===selectedUnit);
         if(!choice) return;
-        const scaled=engine.scaledChoice(choice);
+        const scaled=scaledChoice(choice);
         const unit=engine.units[choice.key.replace(/^eq:/,'')], explicitPrefix=unit?.prefix && engine.units[unit.base] ? {symbol:unit.prefix,power:Math.round(Math.log10(unit.factor/engine.units[unit.base].factor))} : null;
         showInputPrefixes(scaled.prefix?{symbol:scaled.prefix,power:scaled.power}:explicitPrefix);
         const tex=`${complexNumber(scaled.value,scaled.imag)}\\,\\color{teal}{${mathUnit(scaled.label)}}`;
@@ -144,7 +146,7 @@
         const list=$('result-unit-options'); list.replaceChildren();
         matches.forEach(choice=>{
             const button=document.createElement('button'), label=document.createElement('strong'), number=document.createElement('span');
-            const scaled=engine.scaledChoice(choice);
+            const scaled=scaledChoice(choice);
             button.type='button'; button.className='unit-choice'; button.dataset.unit=choice.key;
             button.setAttribute('aria-pressed',String(choice.key===selectedUnit));
             label.textContent=choice.group==='Energy equivalent'?`${choice.label} equivalent`:choice.label;
@@ -187,7 +189,7 @@
         finally {refreshAnswer();}
     }
     function hideSuggestions() {
-        $('autocomplete-list').hidden=true; $('next-suggestions').hidden=true; $('suggestion-hint').hidden=false;
+        $('autocomplete-list').hidden=true; $('next-suggestions').hidden=true;
         input.setAttribute('aria-expanded','false'); input.removeAttribute('aria-activedescendant'); suggestions=[];
     }
     function acceptSuggestion(index) {
@@ -207,13 +209,13 @@
         suggestions.forEach((item,index)=>{
             const option=document.createElement('button'), symbol=document.createElement('strong'), description=document.createElement('span');
             option.type='button'; option.id=`completion-${index}`; option.className='autocomplete-option'; option.setAttribute('role','option');
-            symbol.className=item.type==='unit'?'unit-color':item.type==='function'||item.type==='operator'?'function-color':'constant-color'; symbol.textContent=item.symbol; description.textContent=`${item.name} · ${item.type}`;
+            symbol.className=item.type==='unit'?'unit-color':item.type==='function'||item.type==='operator'?'function-color':'constant-color'; symbol.textContent=item.symbol; description.textContent=item.name;
             option.append(symbol,description);
             option.addEventListener('pointerdown',event=>{if(event.button!==0)return;event.preventDefault();suggestionPointerActive=true;});
             option.addEventListener('click',()=>{suggestionPointerActive=false;acceptSuggestion(index);});
             list.append(option);
         });
-        list.hidden=false; $('suggestion-hint').hidden=true; input.setAttribute('aria-expanded','true'); markSuggestion();
+        list.hidden=false; input.setAttribute('aria-expanded','true'); markSuggestion();
     }
     function markSuggestion() {
         const options=[...$('autocomplete-list').children];
@@ -255,23 +257,6 @@
         populateMenu(); $('menu-search').focus();
     }
     input.addEventListener('input',()=>{ $('result-unit-search').value=''; update(); showSuggestions();});
-    function useMobileKey(button) {
-        if(mathEditor) {mathEditor.key(button);showSuggestions();return;}
-        input.focus({preventScroll:true});
-        if(button.dataset.insert) {
-            input.setRangeText(button.dataset.insert,input.selectionStart,input.selectionEnd,'end');
-            input.dispatchEvent(new Event('input',{bubbles:true}));
-        } else {
-            const left=button.dataset.move==='-1', start=input.selectionStart, end=input.selectionEnd;
-            const position=start!==end?(left?start:end):Math.max(0,Math.min(input.value.length,start+(left?-1:1)));
-            input.setSelectionRange(position,position); showSuggestions();
-        }
-    }
-    document.querySelectorAll('.mobile-keys button').forEach(button=>{
-        let pointerActivated=false;
-        button.addEventListener('pointerdown',event=>{if(event.button!==0) return; event.preventDefault(); pointerActivated=true; useMobileKey(button);setTimeout(()=>{pointerActivated=false;},500);});
-        button.addEventListener('click',event=>{if(event.detail===0 && !pointerActivated) useMobileKey(button);pointerActivated=false;});
-    });
     $('clear-expression').addEventListener('mousedown',e=>e.preventDefault());
     $('clear-expression').addEventListener('click',()=>{input.value=''; manualUnit=false; $('result-unit-search').value=''; closeMenu(); hideSuggestions(); update(); input.focus();});
     input.addEventListener('scroll',()=>{$('expression-highlight').scrollLeft=input.scrollLeft; $('expression-highlight').scrollTop=input.scrollTop;});
@@ -279,7 +264,7 @@
     input.addEventListener('click',showSuggestions);
     // Keep suggestions in place until a click completes: removing them on blur
     // can move a saved calculation out from under the pointer before click.
-    document.addEventListener('click',e=>{if(e.target!==input && e.target!==mathEditor?.field && !$('autocomplete-list').contains(e.target) && !e.target.closest('.mobile-keys, #next-suggestions')) hideSuggestions();});
+    document.addEventListener('click',e=>{if(mathEditor?.hasFocus())return;if(e.target!==input && e.target!==mathEditor?.field && !$('autocomplete-list').contains(e.target) && !e.target.closest('#next-suggestions')) hideSuggestions();});
     input.addEventListener('keydown',e=>{
         if(e.isComposing) return;
         if(e.key==='Enter' && !e.shiftKey && $('autocomplete-list').hidden) {e.preventDefault(); input.blur(); return;}
@@ -314,7 +299,7 @@
         let choice=choices.find(row=>row.key===item.unit);
         if(item.unit?.startsWith('eq:')) choice=engine.requestedConversion(result,item.unit.slice(3));
         if(!choice && choices.length) choice=choices.find(row=>row.key===engine.chooseDefault(result,expression,choices));
-        const scaled=choice?engine.scaledChoice(choice):{value:result.value,imag:result.imag||0,label:siUnit(result.dim)};
+        const scaled=choice?scaledChoice(choice):{value:result.value,imag:result.imag||0,label:siUnit(result.dim)};
         const tex=`${complexNumber(scaled.value,scaled.imag)}${scaled.label==='1'?'':`\\,\\color{teal}{${mathUnit(scaled.label)}}`}`;
         const number=value=>String(value).replace(/e([+-]?\d+)/,'E$1');
         const value=scaled.imag?`(${number(scaled.value)} + (${number(scaled.imag)}) * i)`:number(scaled.value);
@@ -350,6 +335,7 @@
         const degrees=$('angle-mode').value!=='1'; $('angle-mode').value=degrees?'1':'0';
         $('angle-toggle').setAttribute('aria-pressed',String(degrees));
         $('angle-toggle').setAttribute('aria-label',`Angle unit: ${degrees?'degrees':'radians'}. Switch to ${degrees?'radians':'degrees'}`);
+        preferences.angleMode=degrees?'deg':'rad';writeStorage(settingsKey,preferences);
         $('angle-mode').dispatchEvent(new Event('input'));
     });
     for(const id of ['angle-toggle','save-calculation','copy-latex']) $(id).addEventListener('pointerdown',event=>event.preventDefault());
@@ -369,15 +355,39 @@
         dialog.addEventListener('click',event=>{if(event.target===dialog) {const rect=dialog.getBoundingClientRect(); if(event.clientX<rect.left||event.clientX>rect.right||event.clientY<rect.top||event.clientY>rect.bottom) dialog.close();}});
     });
     $('insert-menu').addEventListener('close',()=>{for(const id of ['constants-button','units-button','functions-button']) $(id).setAttribute('aria-expanded','false');});
-    document.querySelectorAll('[data-example]').forEach(button=>button.addEventListener('click',()=>{
-        input.value=button.dataset.example; manualUnit=false; $('result-unit-search').value=''; update(); input.focus({preventScroll:true});
-    }));
+    function populateSettings() {
+        for(const [key,value] of Object.entries(preferences)) $('setting-'+key).value=String(value);
+    }
+    let settingsChanged=false;
+    function applySettings() {
+        settingsChanged=true;
+        $('angle-mode').value=preferences.angleMode==='deg'?'1':'0';
+        manualUnit=false;
+        update();renderSaved();syncViewport();
+    }
+    $('settings-dialog').addEventListener('close',()=>{
+        if(settingsChanged) {mathEditor?.configure(preferences);settingsChanged=false;}
+    });
+    $('settings-button').addEventListener('click',()=>{populateSettings();openDialog('settings-dialog');});
+    $('settings-form').addEventListener('submit',event=>event.preventDefault());
+    $('settings-form').addEventListener('change',()=>{
+        const next=Object.fromEntries(new FormData($('settings-form')));
+        next.unitPrefixes=next.unitPrefixes==='true';
+        preferences=CalculatorSettings.normalize(next);
+        $('settings-status').textContent=writeStorage(settingsKey,preferences)?'Settings saved.':'Settings apply for this visit; browser storage is unavailable.';
+        applySettings();
+    });
+    $('settings-reset').addEventListener('click',()=>{
+        preferences={...CalculatorSettings.defaults};writeStorage(settingsKey,preferences);populateSettings();applySettings();$('settings-status').textContent='Default settings restored.';
+    });
     let statusTimer;
     new MutationObserver(()=>{clearTimeout(statusTimer); if($('action-status').textContent) statusTimer=setTimeout(()=>{$('action-status').textContent='';},3500);}).observe($('action-status'),{childList:true});
     if(window.PhysicsMath && window.MathfieldElement) {
         MathfieldElement.soundsDirectory=null;
         MathfieldElement.computeEngine=null;
-        mathEditor=PhysicsMath.attach(input,$('math-expression'),syncViewport);
+        mathEditor=PhysicsMath.attach(input,$('math-expression'),syncViewport,preferences);
+        $('math-expression').addEventListener('focus',()=>requestAnimationFrame(showSuggestions));
+        $('math-expression').addEventListener('blur',()=>requestAnimationFrame(()=>{if(!mathEditor.hasFocus() && !suggestionPointerActive)hideSuggestions();}));
         $('math-expression').addEventListener('click',showSuggestions);
         $('math-expression').addEventListener('selection-change',showSuggestions);
         $('math-expression').addEventListener('keydown',event=>{
@@ -393,4 +403,5 @@
     $('expression-highlight').parentElement.classList.add('syntax-active');
     renderSaved();
     highlightExpression();
+    refreshAnswer();
 })();
